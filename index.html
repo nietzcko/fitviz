@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BikeFit Pro - Web Port</title>
+    <style>
+        :root {
+            --bg-color: #f5f5f7;
+            --sidebar-bg: #ffffff;
+            --accent-blue: #007aff;
+            --text-main: #1d1d1f;
+            --border-color: #d2d2d7;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            overflow: hidden;
+        }
+
+        /* Layout */
+        .sidebar {
+            width: 300px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            padding: 20px;
+            overflow-y: auto;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+        }
+
+        .right-sidebar {
+            border-right: none;
+            border-left: 1px solid var(--border-color);
+        }
+
+        main {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        canvas {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        /* UI Elements */
+        h2 { font-size: 18px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-size: 12px; color: #86868b; margin-bottom: 5px; text-transform: uppercase; }
+        input[type="number"], input[type="range"] { width: 100%; box-sizing: border-box; }
+        input[type="number"] { padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px; }
+        
+        .val-display { float: right; font-weight: bold; color: var(--accent-blue); }
+
+        .stats-overlay {
+            position: absolute;
+            bottom: 40px;
+            left: 340px;
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 13px;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <h2>Bike Geometry</h2>
+        <div class="input-group">
+            <label>Reach (mm) <span class="val-display" id="reach-val">393</span></label>
+            <input type="number" id="reach" value="393" step="1">
+        </div>
+        <div class="input-group">
+            <label>Stack (mm) <span class="val-display" id="stack-val">580</span></label>
+            <input type="number" id="stack" value="580" step="1">
+        </div>
+        <div class="input-group">
+            <label>Seat Height (mm) <span class="val-display" id="seatHeight-val">760</span></label>
+            <input type="number" id="seatHeight" value="760" step="1">
+        </div>
+        <div class="input-group">
+            <label>Seat Angle (°) <span class="val-display" id="seatAngle-val">73</span></label>
+            <input type="number" id="seatAngle" value="73" step="0.5">
+        </div>
+        <div class="input-group">
+            <label>Crank Length (mm) <span class="val-display" id="crank-val">172.5</span></label>
+            <input type="number" id="crank" value="172.5" step="2.5">
+        </div>
+
+        <h2 style="margin-top: 30px;">Body (cm)</h2>
+        <div class="input-group">
+            <label>Torso</label>
+            <input type="number" id="torso" value="65">
+        </div>
+        <div class="input-group">
+            <label>Arm</label>
+            <input type="number" id="arm" value="60">
+        </div>
+        <div class="input-group">
+            <label>Thigh</label>
+            <input type="number" id="thigh" value="45">
+        </div>
+        <div class="input-group">
+            <label>Shin</label>
+            <input type="number" id="shin" value="50">
+        </div>
+    </aside>
+
+    <main>
+        <canvas id="bikeCanvas" width="800" height="600"></canvas>
+        <div class="stats-overlay" id="stats">
+            Knee Angle: --<br>
+            Hip Angle: --
+        </div>
+    </main>
+
+    <aside class="sidebar right-sidebar">
+        <h2>Rider State</h2>
+        <div class="input-group">
+            <label>Trunk Angle (°) <span class="val-display" id="trunk-val">45</span></label>
+            <input type="range" id="trunkAngle" min="0" max="90" value="45">
+        </div>
+        <div class="input-group">
+            <label>Crank Rotation (°) <span class="val-display" id="rot-val">0</span></label>
+            <input type="range" id="crankRot" min="0" max="360" value="90">
+        </div>
+    </aside>
+
+    <script>
+        const canvas = document.getElementById('bikeCanvas');
+        const ctx = canvas.getContext('2d');
+        const stats = document.getElementById('stats');
+
+        // Configuration
+        const scale = 0.6; // 1mm = 0.6px
+        const offset = { x: 300, y: 450 }; // Origin (Bottom Bracket)
+
+        function toRad(deg) { return deg * (Math.PI / 180); }
+        function toDeg(rad) { return rad * (180 / Math.PI); }
+
+        /**
+         * Inverse Kinematics Solver 
+         * Finds intersection of two circles (Law of Cosines)
+         */
+        function solveIK(p1, p2, len1, len2, flip = false) {
+            const dx = p2.x - p1.x;
+            const dy = p2.y - p1.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist > len1 + len2) return null; // Target unreachable
+
+            const a = (len1 * len1 - len2 * len2 + dist * dist) / (2 * dist);
+            const h = Math.sqrt(Math.max(0, len1 * len1 - a * a));
+
+            const x2 = p1.x + (a * dx) / dist;
+            const y2 = p1.y + (a * dy) / dist;
+
+            const rx = -dy * (h / dist);
+            const ry = dx * (h / dist);
+
+            return flip ? { x: x2 - rx, y: y2 - ry } : { x: x2 + rx, y: y2 + ry };
+        }
+
+        function update() {
+            // 1. Get Inputs
+            const reach = parseFloat(document.getElementById('reach').value);
+            const stack = parseFloat(document.getElementById('stack').value);
+            const seatH = parseFloat(document.getElementById('seatHeight').value);
+            const seatA = parseFloat(document.getElementById('seatAngle').value);
+            const crankL = parseFloat(document.getElementById('crank').value);
+            
+            const torsoL = parseFloat(document.getElementById('torso').value) * 10;
+            const armL = parseFloat(document.getElementById('arm').value) * 10;
+            const thighL = parseFloat(document.getElementById('thigh').value) * 10;
+            const shinL = parseFloat(document.getElementById('shin').value) * 10;
+
+            const trunkA = parseFloat(document.getElementById('trunkAngle').value);
+            const crankRot = parseFloat(document.getElementById('crankRot').value);
+
+            // Update UI Labels
+            document.getElementById('reach-val').innerText = reach;
+            document.getElementById('stack-val').innerText = stack;
+            document.getElementById('seatHeight-val').innerText = seatH;
+            document.getElementById('seatAngle-val').innerText = seatA;
+            document.getElementById('crank-val').innerText = crankL;
+            document.getElementById('trunk-val').innerText = trunkA;
+            document.getElementById('rot-val').innerText = crankRot;
+
+            // 2. Geometry Calculations (Relative to BB 0,0)
+            const bb = { x: 0, y: 0 };
+            const bars = { x: reach, y: -stack };
+            
+            // Saddle (Trig: hypotenuse is seatH, angle is from vertical)
+            const saddleX = -Math.cos(toRad(seatA)) * seatH;
+            const saddleY = -Math.sin(toRad(seatA)) * seatH;
+            const saddle = { x: saddleX, y: saddleY };
+
+            // Pedal
+            const pedal = {
+                x: Math.sin(toRad(crankRot)) * crankL,
+                y: -Math.cos(toRad(crankRot)) * crankL
+            };
+
+            // Rider Body Points
+            // Hip is located at saddle
+            const hip = { ...saddle };
+            
+            // Shoulder based on Trunk Angle (0 is horizontal)
+            const shoulder = {
+                x: hip.x + Math.cos(toRad(-trunkA)) * torsoL,
+                y: hip.y + Math.sin(toRad(-trunkA)) * torsoL
+            };
+
+            // Solve Joints
+            const knee = solveIK(hip, pedal, thighL, shinL, false);
+            const elbow = solveIK(shoulder, bars, armL * 0.5, armL * 0.5, true); // Simplified arm segments
+
+            draw(bb, bars, saddle, pedal, hip, shoulder, knee, elbow);
+            
+            // Calculate Stats
+            if(knee) {
+                const a = thighL, b = shinL, c = Math.hypot(hip.x-pedal.x, hip.y-pedal.y);
+                const kneeAngle = toDeg(Math.acos((a*a + b*b - c*c)/(2*a*b)));
+                stats.innerHTML = `Knee Angle: ${kneeAngle.toFixed(1)}°<br>Hip Angle: ${trunkA.toFixed(1)}°`;
+            }
+        }
+
+        function draw(bb, bars, saddle, pedal, hip, shoulder, knee, elbow) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const px = (pt) => ({ x: offset.x + pt.x * scale, y: offset.y + pt.y * scale });
+
+            const sBB = px(bb);
+            const sBars = px(bars);
+            const sSaddle = px(saddle);
+            const sPedal = px(pedal);
+            const sHip = px(hip);
+            const sShoulder = px(shoulder);
+            const sKnee = knee ? px(knee) : null;
+            const sElbow = elbow ? px(elbow) : null;
+
+            // Draw Bike
+            ctx.lineWidth = 6;
+            ctx.strokeStyle = "#444";
+            ctx.lineJoin = "round";
+            
+            ctx.beginPath();
+            ctx.moveTo(sBB.x, sBB.y);
+            ctx.lineTo(sSaddle.x, sSaddle.y); // Seat tube
+            ctx.moveTo(sBB.x, sBB.y);
+            ctx.lineTo(sBars.x, sBars.y);   // Down tube-ish
+            ctx.stroke();
+
+            // Crank
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = "#888";
+            ctx.beginPath();
+            ctx.moveTo(sBB.x, sBB.y);
+            ctx.lineTo(sPedal.x, sPedal.y);
+            ctx.stroke();
+
+            // Draw Rider
+            ctx.lineWidth = 5;
+            ctx.strokeStyle = "#007aff";
+            
+            // Legs
+            if(sKnee) {
+                ctx.beginPath();
+                ctx.moveTo(sHip.x, sHip.y);
+                ctx.lineTo(sKnee.x, sKnee.y);
+                ctx.lineTo(sPedal.x, sPedal.y);
+                ctx.stroke();
+            }
+
+            // Torso & Arms
+            ctx.beginPath();
+            ctx.moveTo(sHip.x, sHip.y);
+            ctx.lineTo(sShoulder.x, sShoulder.y);
+            if(sElbow) {
+                ctx.lineTo(sElbow.x, sElbow.y);
+                ctx.lineTo(sBars.x, sBars.y);
+            }
+            ctx.stroke();
+
+            // Joint Markers
+            const drawJoint = (p) => {
+                if(!p) return;
+                ctx.fillStyle = "red";
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 4, 0, Math.PI*2);
+                ctx.fill();
+            };
+
+            [sHip, sKnee, sShoulder, sElbow, sPedal].forEach(drawJoint);
+        }
+
+        // Event Listeners
+        document.querySelectorAll('input').forEach(el => {
+            el.addEventListener('input', update);
+        });
+
+        // Initialize
+        update();
+    </script>
+</body>
+</html>
