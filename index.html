@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BikeFit Mobile</title>
+    <title>BikeFit Mobile Fix</title>
     <style>
         :root {
             --bg-color: #f5f5f7;
@@ -20,71 +20,56 @@
             color: var(--text-main);
             display: flex;
             flex-direction: column;
-            height: 100vh;
+            overflow-x: hidden;
         }
 
-        /* Responsive Layout Engine */
+        /* Responsive Grid */
         .app-container {
             display: grid;
-            grid-template-columns: 300px 1fr 300px;
-            height: 100%;
+            grid-template-columns: 1fr;
+            width: 100%;
         }
 
-        @media (max-width: 1024px) {
-            .app-container {
-                grid-template-columns: 1fr;
-                grid-template-rows: auto 1fr auto;
-                overflow-y: auto;
-            }
-            body { height: auto; overflow: visible; }
-            .sidebar { width: 100% !important; height: auto !important; border: none !important; }
-            main { order: -1; position: sticky; top: 0; z-index: 10; background: var(--bg-color); }
+        @media (min-width: 1025px) {
+            .app-container { grid-template-columns: 300px 1fr 300px; height: 100vh; }
+            .sidebar { overflow-y: auto; }
         }
-
-        .sidebar {
-            background: var(--sidebar-bg);
-            border-right: 1px solid var(--border-color);
-            padding: 20px;
-            overflow-y: auto;
-            box-sizing: border-box;
-        }
-
-        .right-sidebar { border-right: none; border-left: 1px solid var(--border-color); }
 
         main {
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            padding: 10px;
-            min-height: 350px;
+            padding: 15px;
+            background: var(--bg-color);
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
 
-        canvas {
+        /* Canvas Container for sizing */
+        .canvas-container {
+            width: 100%;
+            max-width: 500px;
+            aspect-ratio: 1.2 / 1;
             background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            max-width: 100%;
-            height: auto;
-            touch-action: none;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        /* Mobile-Optimized Form Elements */
-        h2 { font-size: 16px; margin: 15px 0 10px 0; color: var(--accent-blue); }
-        .input-group { 
-            margin-bottom: 12px; 
-            background: #f9f9fb; 
-            padding: 10px; 
-            border-radius: 8px; 
-        }
-        label { display: block; font-size: 11px; color: #86868b; margin-bottom: 8px; font-weight: 600; }
+        canvas { width: 100%; height: 100%; touch-action: none; }
+
+        /* UI Styling */
+        .sidebar { background: var(--sidebar-bg); padding: 20px; box-sizing: border-box; }
+        .input-group { margin-bottom: 15px; background: #f9f9fb; padding: 12px; border-radius: 12px; }
+        label { display: block; font-size: 12px; color: #86868b; margin-bottom: 8px; font-weight: 600; text-transform: uppercase; }
+        .val-display { float: right; color: var(--accent-blue); }
         
-        input[type="number"], input[type="range"] { 
-            width: 100%; 
-            height: 35px; /* Larger hit area for thumbs */
-        }
-
-        .val-display { float: right; font-weight: bold; color: var(--text-main); font-variant-numeric: tabular-nums; }
+        input[type="range"] { width: 100%; height: 25px; accent-color: var(--accent-blue); }
+        input[type="number"] { width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 8px; }
 
         .stats-banner {
             width: 100%;
@@ -93,19 +78,29 @@
             justify-content: space-around;
             background: white;
             margin-top: 10px;
-            padding: 10px;
-            border-radius: 8px;
+            padding: 12px;
+            border-radius: 12px;
             font-size: 14px;
             font-weight: 600;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         }
     </style>
 </head>
 <body>
 
 <div class="app-container">
+    <main>
+        <div class="canvas-container">
+            <canvas id="bikeCanvas"></canvas>
+        </div>
+        <div class="stats-banner">
+            <span id="stat-knee">Knee Angle: --</span>
+            <span id="stat-hip">Trunk: --</span>
+        </div>
+    </main>
+
     <aside class="sidebar">
-        <h2>Bike Geometry (mm)</h2>
+        <h2>Geometry (mm)</h2>
         <div class="input-group">
             <label>Reach <span class="val-display" id="reach-val">393</span></label>
             <input type="range" id="reach" min="300" max="500" value="393">
@@ -122,123 +117,107 @@
             <label>Seat Angle (°) <span class="val-display" id="seatAngle-val">73</span></label>
             <input type="range" id="seatAngle" min="65" max="85" step="0.5" value="73">
         </div>
-    </aside>
 
-    <main>
-        <canvas id="bikeCanvas" width="600" height="500"></canvas>
-        <div class="stats-banner">
-            <span id="stat-knee">Knee: --</span>
-            <span id="stat-hip">Hip: --</span>
-        </div>
-    </main>
-
-    <aside class="sidebar right-sidebar">
-        <h2>Rider Position</h2>
+        <h2>Rider State</h2>
         <div class="input-group">
-            <label>Trunk Angle (°) <span class="val-display" id="trunk-val">45</span></label>
+            <label>Trunk Angle <span class="val-display" id="trunk-val">45</span></label>
             <input type="range" id="trunkAngle" min="0" max="90" value="45">
         </div>
         <div class="input-group">
-            <label>Crank Position (°) <span class="val-display" id="rot-val">90</span></label>
+            <label>Crank Rot <span class="val-display" id="rot-val">90</span></label>
             <input type="range" id="crankRot" min="0" max="360" value="90">
-        </div>
-
-        <h2>Limb Lengths (cm)</h2>
-        <div class="input-group">
-            <label>Torso / Arm</label>
-            <input type="number" id="torso" value="65" style="width:45%">
-            <input type="number" id="arm" value="60" style="width:45%; float:right">
-        </div>
-        <div class="input-group">
-            <label>Thigh / Shin</label>
-            <input type="number" id="thigh" value="45" style="width:45%">
-            <input type="number" id="shin" value="50" style="width:45%; float:right">
         </div>
     </aside>
 </div>
 
 <script>
-    const canvas = document.getElementById('bikeCanvas');
-    const ctx = canvas.getContext('2d');
-    const scale = 0.5; 
-    const offset = { x: 220, y: 380 };
-
-    function toRad(deg) { return deg * (Math.PI / 180); }
-    function toDeg(rad) { return rad * (180 / Math.PI); }
-
-    function solveIK(p1, p2, len1, len2, flip = false) {
-        const dx = p2.x - p1.x, dy = p2.y - p1.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist > len1 + len2 || dist < Math.abs(len1 - len2)) return null;
-        const a = (len1**2 - len2**2 + dist**2) / (2 * dist);
-        const h = Math.sqrt(Math.max(0, len1**2 - a**2));
-        const x2 = p1.x + (a * dx) / dist, y2 = p1.y + (a * dy) / dist;
-        const rx = -dy * (h / dist), ry = dx * (h / dist);
-        return flip ? { x: x2 - rx, y: y2 - ry } : { x: x2 + rx, y: y2 + ry };
-    }
-
-    function update() {
-        const getV = (id) => parseFloat(document.getElementById(id).value);
-        const reach = getV('reach'), stack = getV('stack'), seatH = getV('seatHeight');
-        const seatA = getV('seatAngle'), crankL = 172.5; 
-        const torsoL = getV('torso')*10, armL = getV('arm')*10, thighL = getV('thigh')*10, shinL = getV('shin')*10;
-        const trunkA = getV('trunkAngle'), crankRot = getV('crankRot');
-
-        // Sync labels
-        ['reach','stack','seatHeight','seatAngle','trunkAngle','crankRot'].forEach(id => {
-            document.getElementById(id+'-val').innerText = document.getElementById(id).value;
-        });
-
-        const bb = { x: 0, y: 0 };
-        const bars = { x: reach, y: -stack };
-        const saddle = { x: -Math.cos(toRad(seatA)) * seatH, y: -Math.sin(toRad(seatA)) * seatH };
-        const pedal = { x: Math.sin(toRad(crankRot)) * crankL, y: -Math.cos(toRad(crankRot)) * crankL };
-        const hip = { ...saddle };
-        const shoulder = { x: hip.x + Math.cos(toRad(-trunkA)) * torsoL, y: hip.y + Math.sin(toRad(-trunkA)) * torsoL };
+    window.addEventListener('DOMContentLoaded', () => {
+        const canvas = document.getElementById('bikeCanvas');
+        const ctx = canvas.getContext('2d');
         
-        const knee = solveIK(hip, pedal, thighL, shinL, false);
-        const elbow = solveIK(shoulder, bars, armL*0.5, armL*0.5, true);
-
-        draw(bb, bars, saddle, pedal, hip, shoulder, knee, elbow);
-
-        if(knee) {
-            const dist = Math.hypot(hip.x-pedal.x, hip.y-pedal.y);
-            const kAngle = toDeg(Math.acos((thighL**2 + shinL**2 - dist**2)/(2*thighL*shinL)));
-            document.getElementById('stat-knee').innerText = `Knee: ${Math.round(kAngle)}°`;
-            document.getElementById('stat-hip').innerText = `Trunk: ${trunkA}°`;
+        // --- HiDPI Scaling Fix ---
+        function setupCanvas() {
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.parentNode.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+            // Use logical CSS pixels for drawing math
+            return { w: rect.width, h: rect.height };
         }
-    }
 
-    function draw(bb, bars, saddle, pedal, hip, shoulder, knee, elbow) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        const px = (pt) => ({ x: offset.x + pt.x * scale, y: offset.y + pt.y * scale });
+        let dims = setupCanvas();
+        window.addEventListener('resize', () => { dims = setupCanvas(); update(); });
 
-        const pts = { bb: px(bb), bars: px(bars), saddle: px(saddle), pedal: px(pedal), hip: px(hip), shoulder: px(shoulder), knee: knee?px(knee):null, elbow: elbow?px(elbow):null };
+        const toRad = deg => deg * (Math.PI / 180);
+        const toDeg = rad => rad * (180 / Math.PI);
 
-        // Bike Frame
-        ctx.setLineDash([5, 5]); ctx.strokeStyle = "#ccc"; ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.moveTo(pts.bb.x, pts.bb.y); ctx.lineTo(pts.bars.x, pts.bars.y); ctx.stroke();
-        ctx.setLineDash([]); ctx.strokeStyle = "#444"; ctx.lineWidth = 5;
-        ctx.beginPath(); ctx.moveTo(pts.bb.x, pts.bb.y); ctx.lineTo(pts.saddle.x, pts.saddle.y); ctx.stroke();
-
-        // Rider
-        ctx.strokeStyle = "#007aff"; ctx.lineWidth = 6; ctx.lineCap = "round";
-        if(pts.knee) {
-            ctx.beginPath(); ctx.moveTo(pts.hip.x, pts.hip.y); ctx.lineTo(pts.knee.x, pts.knee.y); ctx.lineTo(pts.pedal.x, pts.pedal.y); ctx.stroke();
+        function solveIK(p1, p2, l1, l2, flip = false) {
+            const dx = p2.x - p1.x, dy = p2.y - p1.y;
+            const d = Math.sqrt(dx*dx + dy*dy);
+            if (d > l1 + l2 || d < Math.abs(l1 - l2)) return null;
+            const a = (l1*l1 - l2*l2 + d*d) / (2*d);
+            const h = Math.sqrt(Math.max(0, l1*l1 - a*a));
+            const x2 = p1.x + a*dx/d, y2 = p1.y + a*dy/d;
+            const rx = -dy*(h/d), ry = dx*(h/d);
+            return flip ? {x: x2-rx, y: y2-ry} : {x: x2+rx, y: y2+ry};
         }
-        ctx.beginPath(); ctx.moveTo(pts.hip.x, pts.hip.y); ctx.lineTo(pts.shoulder.x, pts.shoulder.y);
-        if(pts.elbow) { ctx.lineTo(pts.elbow.x, pts.elbow.y); ctx.lineTo(pts.bars.x, pts.bars.y); }
-        ctx.stroke();
 
-        // Joints
-        ctx.fillStyle = "#ff3b30";
-        [pts.hip, pts.knee, pts.shoulder, pts.elbow, pts.pedal].forEach(p => {
-            if(!p) return; ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, 7); ctx.fill();
-        });
-    }
+        function update() {
+            const get = id => parseFloat(document.getElementById(id).value);
+            const reach = get('reach'), stack = get('stack'), sH = get('seatHeight'), sA = get('seatAngle');
+            const tA = get('trunkAngle'), cRot = get('crankRot');
+            
+            // UI Sync
+            ['reach','stack','seatHeight','seatAngle','trunkAngle','crankRot'].forEach(id => {
+                document.getElementById(id+'-val').innerText = document.getElementById(id).value;
+            });
 
-    document.querySelectorAll('input').forEach(i => i.oninput = update);
-    update();
+            // Math (mm)
+            const scale = 0.45;
+            const offset = { x: dims.w * 0.35, y: dims.h * 0.75 };
+            
+            const bb = {x:0, y:0};
+            const pedal = {x: Math.sin(toRad(cRot))*172.5, y: -Math.cos(toRad(cRot))*172.5};
+            const saddle = {x: -Math.cos(toRad(sA))*sH, y: -Math.sin(toRad(sA))*sH};
+            const bars = {x: reach, y: -stack};
+            const shoulder = {x: saddle.x + Math.cos(toRad(-tA))*650, y: saddle.y + Math.sin(toRad(-tA))*650};
+            
+            const knee = solveIK(saddle, pedal, 450, 500, false);
+            const elbow = solveIK(shoulder, bars, 300, 300, true);
+
+            // Draw
+            ctx.clearRect(0,0, dims.w, dims.h);
+            const px = p => ({x: offset.x + p.x*scale, y: offset.y + p.y*scale});
+            
+            const sBB = px(bb), sS = px(saddle), sP = px(pedal), sB = px(bars), sSh = px(shoulder);
+
+            // Bike
+            ctx.strokeStyle = "#333"; ctx.lineWidth = 4; ctx.beginPath();
+            ctx.moveTo(sBB.x, sBB.y); ctx.lineTo(sS.x, sS.y); 
+            ctx.moveTo(sBB.x, sBB.y); ctx.lineTo(sB.x, sB.y); ctx.stroke();
+
+            // Rider
+            ctx.strokeStyle = "#007aff"; ctx.lineWidth = 5; ctx.lineCap = "round";
+            if(knee) {
+                const sK = px(knee);
+                ctx.beginPath(); ctx.moveTo(sS.x, sS.y); ctx.lineTo(sK.x, sK.y); ctx.lineTo(sP.x, sP.y); ctx.stroke();
+                
+                // Knee Angle Calculation
+                const d = Math.hypot(saddle.x-pedal.x, saddle.y-pedal.y);
+                const kA = toDeg(Math.acos((450**2 + 500**2 - d**2)/(2*450*500)));
+                document.getElementById('stat-knee').innerText = `Knee Angle: ${Math.round(kA)}°`;
+                document.getElementById('stat-hip').innerText = `Trunk: ${tA}°`;
+            }
+
+            ctx.beginPath(); ctx.moveTo(sS.x, sS.y); ctx.lineTo(sSh.x, sSh.y);
+            if(elbow) { const sE = px(elbow); ctx.lineTo(sE.x, sE.y); ctx.lineTo(sB.x, sB.y); }
+            ctx.stroke();
+        }
+
+        document.querySelectorAll('input').forEach(i => i.addEventListener('input', update));
+        update();
+    });
 </script>
 </body>
 </html>
