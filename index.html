@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BikeFit Pro v1.0.9</title>
+    <title>BikeFit Pro v1.1.0</title>
     <style>
         :root {
             --bg-color: #f2f2f7;
@@ -87,37 +87,37 @@
         <canvas id="bikeCanvas"></canvas>
     </div>
     <div class="stats-bar">
-        <span id="stat-knee">Knee: --</span>
-        <span id="stat-hip">Hip: --</span>
-        <span id="stat-fa">Fork Angle: --</span>
+        <span id="stat-knee">Knee Angle: --</span>
+        <span id="stat-hip">Trunk: --</span>
+        <span id="stat-fa">Fork: --</span>
     </div>
 </div>
 
 <div class="controls-section">
-    <h2>Frame Geometry</h2>
+    <h2>Frame Geometry (mm)</h2>
     <div class="card">
         <div class="row"><span class="label-text">Reach</span><input type="range" id="reach" min="350" max="480" value="393"><span class="val-text" id="reach-val">393</span></div>
         <div class="row"><span class="label-text">Stack</span><input type="range" id="stack" min="500" max="750" value="580"><span class="val-text" id="stack-val">580</span></div>
-        <div class="row"><span class="label-text">Fork Angle</span><input type="range" id="fa" min="65" max="80" step="0.5" value="72.5"><span class="val-text" id="fa-val">72.5</span></div>
+        <div class="row"><span class="label-text">Fork Angle</span><input type="range" id="fa" min="65" max="80" step="0.5" value="72.5"><span class="val-text" id="fa-val">72.5°</span></div>
         <div class="row"><span class="label-text">Seat Tube H</span><input type="range" id="stl" min="400" max="600" value="520"><span class="val-text" id="stl-val">520</span></div>
     </div>
 
-    <h2>Cockpit & Setup</h2>
+    <h2>Cockpit & Spacers</h2>
     <div class="card">
         <div class="row"><span class="label-text">Spacers (mm)</span><input type="range" id="spacers" min="0" max="100" value="30"><span class="val-text" id="spacers-val">30</span></div>
         <div class="row"><span class="label-text">Stem Length</span><input type="range" id="stemL" min="60" max="140" value="100"><span class="val-text" id="stemL-val">100</span></div>
-        <div class="row"><span class="label-text">Stem Angle</span><input type="range" id="stemA" min="-20" max="20" value="-6"><span class="val-text" id="stemA-val">-6</span></div>
+        <div class="row"><span class="label-text">Stem Angle</span><input type="range" id="stemA" min="-20" max="20" value="-6"><span class="val-text" id="stemA-val">-6°</span></div>
         <div class="row"><span class="label-text">Saddle Height</span><input type="range" id="seatHeight" min="600" max="950" value="760"><span class="val-text" id="seatHeight-val">760</span></div>
     </div>
 
-    <h2>Rider State</h2>
+    <h2>Rider Position</h2>
     <div class="card">
-        <div class="row"><span class="label-text">Trunk Angle</span><input type="range" id="trunkAngle" min="0" max="90" value="45"><span class="val-text" id="trunk-val">45</span></div>
-        <div class="row"><span class="label-text">Crank Rot</span><input type="range" id="crankRot" min="0" max="360" value="90"><span class="val-text" id="rot-val">90</span></div>
+        <div class="row"><span class="label-text">Trunk Angle</span><input type="range" id="trunkAngle" min="0" max="90" value="45"><span class="val-text" id="trunk-val">45°</span></div>
+        <div class="row"><span class="label-text">Crank Position</span><input type="range" id="crankRot" min="0" max="360" value="90"><span class="val-text" id="rot-val">90°</span></div>
     </div>
 </div>
 
-<div class="version-tag">v1.0.9</div>
+<div class="version-tag">v1.1.0</div>
 
 <script>
     const canvas = document.getElementById('bikeCanvas');
@@ -150,39 +150,59 @@
     function update() {
         const val = id => parseFloat(document.getElementById(id).value);
         
+        // Input values
         const reach = val('reach'), stack = val('stack'), fa = val('fa');
         const spacers = val('spacers'), stl = val('stl'), stemL = val('stemL'), stemA = val('stemA');
         const sH = val('seatHeight'), cL = 172.5, cRot = val('crankRot'), tA = val('trunkAngle');
         
-        const sta = 73.5, wheelR = 340, wb = 1010;
+        const sta = 73.5, wheelR = 340, wb_base = 1010;
 
-        // Label Sync
+        // Label updates
         document.querySelectorAll('input').forEach(i => {
             const lab = document.getElementById(i.id + '-val') || document.getElementById(i.id.replace('Angle','').replace('Rot','rot') + '-val');
-            if(lab) lab.innerText = i.value + (i.id.includes('Angle') || i.id === 'fa' ? '°' : '');
+            if(lab) lab.innerText = i.value + (i.id.includes('Angle') || i.id === 'fa' || i.id === 'stemA' || i.id === 'crankRot' || i.id === 'trunkAngle' ? '°' : '');
         });
 
         const scale = dims.w / 1400;
-        const offset = { x: dims.w * 0.42, y: dims.h * 0.75 };
+        const offset = { x: dims.w * 0.4, y: dims.h * 0.75 };
         const px = p => ({x: offset.x + p.x*scale, y: offset.y + (p.y + wheelR)*scale});
 
-        // Geometry (BB 0,0)
+        // GEOMETRY CALCULATION (BB at 0,0)
         const bb = {x:0, y:0};
-        const rearHub = {x: -wb * 0.42, y: 0};
-        const frontHub = {x: wb * 0.58, y: 0};
+        const rearHub = {x: -wb_base * 0.42, y: 0};
         
+        // Stack and Reach point (Top of Head Tube)
+        const htTop = {x: reach, y: -stack};
+        
+        // UNIFIED FORK AXIS
+        // The Fork Angle determines the line through htTop. 
+        // We calculate Front Hub 'x' so it sits on the floor (y=0) along this line.
+        const dx_hub = stack / Math.tan(toRad(fa));
+        const frontHub = {x: reach + dx_hub, y: 0};
+
+        // Steerer direction vector (pointing UP from htTop)
+        const steererVec = { 
+            x: Math.cos(toRad(90+fa)), 
+            y: -Math.sin(toRad(90+fa)) 
+        };
+        
+        // Spacers sit exactly on the steerer tube line
+        const stemBase = { 
+            x: htTop.x + steererVec.x * spacers, 
+            y: htTop.y + steererVec.y * spacers 
+        };
+        
+        // Stem is measured relative to the fork's axis
+        const stemTotalRad = toRad((90-fa) + stemA);
+        const stemEnd = { 
+            x: stemBase.x + Math.cos(stemTotalRad)*stemL, 
+            y: stemBase.y - Math.sin(stemTotalRad)*stemL 
+        };
+        const hoods = { x: stemEnd.x + 80, y: stemEnd.y + 20 };
+
+        // Saddle section
         const stTop = { x: Math.cos(Math.PI - toRad(sta)) * stl, y: -Math.sin(Math.PI - toRad(sta)) * stl };
         const saddle = { x: Math.cos(Math.PI - toRad(sta)) * sH, y: -Math.sin(Math.PI - toRad(sta)) * sH };
-        
-        const htTop = {x: reach, y: -stack};
-        // Steerer direction based strictly on Fork Angle
-        const steererDir = { x: Math.cos(toRad(90+fa)), y: -Math.sin(toRad(90+fa)) };
-        const stemBase = { x: htTop.x + steererDir.x * spacers, y: htTop.y + steererDir.y * spacers };
-        
-        // Stem is measured relative to the fork angle plane
-        const stemTotalRad = toRad((90-fa) + stemA);
-        const stemEnd = { x: stemBase.x + Math.cos(stemTotalRad)*stemL, y: stemBase.y - Math.sin(stemTotalRad)*stemL };
-        const hoods = { x: stemEnd.x + 80, y: stemEnd.y + 20 };
 
         ctx.clearRect(0,0, dims.w, dims.h);
         
@@ -192,32 +212,39 @@
             hoods: px(hoods), rh: px(rearHub), fh: px(frontHub) 
         };
 
-        // Wheels
+        // Draw Wheels
         ctx.strokeStyle = "#e5e5ea"; ctx.lineWidth = 1.5;
         [pts.rh, pts.fh].forEach(w => { ctx.beginPath(); ctx.arc(w.x, w.y, wheelR*scale, 0, 7); ctx.stroke(); });
 
-        // Frame
-        ctx.strokeStyle = "#2c2c2e"; ctx.lineWidth = 8; ctx.lineCap = "round"; ctx.lineJoin = "round";
+        // Draw Frame (Dark Gray)
+        ctx.strokeStyle = "#3a3a3c"; ctx.lineWidth = 8; ctx.lineCap = "round"; ctx.lineJoin = "round";
         ctx.beginPath();
         ctx.moveTo(pts.bb.x, pts.bb.y); ctx.lineTo(pts.stTop.x, pts.stTop.y);
         ctx.lineTo(pts.htTop.x, pts.htTop.y); ctx.lineTo(pts.bb.x, pts.bb.y);
         ctx.stroke();
 
+        // Rear Triangle
         ctx.lineWidth = 6;
         ctx.beginPath();
         ctx.moveTo(pts.bb.x, pts.bb.y); ctx.lineTo(pts.rh.x, pts.rh.y);
         ctx.lineTo(pts.stTop.x, pts.stTop.y);
         ctx.stroke();
 
-        // Fork Assembly (Fork + Steerer + Spacers)
-        ctx.strokeStyle = "#555"; ctx.lineWidth = 5;
-        ctx.beginPath(); ctx.moveTo(pts.fh.x, pts.fh.y); ctx.lineTo(pts.htTop.x, pts.htTop.y); ctx.stroke();
+        // FORK & SPACER ASSEMBLY (Unified)
+        ctx.strokeStyle = "#1c1c1e"; ctx.lineWidth = 7;
+        ctx.beginPath(); 
+        ctx.moveTo(pts.fh.x, pts.fh.y); 
+        ctx.lineTo(pts.htTop.x, pts.htTop.y); // Fork leg to Headtube
+        ctx.stroke();
         
-        ctx.strokeStyle = "#8e8e93"; ctx.lineWidth = 4; // Spacers/Steerer extension
-        ctx.beginPath(); ctx.moveTo(pts.htTop.x, pts.htTop.y); ctx.lineTo(pts.stemBase.x, pts.stemBase.y); ctx.stroke();
+        ctx.strokeStyle = "#8e8e93"; ctx.lineWidth = 5; 
+        ctx.beginPath(); 
+        ctx.moveTo(pts.htTop.x, pts.htTop.y); 
+        ctx.lineTo(pts.stemBase.x, pts.stemBase.y); // Spacers (Collinear with Fork)
+        ctx.stroke();
 
         // Cockpit
-        ctx.strokeStyle = "#1c1c1e"; ctx.lineWidth = 5;
+        ctx.strokeStyle = "#1c1c1e"; ctx.lineWidth = 6;
         ctx.beginPath(); ctx.moveTo(pts.stemBase.x, pts.stemBase.y); ctx.lineTo(pts.stemEnd.x, pts.stemEnd.y); ctx.stroke();
         ctx.beginPath(); ctx.arc(pts.stemEnd.x, pts.stemEnd.y, 7*scale, 0, 7); ctx.stroke();
 
@@ -225,7 +252,7 @@
         ctx.strokeStyle = "#8e8e93"; ctx.lineWidth = 5;
         ctx.beginPath(); ctx.moveTo(pts.stTop.x, pts.stTop.y); ctx.lineTo(pts.saddle.x, pts.saddle.y); ctx.stroke();
 
-        // Rider
+        // Rider (Inverse Kinematics)
         const shoulder = { x: saddle.x + Math.cos(toRad(-tA))*640, y: saddle.y + Math.sin(toRad(-tA))*640 };
         const pedal = { x: Math.sin(toRad(cRot))*cL, y: -Math.cos(toRad(cRot))*cL };
         const knee = solveIK(saddle, pedal, 460, 510, true);
