@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hu">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BikeFit Pro v1.0.6</title>
+    <title>BikeFit Pro v1.0.8</title>
     <style>
         :root {
             --bg-color: #f2f2f7;
@@ -53,9 +53,10 @@
             display: flex;
             justify-content: space-around;
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
             z-index: 101;
+            text-transform: uppercase;
         }
 
         .controls-section { 
@@ -69,11 +70,11 @@
         h2 { font-size: 11px; color: #8e8e93; text-transform: uppercase; margin: 15px 0 8px 5px; grid-column: 1 / -1; }
 
         .card { background: white; border-radius: 12px; padding: 4px 16px; margin-bottom: 5px; }
-        .row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f2f2f7; }
+        .row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f2f2f7; }
         .row:last-child { border-bottom: none; }
         
         .label-text { font-size: 13px; flex: 1; }
-        .val-text { color: var(--accent-blue); font-weight: 600; width: 45px; text-align: right; font-size: 12px; }
+        .val-text { color: var(--accent-blue); font-weight: 600; width: 55px; text-align: right; font-size: 12px; }
         input[type="range"] { flex: 2; margin: 0 10px; accent-color: var(--accent-blue); }
 
         .version-tag { position: fixed; bottom: 8px; right: 12px; font-size: 10px; color: #aeaeb2; font-weight: bold; }
@@ -86,44 +87,42 @@
         <canvas id="bikeCanvas"></canvas>
     </div>
     <div class="stats-bar">
-        <span id="stat-knee">Knee: --</span>
-        <span id="stat-hip">Hip: --</span>
-        <span id="stat-back">Back: --</span>
+        <span id="stat-knee">Térd: --</span>
+        <span id="stat-hip">Csípő: --</span>
+        <span id="stat-ha">HA: --</span>
     </div>
 </div>
 
 <div class="controls-section">
-    <h2>Frame Geometry</h2>
+    <h2>Váz Geometria</h2>
     <div class="card">
         <div class="row"><span class="label-text">Reach</span><input type="range" id="reach" min="350" max="480" value="393"><span class="val-text" id="reach-val">393</span></div>
-        <div class="row"><span class="label-text">Stack</span><input type="range" id="stack" min="500" max="700" value="580"><span class="val-text" id="stack-val">580</span></div>
-        <div class="row"><span class="label-text">Wheelbase</span><input type="range" id="wheelbase" min="950" max="1100" value="1010"><span class="val-text" id="wheelbase-val">1010</span></div>
-        <div class="row"><span class="label-text">Seat Angle</span><input type="range" id="sta" min="70" max="80" step="0.5" value="73.5"><span class="val-text" id="sta-val">73.5</span></div>
+        <div class="row"><span class="label-text">Stack</span><input type="range" id="stack" min="500" max="750" value="580"><span class="val-text" id="stack-val">580</span></div>
+        <div class="row"><span class="label-text">Fejcső Szög (HA)</span><input type="range" id="ha" min="65" max="80" step="0.5" value="72.5"><span class="val-text" id="ha-val">72.5</span></div>
+        <div class="row"><span class="label-text">Nyeregvázcső H</span><input type="range" id="stl" min="400" max="600" value="520"><span class="val-text" id="stl-val">520</span></div>
     </div>
 
-    <h2>Cockpit (mm)</h2>
+    <h2>Kokpit & Spacerek</h2>
     <div class="card">
-        <div class="row"><span class="label-text">Stem Length</span><input type="range" id="stemL" min="70" max="140" value="100"><span class="val-text" id="stemL-val">100</span></div>
-        <div class="row"><span class="label-text">Stem Angle</span><input type="range" id="stemA" min="-20" max="20" value="-6"><span class="val-text" id="stemA-val">-6</span></div>
-        <div class="row"><span class="label-text">Spacers</span><input type="range" id="spacers" min="0" max="50" value="20"><span class="val-text" id="spacers-val">20</span></div>
-        <div class="row"><span class="label-text">Bar Reach</span><input type="range" id="barR" min="60" max="100" value="80"><span class="val-text" id="barR-val">80</span></div>
+        <div class="row"><span class="label-text">Spacerek (mm)</span><input type="range" id="spacers" min="0" max="100" value="30"><span class="val-text" id="spacers-val">30</span></div>
+        <div class="row"><span class="label-text">Stucni Hossz</span><input type="range" id="stemL" min="60" max="140" value="100"><span class="val-text" id="stemL-val">100</span></div>
+        <div class="row"><span class="label-text">Stucni Szög</span><input type="range" id="stemA" min="-20" max="20" value="-6"><span class="val-text" id="stemA-val">-6</span></div>
+        <div class="row"><span class="label-text">Nyereg Magasság</span><input type="range" id="seatHeight" min="600" max="900" value="760"><span class="val-text" id="seatHeight-val">760</span></div>
     </div>
 
-    <h2>Rider State</h2>
+    <h2>Rider Beállítás</h2>
     <div class="card">
-        <div class="row"><span class="label-text">Trunk Angle</span><input type="range" id="trunkAngle" min="0" max="90" value="45"><span class="val-text" id="trunk-val">45</span></div>
-        <div class="row"><span class="label-text">Crank Rot</span><input type="range" id="crankRot" min="0" max="360" value="90"><span class="val-text" id="rot-val">90</span></div>
+        <div class="row"><span class="label-text">Törzs Szög</span><input type="range" id="trunkAngle" min="0" max="90" value="45"><span class="val-text" id="trunk-val">45</span></div>
+        <div class="row"><span class="label-text">Pedál Pozíció</span><input type="range" id="crankRot" min="0" max="360" value="90"><span class="val-text" id="rot-val">90</span></div>
     </div>
 </div>
 
-<div class="version-tag">v1.0.6</div>
+<div class="version-tag">v1.0.8</div>
 
 <script>
     const canvas = document.getElementById('bikeCanvas');
     const ctx = canvas.getContext('2d');
-    
     const toRad = deg => deg * (Math.PI / 180);
-    const toDeg = rad => rad * (180 / Math.PI);
 
     function initCanvas() {
         const dpr = window.devicePixelRatio || 1;
@@ -151,101 +150,98 @@
     function update() {
         const val = id => parseFloat(document.getElementById(id).value);
         
-        // Inputs
-        const reach = val('reach'), stack = val('stack'), wb = val('wheelbase'), sta = val('sta');
-        const stemL = val('stemL'), stemA = val('stemA'), spacers = val('spacers'), barR = val('barR');
-        const trunkA = val('trunkAngle'), cRot = val('crankRot');
+        const reach = val('reach'), stack = val('stack'), ha = val('ha');
+        const spacers = val('spacers'), stl = val('stl'), stemL = val('stemL'), stemA = val('stemA');
+        const sH = val('seatHeight'), cL = 172.5, cRot = val('crankRot'), tA = val('trunkAngle');
         
-        const headAngle = 72; // Standard road head angle
-        const wheelR = 340;
+        const sta = 73.5, wheelR = 340, wb = 1010;
 
-        // UI Text Sync
-        ['reach','stack','wheelbase','sta','stemL','stemA','spacers','barR','trunkAngle','crankRot'].forEach(id => {
-            const target = id.includes('Angle') ? id.replace('Angle','') : id.replace('Rot','rot');
-            const display = document.getElementById(target + '-val') || document.getElementById(target);
-            if(display) display.innerText = document.getElementById(id).value;
+        // Sync Labels
+        document.querySelectorAll('input').forEach(i => {
+            const lab = document.getElementById(i.id + '-val') || document.getElementById(i.id.replace('Angle','').replace('Rot','rot') + '-val');
+            if(lab) lab.innerText = i.value + (i.id.includes('Angle') || i.id === 'ha' ? '°' : '');
         });
 
-        // Points (BB = 0,0)
+        const scale = dims.w / 1400;
+        const offset = { x: dims.w * 0.42, y: dims.h * 0.75 };
+        const px = p => ({x: offset.x + p.x*scale, y: offset.y + (p.y + wheelR)*scale});
+
+        // Pontok (BB = 0,0)
         const bb = {x:0, y:0};
-        const htTop = {x: reach, y: -stack};
-        const rearHub = {x: -wb * 0.42, y: 0}; 
+        const rearHub = {x: -wb * 0.42, y: 0};
         const frontHub = {x: wb * 0.58, y: 0};
         
-        // Cockpit Chain
-        const steerVec = { x: Math.cos(toRad(headAngle + 90)), y: -Math.sin(toRad(headAngle + 90)) };
-        const spacerEnd = { x: htTop.x + steerVec.x * spacers, y: htTop.y + steerVec.y * spacers };
+        // Ülés szekció
+        const stTop = { x: Math.cos(Math.PI - toRad(sta)) * stl, y: -Math.sin(Math.PI - toRad(sta)) * stl };
+        const saddle = { x: Math.cos(Math.PI - toRad(sta)) * sH, y: -Math.sin(Math.PI - toRad(sta)) * sH };
         
-        // Stem (relative to steer tube)
-        const stemTotalAngle = (90 - headAngle) + stemA;
-        const stemEnd = {
-            x: spacerEnd.x + Math.cos(toRad(stemTotalAngle)) * stemL,
-            y: spacerEnd.y - Math.sin(toRad(stemTotalAngle)) * stemL
-        };
-
-        const handPos = { x: stemEnd.x + barR, y: stemEnd.y + 20 }; // Bar hoods roughly +20mm drop/pos
-
-        // Saddle
-        const saddleH = 740; // Defaulting for now
-        const saddle = { x: Math.cos(Math.PI - toRad(sta)) * saddleH, y: -Math.sin(Math.PI - toRad(sta)) * saddleH };
-
-        // Draw Math
-        const scale = dims.w / 1400;
-        const offset = { x: dims.w * 0.4, y: dims.h * 0.75 };
-        const px = p => ({x: offset.x + p.x*scale, y: offset.y + (p.y + wheelR)*scale});
+        // Kormány szekció (A villanyak vonalán)
+        const htTop = {x: reach, y: -stack};
+        const steererVec = { x: Math.cos(toRad(90+ha)), y: -Math.sin(toRad(90+ha)) };
+        const stemBase = { x: htTop.x + steererVec.x * spacers, y: htTop.y + steererVec.y * spacers };
+        
+        // Stucni vége (a villanyak szögéhez képest mérve a stem szögét)
+        const stemTotalRad = toRad((90-ha) + stemA);
+        const stemEnd = { x: stemBase.x + Math.cos(stemTotalRad)*stemL, y: stemBase.y - Math.sin(stemTotalRad)*stemL };
+        const hoods = { x: stemEnd.x + 80, y: stemEnd.y + 20 };
 
         ctx.clearRect(0,0, dims.w, dims.h);
         
-        // Render Components
-        const sBB = px(bb), sS = px(saddle), sHT = px(htTop), sSE = px(stemEnd), sH = px(handPos);
-        const sRH = px(rearHub), sFH = px(frontHub);
+        const pts = { bb: px(bb), stTop: px(stTop), saddle: px(saddle), htTop: px(htTop), stemBase: px(stemBase), stemEnd: px(stemEnd), hoods: px(hoods), rh: px(rearHub), fh: px(frontHub) };
 
-        // 1. Frame Tubes
-        ctx.lineWidth = 6; ctx.lineCap = "round";
-        
-        // Seat Tube
-        ctx.strokeStyle = "#444"; ctx.beginPath(); ctx.moveTo(sBB.x, sBB.y); ctx.lineTo(sS.x, sS.y); ctx.stroke();
-        // Down Tube
-        ctx.beginPath(); ctx.moveTo(sBB.x, sBB.y); ctx.lineTo(sHT.x, sHT.y); ctx.stroke();
-        // Top Tube
-        const ttStart = {x: sS.x + (sBB.x - sS.x)*0.2, y: sS.y + (sBB.y - sS.y)*0.2};
-        ctx.beginPath(); ctx.moveTo(ttStart.x, ttStart.y); ctx.lineTo(sHT.x, sHT.y); ctx.stroke();
-        // Chainstays
-        ctx.beginPath(); ctx.moveTo(sBB.x, sBB.y); ctx.lineTo(sRH.x, sRH.y); ctx.stroke();
-        // Fork
-        ctx.beginPath(); ctx.moveTo(sHT.x, sHT.y); ctx.lineTo(sFH.x, sFH.y); ctx.stroke();
+        // Kerék
+        ctx.strokeStyle = "#e5e5ea"; ctx.lineWidth = 1.5;
+        [pts.rh, pts.fh].forEach(w => { ctx.beginPath(); ctx.arc(w.x, w.y, wheelR*scale, 0, 7); ctx.stroke(); });
 
-        // 2. Cockpit
-        ctx.strokeStyle = "#888"; ctx.lineWidth = 4;
-        ctx.beginPath(); ctx.moveTo(sHT.x, sHT.y); ctx.lineTo(px(spacerEnd).x, px(spacerEnd).y); ctx.stroke(); // Spacers
-        ctx.strokeStyle = "#222";
-        ctx.beginPath(); ctx.moveTo(px(spacerEnd).x, px(spacerEnd).y); ctx.lineTo(sSE.x, sSE.y); ctx.stroke(); // Stem
-        ctx.beginPath(); ctx.arc(sSE.x, sSE.y, 8*scale, 0, 7); ctx.stroke(); // Bar curve
-
-        // 3. Wheels
-        ctx.strokeStyle = "#ddd"; ctx.lineWidth = 2;
-        [sRH, sFH].forEach(w => { ctx.beginPath(); ctx.arc(w.x, w.y, wheelR*scale, 0, 7); ctx.stroke(); });
-
-        // 4. Rider IK
-        const shoulder = { x: saddle.x + Math.cos(toRad(-trunkA))*640, y: saddle.y + Math.sin(toRad(-trunkA))*640 };
-        const pedal = { x: Math.sin(toRad(cRot))*172.5, y: -Math.cos(toRad(cRot))*172.5 };
-        const knee = solveIK(saddle, pedal, 460, 510, true);
-        const elbow = solveIK(shoulder, handPos, 320, 310, false);
-
-        ctx.strokeStyle = "#007aff"; ctx.lineWidth = 8;
-        if(knee) {
-            const sK = px(knee), sP = px(pedal);
-            ctx.beginPath(); ctx.moveTo(sS.x, sS.y); ctx.lineTo(sK.x, sK.y); ctx.lineTo(sP.x, sP.y); ctx.stroke();
-        }
-        ctx.beginPath(); ctx.moveTo(sS.x, sS.y); ctx.lineTo(px(shoulder).x, px(shoulder).y);
-        if(elbow) {
-            const sE = px(elbow);
-            ctx.lineTo(sE.x, sE.y); ctx.lineTo(sH.x, sH.y);
-        }
+        // Váz - Első háromszög
+        ctx.strokeStyle = "#2c2c2e"; ctx.lineWidth = 8; ctx.lineCap = "round"; ctx.lineJoin = "round";
+        ctx.beginPath();
+        ctx.moveTo(pts.bb.x, pts.bb.y); ctx.lineTo(pts.stTop.x, pts.stTop.y);
+        ctx.lineTo(pts.htTop.x, pts.htTop.y); ctx.lineTo(pts.bb.x, pts.bb.y);
         ctx.stroke();
 
-        // Stats
-        document.getElementById('stat-back').innerText = `Back: ${trunkA}°`;
+        // Váz - Hátsó háromszög
+        ctx.lineWidth = 6;
+        ctx.beginPath();
+        ctx.moveTo(pts.bb.x, pts.bb.y); ctx.lineTo(pts.rh.x, pts.rh.y); // Chainstay
+        ctx.lineTo(pts.stTop.x, pts.stTop.y); // Seatstay
+        ctx.stroke();
+
+        // Villa és Villanyak (Spacerek vonala)
+        ctx.strokeStyle = "#555"; ctx.lineWidth = 5;
+        ctx.beginPath(); ctx.moveTo(pts.fh.x, pts.fh.y); ctx.lineTo(pts.htTop.x, pts.htTop.y); ctx.stroke();
+        ctx.strokeStyle = "#8e8e93"; ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.moveTo(pts.htTop.x, pts.htTop.y); ctx.lineTo(pts.stemBase.x, pts.stemBase.y); ctx.stroke();
+
+        // Kokpit
+        ctx.strokeStyle = "#1c1c1e"; ctx.lineWidth = 5;
+        ctx.beginPath(); ctx.moveTo(pts.stemBase.x, pts.stemBase.y); ctx.lineTo(pts.stemEnd.x, pts.stemEnd.y); ctx.stroke();
+        ctx.beginPath(); ctx.arc(pts.stemEnd.x, pts.stemEnd.y, 7*scale, 0, 7); ctx.stroke();
+
+        // Nyeregcső
+        ctx.strokeStyle = "#8e8e93"; ctx.lineWidth = 5;
+        ctx.beginPath(); ctx.moveTo(pts.stTop.x, pts.stTop.y); ctx.lineTo(pts.saddle.x, pts.saddle.y); ctx.stroke();
+
+        // Rider (IK)
+        const shoulder = { x: saddle.x + Math.cos(toRad(-tA))*640, y: saddle.y + Math.sin(toRad(-tA))*640 };
+        const pedal = { x: Math.sin(toRad(cRot))*cL, y: -Math.cos(toRad(cRot))*cL };
+        const knee = solveIK(saddle, pedal, 460, 510, true);
+        const elbow = solveIK(shoulder, hoods, 320, 310, false);
+
+        ctx.strokeStyle = "rgba(0, 122, 255, 0.85)"; ctx.lineWidth = 9;
+        if(knee) {
+            const sk = px(knee), sp = px(pedal);
+            ctx.beginPath(); ctx.moveTo(pts.saddle.x, pts.saddle.y); ctx.lineTo(sk.x, sk.y); ctx.lineTo(sp.x, sp.y); ctx.stroke();
+            const d = Math.hypot(saddle.x-pedal.x, saddle.y-pedal.y);
+            const kAngle = Math.acos((460**2 + 510**2 - d**2)/(2*460*510)) * 180/Math.PI;
+            document.getElementById('stat-knee').innerText = `Térd: ${Math.round(kAngle)}°`;
+        }
+        ctx.beginPath(); ctx.moveTo(pts.saddle.x, pts.saddle.y); ctx.lineTo(px(shoulder).x, px(shoulder).y);
+        if(elbow) { ctx.lineTo(px(elbow).x, px(elbow).y); ctx.lineTo(pts.hoods.x, pts.hoods.y); }
+        ctx.stroke();
+
+        document.getElementById('stat-ha').innerText = `HA: ${ha}°`;
+        document.getElementById('stat-hip').innerText = `Törzs: ${tA}°`;
     }
 
     window.addEventListener('resize', () => { dims = initCanvas(); update(); });
