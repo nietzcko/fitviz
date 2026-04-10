@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BikeFit Pro Compare v2.4.0</title>
+    <title>BikeFit Pro Compare v2.3.2</title>
     <style>
         :root {
             --bg-color: #f2f2f7;
             --sidebar-bg: #ffffff;
-            --accent-purple: #5856d6;
-            --accent-green: #248a3d;
+            --accent-purple: #5856d6; 
+            --accent-green: #248a3d;  
+            --accent-red: #ff3b30;    /* Distinct red for compare bike */
             --text-main: #1c1c1e;
             --border-color: #d1d1d6;
         }
@@ -98,7 +99,7 @@
         }
 
         h1 { font-size: 14px; margin: 0 0 15px 0; color: var(--accent-purple); text-transform: uppercase; display: flex; align-items: center; justify-content: space-between; }
-        h1.bike-b { color: var(--accent-green); }
+        h1.bike-b { color: var(--accent-red); } /* associated with Red bike */
         h2 { font-size: 11px; color: #8e8e93; text-transform: uppercase; margin: 15px 0 6px 5px; letter-spacing: 0.5px; }
         h2.common { color: #555; font-weight: 800; border-top: 1px solid var(--border-color); padding-top: 15px; }
 
@@ -118,9 +119,9 @@
         .val-input[type=number] { -moz-appearance: textfield; }
         .unit { font-size: 11px; color: var(--accent-purple); font-weight: 600; margin-left: 2px; }
 
-        .bike-b-input { color: var(--accent-green); }
-        .bike-b-input:focus { border-color: var(--accent-green); }
-        .unit-b { color: var(--accent-green); }
+        .bike-b-input { color: var(--accent-red); } /* associates input text with Red bike geometry */
+        .bike-b-input:focus { border-color: var(--accent-red); }
+        .unit-b { color: var(--accent-red); }
 
         input[type="checkbox"] { transform: scale(1.2); accent-color: var(--accent-purple); margin-right: 8px; cursor: pointer; }
         .toggle-wrapper { display: flex; align-items: center; font-size: 11px; color: #555; text-transform: none; cursor: pointer; }
@@ -132,7 +133,9 @@
         .btn-import { background: #e5e5ea; color: var(--text-main); }
         .btn-import:hover { background: #d1d1d6; }
 
+        /* Container for collapsible Bike B settings */
         #bikeB-settings { display: none; }
+
         .version-tag { position: fixed; bottom: 8px; right: 12px; font-size: 10px; color: #aeaeb2; font-weight: bold; z-index: 1000; pointer-events: none; }
     </style>
 </head>
@@ -218,32 +221,30 @@
             <canvas id="bikeCanvas"></canvas>
         </div>
         <div class="stats-bar">
-            <span>Knee A: <span id="stat-kneeA" style="color:var(--accent-purple)">--</span> / B: <span id="stat-kneeB" style="color:var(--accent-green)">--</span></span>
-            <span>Hip A: <span id="stat-hipA" style="color:var(--accent-purple)">--</span> / B: <span id="stat-hipB" style="color:var(--accent-green)">--</span></span>
-        </div>
+            <span>Knee A: <span id="stat-kneeA" style="color:var(--accent-purple)">--</span> / B: <span id="stat-kneeB" style="color:var(--accent-green)">--</span></span> <span>Hip A: <span id="stat-hipA" style="color:var(--accent-purple)">--</span> / B: <span id="stat-hipB" style="color:var(--accent-green)">--</span></span>   </div>
     </main>
 
     <aside class="sidebar right-sidebar">
         <h1 class="bike-b">
             Bike B (Összehasonlító)
-            <label class="toggle-wrapper" style="color:var(--accent-green)">
-                <input type="checkbox" id="enableBikeB" style="accent-color:var(--accent-green)"> Mutat
+            <label class="toggle-wrapper" style="color:var(--accent-red)">
+                <input type="checkbox" id="enableBikeB" style="accent-color:var(--accent-red)"> Mutat
             </label>
         </h1>
         
         <div id="bikeB-settings">
             <h2>Rider Position B</h2>
             <div class="card">
-                <div class="row"><span class="label-text">Trunk Angle</span><input type="range" id="trunkAngleB" min="0" max="90" value="40" style="accent-color: var(--accent-green)"><div class="val-container"><input type="number" id="trunkAngleB-num" class="val-input bike-b-input" value="40"><span class="unit unit-b">°</span></div></div>
-                <div class="row"><span class="label-text">Foot Angle</span><input type="range" id="footAngleB" min="-30" max="45" value="0" style="accent-color: var(--accent-green)"><div class="val-container"><input type="number" id="footAngleB-num" class="val-input bike-b-input" value="0"><span class="unit unit-b">°</span></div></div>
-                <div class="row"><span class="label-text">Crank Rot.</span><input type="range" id="crankRotB" min="0" max="360" value="180" style="accent-color: var(--accent-green)"><div class="val-container"><input type="number" id="crankRotB-num" class="val-input bike-b-input" value="180"><span class="unit unit-b">°</span></div></div>
+                <div class="row"><span class="label-text">Trunk Angle</span><input type="range" id="trunkAngleB" min="0" max="90" value="40" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="trunkAngleB-num" class="val-input bike-b-input" value="40"><span class="unit unit-b">°</span></div></div>
+                <div class="row"><span class="label-text">Foot Angle</span><input type="range" id="footAngleB" min="-30" max="45" value="0" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="footAngleB-num" class="val-input bike-b-input" value="0"><span class="unit unit-b">°</span></div></div>
+                <div class="row"><span class="label-text">Crank Rot.</span><input type="range" id="crankRotB" min="0" max="360" value="180" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="crankRotB-num" class="val-input bike-b-input" value="180"><span class="unit unit-b">°</span></div></div>
             </div>
 
             <h2>Frame & Fork B</h2>
             <div class="card">
                 <div class="row">
                     <span class="label-text">Preset</span>
-                    <select id="presetB" style="border-color: var(--accent-green); color: var(--accent-green)">
+                    <select id="presetB" style="border-color: var(--accent-red); color: var(--accent-red)">
                         <option value="custom">Custom...</option>
                         <optgroup label="Surly MS">
                             <option value="ms50">50cm</option>
@@ -260,30 +261,30 @@
                         </optgroup>
                     </select>
                 </div>
-                <div class="row"><span class="label-text">Reach</span><input type="range" id="reachB" min="350" max="550" value="402" style="accent-color: var(--accent-green)"><div class="val-container"><input type="number" id="reachB-num" class="val-input bike-b-input" value="402"></div></div>
-                <div class="row"><span class="label-text">Stack</span><input type="range" id="stackB" min="500" max="750" value="599" style="accent-color: var(--accent-green)"><div class="val-container"><input type="number" id="stackB-num" class="val-input bike-b-input" value="599"></div></div>
-                <div class="row"><span class="label-text">Fork Angle</span><input type="range" id="faB" min="60" max="85" step="0.5" value="73" style="accent-color: var(--accent-green)"><div class="val-container"><input type="number" id="faB-num" class="val-input bike-b-input" value="73"><span class="unit unit-b">°</span></div></div>
-                <div class="row"><span class="label-text">Seat Tube</span><input type="range" id="stlB" min="350" max="650" value="580" style="accent-color: var(--accent-green)"><div class="val-container"><input type="number" id="stlB-num" class="val-input bike-b-input" value="580"></div></div>
+                <div class="row"><span class="label-text">Reach</span><input type="range" id="reachB" min="350" max="550" value="402" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="reachB-num" class="val-input bike-b-input" value="402"></div></div>
+                <div class="row"><span class="label-text">Stack</span><input type="range" id="stackB" min="500" max="750" value="599" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="stackB-num" class="val-input bike-b-input" value="599"></div></div>
+                <div class="row"><span class="label-text">Fork Angle</span><input type="range" id="faB" min="60" max="85" step="0.5" value="73" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="faB-num" class="val-input bike-b-input" value="73"><span class="unit unit-b">°</span></div></div>
+                <div class="row"><span class="label-text">Seat Tube</span><input type="range" id="stlB" min="350" max="650" value="580" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="stlB-num" class="val-input bike-b-input" value="580"></div></div>
             </div>
 
             <h2>Cockpit B</h2>
             <div class="card">
-                <div class="row"><span class="label-text">Spacers</span><input type="range" id="spacersB" min="0" max="100" value="10" style="accent-color: var(--accent-green)"><div class="val-container"><input type="number" id="spacersB-num" class="val-input bike-b-input" value="10"></div></div>
-                <div class="row"><span class="label-text">Stem Length</span><input type="range" id="stemLB" min="30" max="140" value="110" style="accent-color: var(--accent-green)"><div class="val-container"><input type="number" id="stemLB-num" class="val-input bike-b-input" value="110"></div></div>
-                <div class="row"><span class="label-text">Stem Angle</span><input type="range" id="stemAB" min="-25" max="25" value="-17" style="accent-color: var(--accent-green)"><div class="val-container"><input type="number" id="stemAB-num" class="val-input bike-b-input" value="-17"><span class="unit unit-b">°</span></div></div>
+                <div class="row"><span class="label-text">Spacers</span><input type="range" id="spacersB" min="0" max="100" value="10" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="spacersB-num" class="val-input bike-b-input" value="10"></div></div>
+                <div class="row"><span class="label-text">Stem Length</span><input type="range" id="stemLB" min="30" max="140" value="110" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="stemLB-num" class="val-input bike-b-input" value="110"></div></div>
+                <div class="row"><span class="label-text">Stem Angle</span><input type="range" id="stemAB" min="-25" max="25" value="-17" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="stemAB-num" class="val-input bike-b-input" value="-17"><span class="unit unit-b">°</span></div></div>
                 <div class="row">
                     <span class="label-text">Bar Type</span>
-                    <select id="barTypeB" onchange="updateBarUI('B')" style="border-color: var(--accent-green); color: var(--accent-green)">
+                    <select id="barTypeB" onchange="updateBarUI('B')" style="border-color: var(--accent-red); color: var(--accent-red)">
                         <option value="flat">Flat / Riser</option>
                         <option value="drop" selected>Drop Bar</option>
                     </select>
                 </div>
-                <div class="row"><span class="label-text">Bar Reach</span><input type="range" id="barReachB" min="0" max="150" value="80" style="accent-color: var(--accent-green)"><div class="val-container"><input type="number" id="barReachB-num" class="val-input bike-b-input" value="80"></div></div>
-                <div class="row" id="row-barDropB"><span class="label-text">Bar Drop</span><input type="range" id="barDropB" min="100" max="160" value="120" style="accent-color: var(--accent-green)"><div class="val-container"><input type="number" id="barDropB-num" class="val-input bike-b-input" value="120"></div></div>
-                <div class="row"><span class="label-text">Bar Angle</span><input type="range" id="barAngleB" min="-180" max="180" value="0" style="accent-color: var(--accent-green)"><div class="val-container"><input type="number" id="barAngleB-num" class="val-input bike-b-input" value="0"><span class="unit unit-b">°</span></div></div>
+                <div class="row"><span class="label-text">Bar Reach</span><input type="range" id="barReachB" min="0" max="150" value="80" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="barReachB-num" class="val-input bike-b-input" value="80"></div></div>
+                <div class="row" id="row-barDropB"><span class="label-text">Bar Drop</span><input type="range" id="barDropB" min="100" max="160" value="120" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="barDropB-num" class="val-input bike-b-input" value="120"></div></div>
+                <div class="row"><span class="label-text">Bar Angle</span><input type="range" id="barAngleB" min="-180" max="180" value="0" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="barAngleB-num" class="val-input bike-b-input" value="0"><span class="unit unit-b">°</span></div></div>
                 <div class="row" id="row-handPosB">
                     <span class="label-text">Hand Position</span>
-                    <select id="handPosB" style="border-color: var(--accent-green); color: var(--accent-green)">
+                    <select id="handPosB" style="border-color: var(--accent-red); color: var(--accent-red)">
                         <option value="hoods" selected>Hoods</option>
                         <option value="drops">Drops</option>
                     </select>
@@ -314,7 +315,7 @@
 
 </div>
 
-<div class="version-tag">v2.4.0</div>
+<div class="version-tag">v2.3.2</div>
 
 <script>
     const canvas = document.getElementById('bikeCanvas');
@@ -322,11 +323,13 @@
     const toRad = deg => deg * (Math.PI / 180);
 
     const bikePresets = {
+        // Surly MS Geometry
         "ms50": { reach: 379, stack: 544, fa: 72.0, stl: 500, barType: 'drop', barReach: 80, barDrop: 120, barAngle: 0, handPos: 'hoods' },
         "ms54": { reach: 389, stack: 560, fa: 72.5, stl: 540, barType: 'drop', barReach: 80, barDrop: 120, barAngle: 0, handPos: 'hoods' },
         "ms56": { reach: 393, stack: 580, fa: 73.0, stl: 560, barType: 'drop', barReach: 80, barDrop: 120, barAngle: 0, handPos: 'hoods' },
         "ms58": { reach: 402, stack: 599, fa: 73.0, stl: 580, barType: 'drop', barReach: 80, barDrop: 120, barAngle: 0, handPos: 'hoods' },
         "ms60": { reach: 409, stack: 620, fa: 73.5, stl: 600, barType: 'drop', barReach: 80, barDrop: 120, barAngle: 0, handPos: 'hoods' },
+        // Kona Unit X Geometry (True ATB geometry)
         "konaS": { reach: 425, stack: 588, fa: 68.0, stl: 370, barType: 'flat', barReach: 20, barAngle: 90 },
         "konaM": { reach: 450, stack: 597, fa: 68.0, stl: 420, barType: 'flat', barReach: 20, barAngle: 90 },
         "konaL": { reach: 475, stack: 606, fa: 68.0, stl: 470, barType: 'flat', barReach: 20, barAngle: 90 },
@@ -364,7 +367,7 @@
     }
     setupPreset('A'); setupPreset('B');
 
-    // Sync Sliders and Number Inputs
+    // Sync Sliders and Number Inputs securely
     document.querySelectorAll('input[type="range"]').forEach(slider => {
         const numInput = document.getElementById(slider.id + '-num');
         if(numInput) {
@@ -430,8 +433,8 @@
         
         // Handlebars Logic
         const barRad = toRad(barAngle);
-        const vF = { x: Math.cos(barRad), y: -Math.sin(barRad) };
-        const vD = { x: Math.sin(barRad), y: Math.cos(barRad) };
+        const vF = { x: Math.cos(barRad), y: -Math.sin(barRad) }; // Forward vector
+        const vD = { x: Math.sin(barRad), y: Math.cos(barRad) };  // Down vector (perpendicular)
 
         const hoods = { x: stemEnd.x + vF.x * barReach, y: stemEnd.y + vF.y * barReach };
         let handTarget = hoods;
@@ -449,18 +452,19 @@
         // Crankset & Legs
         const pedal = { x: Math.sin(toRad(cRot))*172.5, y: -Math.cos(toRad(cRot))*172.5 };
         const pedalOpp = { x: Math.sin(toRad(cRot + 180))*172.5, y: -Math.cos(toRad(cRot + 180))*172.5 };
+        
         const ankle = { x: pedal.x - Math.cos(toRad(-fA)) * riderData.foot, y: pedal.y - Math.sin(toRad(-fA)) * riderData.foot };
         const ankleOpp = { x: pedalOpp.x - Math.cos(toRad(-fA)) * riderData.foot, y: pedalOpp.y - Math.sin(toRad(-fA)) * riderData.foot };
 
         const pts = { bb: px(bb), stTop: px(stTop), saddle: px(saddle), htTop: px(htTop), stemBase: px(stemBase), stemEnd: px(stemEnd), hoods: px(hoods), rh: px(readHub), fh: px(frontHub) };
 
-        // 1. Draw Wheels
-        ctx.strokeStyle = "#c7c7cc";
-        ctx.lineWidth = 2 * zoomFactor;
+        // 1. Draw Wheels (BOLDER and BLACK)
+        ctx.strokeStyle = "#000000"; // Solid Black for tires
+        ctx.lineWidth = 6 * (dims.w / 1400); // Thicker line, doesn't scale fully with zoom to maintain boldness
         [pts.rh, pts.fh].forEach(w => { ctx.beginPath(); ctx.arc(w.x, w.y, wheelR*scale, 0, 7); ctx.stroke(); });
 
         // 2. Draw Opposite (Far) Crank and Leg
-        ctx.globalAlpha = baseAlpha * 0.35;
+        ctx.globalAlpha = baseAlpha * 0.35; // Significant fade for background limbs
         ctx.strokeStyle = colors.crank || "#8e8e93"; ctx.lineWidth = 5 * zoomFactor;
         ctx.beginPath(); ctx.moveTo(pts.bb.x, pts.bb.y); ctx.lineTo(px(pedalOpp).x, px(pedalOpp).y); ctx.stroke();
         ctx.fillStyle = colors.crank || "#8e8e93"; ctx.beginPath(); ctx.arc(px(pedalOpp).x, px(pedalOpp).y, 4*zoomFactor, 0, 7); ctx.fill();
@@ -472,8 +476,8 @@
             ctx.lineTo(px(ankleOpp).x, px(ankleOpp).y); ctx.lineTo(px(pedalOpp).x, px(pedalOpp).y); ctx.stroke();
         }
 
-        // 3. Draw Bike Frame
-        ctx.globalAlpha = baseAlpha; 
+        // 3. Draw Bike Frame (Middle)
+        ctx.globalAlpha = baseAlpha; // Restore original alpha for the frame
         ctx.strokeStyle = colors.frame; ctx.lineWidth = 6 * zoomFactor; ctx.lineCap = "round"; ctx.lineJoin = "round";
         ctx.beginPath(); ctx.moveTo(pts.bb.x, pts.bb.y); ctx.lineTo(pts.stTop.x, pts.stTop.y); ctx.lineTo(pts.htTop.x, pts.htTop.y); ctx.lineTo(pts.bb.x, pts.bb.y); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(pts.bb.x, pts.bb.y); ctx.lineTo(pts.rh.x, pts.rh.y); ctx.lineTo(pts.stTop.x, pts.stTop.y); ctx.stroke();
@@ -481,11 +485,14 @@
         ctx.strokeStyle = colors.fork; ctx.lineWidth = 5 * zoomFactor; ctx.beginPath(); ctx.moveTo(pts.fh.x, pts.fh.y); ctx.lineTo(pts.htTop.x, pts.htTop.y); ctx.stroke();
         ctx.strokeStyle = "#8e8e93"; ctx.lineWidth = 4 * zoomFactor; ctx.beginPath(); ctx.moveTo(pts.htTop.x, pts.htTop.y); ctx.lineTo(pts.stemBase.x, pts.stemBase.y); ctx.stroke();
         
+        // Handlebars Rendering
         ctx.strokeStyle = colors.frame; ctx.lineWidth = 5 * zoomFactor; 
         ctx.beginPath(); ctx.moveTo(pts.stemBase.x, pts.stemBase.y); ctx.lineTo(pts.stemEnd.x, pts.stemEnd.y); ctx.stroke();
         
         ctx.strokeStyle = "#555"; ctx.lineWidth = 4 * zoomFactor; 
-        ctx.beginPath(); ctx.moveTo(pts.stemEnd.x, pts.stemEnd.y); ctx.lineTo(pts.hoods.x, pts.hoods.y); 
+        ctx.beginPath(); 
+        ctx.moveTo(pts.stemEnd.x, pts.stemEnd.y); 
+        ctx.lineTo(pts.hoods.x, pts.hoods.y); 
         if (barType === 'drop' && drops && dropsEnd) {
             ctx.quadraticCurveTo(pts.hoods.x + vF.x * 15 * scale, pts.hoods.y + vF.y * 15 * scale, px(drops).x, px(drops).y);
             ctx.lineTo(px(dropsEnd).x, px(dropsEnd).y);
@@ -500,46 +507,12 @@
         ctx.fillStyle = colors.crank || "#555";
         [pts.bb, px(pedal)].forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, 4*zoomFactor, 0, 7); ctx.fill(); });
 
-        // 5. AUTO-LEAN ALGORITHM & Foreground Rider
-        let actual_tA = tA;
-        let isAutoLeaning = false;
-        
-        // Base attempt with user's trunk angle
-        let shoulder = { x: saddle.x + Math.cos(toRad(-actual_tA))*riderData.torso, y: saddle.y + Math.sin(toRad(-actual_tA))*riderData.torso };
-        let d_shoulder_hand = Math.hypot(shoulder.x - handTarget.x, shoulder.y - handTarget.y);
-        let elbow = null;
-
-        if (d_shoulder_hand <= riderData.arm) {
-            // Can reach comfortably!
-            elbow = solveIK(shoulder, handTarget, riderData.arm*0.5, riderData.arm*0.5, false);
-        } else {
-            // Cannot reach! We need to auto-lean.
-            isAutoLeaning = true;
-            
-            // solveIK with flip=true for torso/arm puts the shoulder joint UP and FORWARD.
-            let shoulder_auto = solveIK(saddle, handTarget, riderData.torso, riderData.arm, true);
-            
-            if (shoulder_auto) {
-                // Can reach if we lean forward enough. The arm will be fully straight.
-                shoulder = shoulder_auto;
-                elbow = { x: (shoulder.x + handTarget.x)/2, y: (shoulder.y + handTarget.y)/2 };
-            } else {
-                // Completely unreachable (distance > torso + arm). Point straight at it.
-                let angle = Math.atan2(handTarget.y - saddle.y, handTarget.x - saddle.x);
-                shoulder = { x: saddle.x + Math.cos(angle)*riderData.torso, y: saddle.y + Math.sin(angle)*riderData.torso };
-                elbow = { x: shoulder.x + Math.cos(angle)*(riderData.arm*0.5), y: shoulder.y + Math.sin(angle)*(riderData.arm*0.5) };
-                // Draw arm pointing towards target but stopping at max reach
-                handTarget = { x: shoulder.x + Math.cos(angle)*riderData.arm, y: shoulder.y + Math.sin(angle)*riderData.arm };
-            }
-            // Recalculate actual effective Trunk Angle (convert from canvas Y-down coordinates)
-            actual_tA = -Math.atan2(shoulder.y - saddle.y, shoulder.x - saddle.x) * (180 / Math.PI);
-        }
-
+        // 5. Draw Near Rider (Foreground)
+        const shoulder = { x: saddle.x + Math.cos(toRad(-tA))*riderData.torso, y: saddle.y + Math.sin(toRad(-tA))*riderData.torso };
         const knee = solveIK(saddle, ankle, riderData.thigh, riderData.shin, true);
+        const elbow = solveIK(shoulder, handTarget, riderData.arm*0.5, riderData.arm*0.5, false);
 
         ctx.strokeStyle = colors.rider; ctx.lineWidth = 9 * zoomFactor;
-        
-        // Draw Leg
         if(knee) {
             const sk = px(knee), sa = px(ankle), sp = px(pedal);
             ctx.beginPath(); ctx.moveTo(pts.saddle.x, pts.saddle.y); ctx.lineTo(sk.x, sk.y); 
@@ -552,21 +525,16 @@
             document.getElementById('stat-knee'+suffix).innerText = `ERR`;
         }
         
-        // Draw Torso and Arm
         ctx.beginPath(); ctx.moveTo(pts.saddle.x, pts.saddle.y); ctx.lineTo(px(shoulder).x, px(shoulder).y);
         if(elbow) { ctx.lineTo(px(elbow).x, px(elbow).y); ctx.lineTo(px(handTarget).x, px(handTarget).y); }
         ctx.stroke();
 
-        // Draw Head
-        const headCenter = { x: shoulder.x + Math.cos(toRad(-actual_tA))*180, y: shoulder.y + Math.sin(toRad(-actual_tA))*180 };
+        // Head
+        const headCenter = { x: shoulder.x + Math.cos(toRad(-tA))*180, y: shoulder.y + Math.sin(toRad(-tA))*180 };
         ctx.beginPath(); ctx.arc(px(headCenter).x, px(headCenter).y, 100 * scale, 0, Math.PI * 2); ctx.stroke();
 
         ctx.restore();
-        
-        // Update Stats UI with Auto indicator
-        let hipLabel = `${Math.round(actual_tA)}°`;
-        if (isAutoLeaning) hipLabel += " (Auto)";
-        document.getElementById('stat-hip'+suffix).innerText = hipLabel;
+        document.getElementById('stat-hip'+suffix).innerText = `${tA}°`;
     }
 
     function update(skipSave = false) {
@@ -587,15 +555,18 @@
         
         const offset = { x: dims.w * 0.35, y: groundY - (340 * scale) };
         const px = p => ({x: offset.x + p.x*scale, y: offset.y + p.y*scale});
+        ctx.fillStyle = "#ff3b30"; ctx.beginPath(); ctx.arc(px({x:0,y:0}).x, px({x:0,y:0}).y, 4, 0, 7); ctx.fill();
 
+        // Distinct schemes: Purple A, Red bike B, Green rider B
         const colorsA = { frame: "#1c1c1e", fork: "#555555", crank: "#333", rider: "rgba(88, 86, 214, 0.9)" };
-        const colorsB = { frame: "#34c759", fork: "#248a3d", crank: "#248a3d", rider: "rgba(36, 138, 61, 0.9)" };
+        const colorsB = { frame: "#ff3b30", fork: "#cc2211", crank: "#cc2211", rider: "rgba(36, 138, 61, 0.9)" };
 
         if (!showBikeB) {
             document.getElementById('stat-kneeB').innerText = '--';
             document.getElementById('stat-hipB').innerText = '--';
             drawBikeAndRider('A', riderData, colorsA, 1.0, zoomFactor);
         } else {
+            // Z-Index ordering combined with high ghosting (0.25 alpha for background)
             if (bikeAFront) {
                 drawBikeAndRider('B', riderData, colorsB, 0.25, zoomFactor); 
                 drawBikeAndRider('A', riderData, colorsA, 1.0, zoomFactor);
@@ -657,6 +628,7 @@
         event.target.value = '';
     }
 
+    // Initialization
     window.addEventListener('resize', () => { dims = initCanvas(); update(true); });
     document.querySelectorAll('input[type="range"], input[type="checkbox"], select').forEach(i => {
         i.addEventListener('input', () => { update(false); });
