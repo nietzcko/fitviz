@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BikeFit Pro Compare v2.0</title>
+    <title>BikeFit Pro Compare v2.0.1</title>
     <style>
         :root {
             --bg-color: #f2f2f7;
@@ -52,13 +52,21 @@
             position: relative;
         }
 
-        /* Mobil nézet szabályok */
+        /* Mobil nézet: A canvas ugorjon felülre! */
         @media (max-width: 1200px) {
             body { overflow: auto; height: auto; }
             .app-container { display: flex; flex-direction: column; height: auto; }
-            .sidebar { overflow-y: visible; border: none; padding: 10px; }
+            .sidebar { overflow-y: visible; border: none; padding: 15px; }
             .right-sidebar { border: none; }
-            .visualizer-section { position: sticky; top: 0; z-index: 100; padding: 5px; border-bottom: 1px solid var(--border-color); }
+            
+            .visualizer-section { 
+                order: -1; /* <--- EZ TESZI LEG FELÜLRE MOBILON */
+                position: sticky; 
+                top: 0; 
+                z-index: 100; 
+                padding: 10px; 
+                border-bottom: 1px solid var(--border-color); 
+            }
         }
 
         /* --- UI ELEMENTS --- */
@@ -97,8 +105,8 @@
         .row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f2f2f7; }
         .row:last-child { border-bottom: none; }
         
-        .label-text { font-size: 12px; flex: 1; color: #444; }
-        .val-text { color: var(--accent-blue); font-weight: 600; width: 50px; text-align: right; font-size: 11px; font-variant-numeric: tabular-nums; }
+        .label-text { font-size: 12px; flex: 1; color: #444; font-weight: 500; }
+        .val-text { color: var(--accent-blue); font-weight: 600; width: 45px; text-align: right; font-size: 11px; font-variant-numeric: tabular-nums; }
         
         input[type="range"] { flex: 2; margin: 0 8px; accent-color: var(--accent-blue); }
         select { flex: 2; margin: 0 8px; padding: 4px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 12px; background: white; color: var(--text-main); outline: none; }
@@ -114,10 +122,15 @@
     <aside class="sidebar left-sidebar">
         <h1>Bike A (Solid)</h1>
         
-        <h2>Rider Position A (Solid)</h2>
+        <h2>View Settings</h2>
         <div class="card">
-            <div class="row"><span class="label-text">Trunk Angle A</span><input type="range" id="trunkAngleA" min="0" max="90" value="45"><span class="val-text" id="trunkA-val">45°</span></div>
-            <div class="row"><span class="label-text">Crank Rot. A</span><input type="range" id="crankRotA" min="0" max="360" value="90"><span class="val-text" id="rotA-val">90°</span></div>
+            <div class="row"><span class="label-text">Zoom</span><input type="range" id="zoom" min="40" max="180" value="95"><span class="val-text" id="zoom-val">95%</span></div>
+        </div>
+
+        <h2>Rider Position A</h2>
+        <div class="card">
+            <div class="row"><span class="label-text">Trunk Angle</span><input type="range" id="trunkAngleA" min="0" max="90" value="45"><span class="val-text" id="trunkAngleA-val">45°</span></div>
+            <div class="row"><span class="label-text">Crank Rot.</span><input type="range" id="crankRotA" min="0" max="360" value="90"><span class="val-text" id="crankRotA-val">90°</span></div>
         </div>
 
         <h2>Frame & Fork A</h2>
@@ -155,7 +168,6 @@
             <div class="row"><span class="label-text">Bar Reach</span><input type="range" id="barReachA" min="30" max="150" value="80"><span class="val-text" id="barReachA-val">80</span></div>
             <div class="row"><span class="label-text">Bar Angle</span><input type="range" id="barAngleA" min="-180" max="180" value="0"><span class="val-text" id="barAngleA-val">0°</span></div>
         </div>
-        
     </aside>
 
     <main class="visualizer-section">
@@ -163,18 +175,18 @@
             <canvas id="bikeCanvas"></canvas>
         </div>
         <div class="stats-bar">
-            <span>Knee A: <span id="stat-kneeA">--</span> / Knee B: <span id="stat-kneeB">--</span></span>
-            <span>Hip A: <span id="stat-hipA">--</span> / Hip B: <span id="stat-hipB">--</span></span>
+            <span>Knee A: <span id="stat-kneeA">--</span> / B: <span id="stat-kneeB">--</span></span>
+            <span>Hip A: <span id="stat-hipA">--</span> / B: <span id="stat-hipB">--</span></span>
         </div>
     </main>
 
     <aside class="sidebar right-sidebar">
         <h1>Bike B (Transparent)</h1>
         
-        <h2>Rider Position B (Transparent)</h2>
+        <h2>Rider Position B</h2>
         <div class="card">
-            <div class="row"><span class="label-text">Trunk Angle B</span><input type="range" id="trunkAngleB" min="0" max="90" value="40"><span class="val-text" id="trunkB-val">40°</span></div>
-            <div class="row"><span class="label-text">Crank Rot. B</span><input type="range" id="crankRotB" min="0" max="360" value="180"><span class="val-text" id="rotB-val">180°</span></div>
+            <div class="row"><span class="label-text">Trunk Angle</span><input type="range" id="trunkAngleB" min="0" max="90" value="40"><span class="val-text" id="trunkAngleB-val">40°</span></div>
+            <div class="row"><span class="label-text">Crank Rot.</span><input type="range" id="crankRotB" min="0" max="360" value="180"><span class="val-text" id="crankRotB-val">180°</span></div>
         </div>
 
         <h2>Frame & Fork B</h2>
@@ -213,23 +225,20 @@
             <div class="row"><span class="label-text">Bar Angle</span><input type="range" id="barAngleB" min="-180" max="180" value="5"><span class="val-text" id="barAngleB-val">5°</span></div>
         </div>
         
-        <h2 class="common">Common Body Measurements (cm)</h2>
+        <h2 class="common">Common Rider Profile (Both Bikes)</h2>
         <div class="card">
+            <div class="row"><span class="label-text">Saddle Height</span><input type="range" id="seatHeight" min="600" max="950" value="760"><span class="val-text" id="seatHeight-val">760</span></div>
             <div class="row"><span class="label-text">Torso</span><input type="range" id="torso" min="50" max="80" value="65"><span class="val-text" id="torso-val">65</span></div>
             <div class="row"><span class="label-text">Arm</span><input type="range" id="arm" min="40" max="80" value="60"><span class="val-text" id="arm-val">60</span></div>
             <div class="row"><span class="label-text">Thigh</span><input type="range" id="thigh" min="35" max="60" value="45"><span class="val-text" id="thigh-val">45</span></div>
             <div class="row"><span class="label-text">Shin</span><input type="range" id="shin" min="35" max="60" value="50"><span class="val-text" id="shin-val">50</span></div>
         </div>
         
-        <h2>View Settings</h2>
-        <div class="card">
-            <div class="row"><span class="label-text">Zoom</span><input type="range" id="zoom" min="40" max="180" value="95"><span class="val-text" id="zoom-val">95%</span></div>
-        </div>
     </aside>
 
 </div>
 
-<div class="version-tag">v2.0.0</div>
+<div class="version-tag">v2.0.1</div>
 
 <script>
     const canvas = document.getElementById('bikeCanvas');
@@ -288,7 +297,6 @@
 
     let dims = initCanvas();
 
-    // Helper to draw a single bike and rider
     function drawBikeAndRider(suffix, riderData, colors, alpha) {
         const val = id => parseFloat(document.getElementById(id + suffix).value);
         const reach = val('reach'), stack = val('stack'), fa = val('fa'), stl = val('stl');
@@ -306,7 +314,6 @@
         const offset = { x: dims.w * 0.35, y: groundY - (wheelR * scale) };
         const px = p => ({x: offset.x + p.x*scale, y: offset.y + p.y*scale});
 
-        // Points (BB 0,0)
         const bb = {x:0, y:0};
         const readHub = {x: -wb_base * 0.42, y: 0};
         const htTop = {x: reach, y: -stack}; 
@@ -326,14 +333,13 @@
         ctx.strokeStyle = colors.frame; ctx.lineWidth = 6; ctx.lineCap = "round"; ctx.lineJoin = "round";
         ctx.beginPath(); ctx.moveTo(pts.bb.x, pts.bb.y); ctx.lineTo(pts.stTop.x, pts.stTop.y); ctx.lineTo(pts.htTop.x, pts.htTop.y); ctx.lineTo(pts.bb.x, pts.bb.y); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(pts.bb.x, pts.bb.y); ctx.lineTo(pts.rh.x, pts.rh.y); ctx.lineTo(pts.stTop.x, pts.stTop.y); ctx.stroke();
-        // Fork
+        
         ctx.strokeStyle = colors.fork; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(pts.fh.x, pts.fh.y); ctx.lineTo(pts.htTop.x, pts.htTop.y); ctx.stroke();
-        // Spacers
         ctx.strokeStyle = "#8e8e93"; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(pts.htTop.x, pts.htTop.y); ctx.lineTo(pts.stemBase.x, pts.stemBase.y); ctx.stroke();
-        // Cockpit
+        
         ctx.strokeStyle = colors.frame; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(pts.stemBase.x, pts.stemBase.y); ctx.lineTo(pts.stemEnd.x, pts.stemEnd.y); ctx.stroke();
         ctx.strokeStyle = "#555"; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(pts.stemEnd.x, pts.stemEnd.y); ctx.lineTo(pts.hoods.x, pts.hoods.y); ctx.stroke();
-        // Post
+        
         ctx.strokeStyle = "#8e8e93"; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(pts.stTop.x, pts.stTop.y); ctx.lineTo(pts.saddle.x, pts.saddle.y); ctx.stroke();
 
         // Draw Rider (IK)
@@ -349,66 +355,55 @@
             const d = Math.hypot(saddle.x-pedal.x, saddle.y-pedal.y);
             const kAngle = Math.acos((riderData.thigh**2 + riderData.shin**2 - d**2)/(2*riderData.thigh*riderData.shin)) * 180/Math.PI;
             document.getElementById('stat-knee'+suffix).innerText = `${Math.round(kAngle)}°`;
+        } else {
+            document.getElementById('stat-knee'+suffix).innerText = `ERR`;
         }
         ctx.beginPath(); ctx.moveTo(pts.saddle.x, pts.saddle.y); ctx.lineTo(px(shoulder).x, px(shoulder).y);
         if(elbow) { ctx.lineTo(px(elbow).x, px(elbow).y); ctx.lineTo(pts.hoods.x, pts.hoods.y); }
         ctx.stroke();
 
         ctx.restore();
-
         document.getElementById('stat-hip'+suffix).innerText = `${tA}°`;
     }
 
     function update() {
-        // UI Sync (Labels)
+        // Robust UI Update logic
         document.querySelectorAll('input[type="range"]').forEach(i => {
-            const valSpan = document.getElementById(i.id.replace('Rot','rot').replace('Angle','').replace('fa','faA-val').replace('stemA','stemA-val') + '-val') || 
-                           document.getElementById(i.id.replace('Rot','rot').replace('Angle','').replace('fa','faB-val').replace('stemA','stemA-val') + '-val') ||
-                           document.getElementById(i.id.replace('trunkAngleA', 'trunkA').replace('trunkAngleB','trunkB') + '-val') ||
-                           document.getElementById(i.id + '-val'); // fallback
-            
-            if(valSpan) valSpan.innerText = i.value + (i.id.includes('Angle') || i.id.includes('fa') || i.id.includes('stemA') || i.id.includes('Rot') ? '°' : (i.id === 'zoom' ? '%' : ''));
+            const valSpan = document.getElementById(i.id + '-val');
+            if (valSpan) {
+                let unit = '';
+                const id = i.id;
+                if (id.includes('Angle') || id.includes('fa') || id.includes('stemA') || id.includes('Rot')) unit = '°';
+                if (id === 'zoom') unit = '%';
+                valSpan.innerText = i.value + unit;
+            }
         });
 
-        // Common Rider Data
         const getV = id => parseFloat(document.getElementById(id).value);
-        const riderData = {
-            torso: getV('torso')*10, arm: getV('arm')*10, thigh: getV('thigh')*10, shin: getV('shin')*10, sH: getV('seatHeight')
-        };
+        const riderData = { torso: getV('torso')*10, arm: getV('arm')*10, thigh: getV('thigh')*10, shin: getV('shin')*10, sH: getV('seatHeight') };
 
-        // Standard Road Bike Wheel Diameter (700c)
-        const wheelR = 340;
-
-        // Visualizer clear and base setup
         ctx.clearRect(0,0, dims.w, dims.h);
         
-        // Dynamic zoom and offsets
-        const zoom = parseFloat(document.getElementById('zoom').value) / 100;
+        const zoom = getV('zoom') / 100;
         const scale = (dims.w / 1400) * zoom;
         const groundY = dims.h * 0.90;
         
-        // Draw common elements
         ctx.strokeStyle = "#8e8e93"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, groundY); ctx.lineTo(dims.w, groundY); ctx.stroke();
-        // Anchor BB for zoom calculations
-        const offset = { x: dims.w * 0.35, y: groundY - (wheelR * scale) };
+        
+        const offset = { x: dims.w * 0.35, y: groundY - (340 * scale) };
         const px = p => ({x: offset.x + p.x*scale, y: offset.y + p.y*scale});
         ctx.fillStyle = "#ff3b30"; ctx.beginPath(); ctx.arc(px({x:0,y:0}).x, px({x:0,y:0}).y, 4, 0, 7); ctx.fill();
 
-        // Colors for differentiation
-        const colorsA = { frame: "#3a3a3c", fork: "#555", rider: "rgba(0, 122, 255, 0.85)" };
-        const colorsB = { frame: "#3a3a3c", fork: "#555", rider: "rgba(0, 122, 255, 0.85)" };
+        // Bike B is transparent (drawn first), Bike A is solid
+        const colorsB = { frame: "#888888", fork: "#999999", rider: "rgba(0, 122, 255, 0.4)" };
+        const colorsA = { frame: "#1c1c1e", fork: "#555555", rider: "rgba(0, 122, 255, 0.9)" };
 
-        // Layering: Draw Bike B (Transparent) FIRST, then Bike A (Solid)
-        drawBikeAndRider('B', riderData, colorsB, 0.5);
+        drawBikeAndRider('B', riderData, colorsB, 0.4);
         drawBikeAndRider('A', riderData, colorsA, 1.0);
     }
 
-    // Dynamic resizing
     window.addEventListener('resize', () => { dims = initCanvas(); update(); });
-    // Listen to ALL input changes
     document.querySelectorAll('input, select').forEach(i => i.addEventListener('input', update));
-    
-    // Initial render
     setTimeout(() => { dims = initCanvas(); update(); }, 150);
 </script>
 </body>
