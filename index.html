@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BikeFit Pro Compare v2.3.1</title>
+    <title>BikeFit Pro Compare v2.4.0</title>
     <style>
         :root {
             --bg-color: #f2f2f7;
             --sidebar-bg: #ffffff;
-            --accent-purple: #5856d6; /* Blue replaced with Purple */
-            --accent-green: #248a3d;  /* Red/Orange replaced with Green */
+            --accent-purple: #5856d6;
+            --accent-green: #248a3d;
             --text-main: #1c1c1e;
             --border-color: #d1d1d6;
         }
@@ -132,9 +132,7 @@
         .btn-import { background: #e5e5ea; color: var(--text-main); }
         .btn-import:hover { background: #d1d1d6; }
 
-        /* Container for collapsible Bike B settings */
         #bikeB-settings { display: none; }
-
         .version-tag { position: fixed; bottom: 8px; right: 12px; font-size: 10px; color: #aeaeb2; font-weight: bold; z-index: 1000; pointer-events: none; }
     </style>
 </head>
@@ -316,7 +314,7 @@
 
 </div>
 
-<div class="version-tag">v2.3.1</div>
+<div class="version-tag">v2.4.0</div>
 
 <script>
     const canvas = document.getElementById('bikeCanvas');
@@ -324,13 +322,11 @@
     const toRad = deg => deg * (Math.PI / 180);
 
     const bikePresets = {
-        // Surly MS Geometry
         "ms50": { reach: 379, stack: 544, fa: 72.0, stl: 500, barType: 'drop', barReach: 80, barDrop: 120, barAngle: 0, handPos: 'hoods' },
         "ms54": { reach: 389, stack: 560, fa: 72.5, stl: 540, barType: 'drop', barReach: 80, barDrop: 120, barAngle: 0, handPos: 'hoods' },
         "ms56": { reach: 393, stack: 580, fa: 73.0, stl: 560, barType: 'drop', barReach: 80, barDrop: 120, barAngle: 0, handPos: 'hoods' },
         "ms58": { reach: 402, stack: 599, fa: 73.0, stl: 580, barType: 'drop', barReach: 80, barDrop: 120, barAngle: 0, handPos: 'hoods' },
         "ms60": { reach: 409, stack: 620, fa: 73.5, stl: 600, barType: 'drop', barReach: 80, barDrop: 120, barAngle: 0, handPos: 'hoods' },
-        // Fixed Kona Unit X Geometry
         "konaS": { reach: 425, stack: 588, fa: 68.0, stl: 370, barType: 'flat', barReach: 20, barAngle: 90 },
         "konaM": { reach: 450, stack: 597, fa: 68.0, stl: 420, barType: 'flat', barReach: 20, barAngle: 90 },
         "konaL": { reach: 475, stack: 606, fa: 68.0, stl: 470, barType: 'flat', barReach: 20, barAngle: 90 },
@@ -368,7 +364,7 @@
     }
     setupPreset('A'); setupPreset('B');
 
-    // Sync Sliders and Number Inputs securely
+    // Sync Sliders and Number Inputs
     document.querySelectorAll('input[type="range"]').forEach(slider => {
         const numInput = document.getElementById(slider.id + '-num');
         if(numInput) {
@@ -434,8 +430,8 @@
         
         // Handlebars Logic
         const barRad = toRad(barAngle);
-        const vF = { x: Math.cos(barRad), y: -Math.sin(barRad) }; // Forward vector
-        const vD = { x: Math.sin(barRad), y: Math.cos(barRad) };  // Down vector (perpendicular)
+        const vF = { x: Math.cos(barRad), y: -Math.sin(barRad) };
+        const vD = { x: Math.sin(barRad), y: Math.cos(barRad) };
 
         const hoods = { x: stemEnd.x + vF.x * barReach, y: stemEnd.y + vF.y * barReach };
         let handTarget = hoods;
@@ -453,19 +449,18 @@
         // Crankset & Legs
         const pedal = { x: Math.sin(toRad(cRot))*172.5, y: -Math.cos(toRad(cRot))*172.5 };
         const pedalOpp = { x: Math.sin(toRad(cRot + 180))*172.5, y: -Math.cos(toRad(cRot + 180))*172.5 };
-        
         const ankle = { x: pedal.x - Math.cos(toRad(-fA)) * riderData.foot, y: pedal.y - Math.sin(toRad(-fA)) * riderData.foot };
         const ankleOpp = { x: pedalOpp.x - Math.cos(toRad(-fA)) * riderData.foot, y: pedalOpp.y - Math.sin(toRad(-fA)) * riderData.foot };
 
         const pts = { bb: px(bb), stTop: px(stTop), saddle: px(saddle), htTop: px(htTop), stemBase: px(stemBase), stemEnd: px(stemEnd), hoods: px(hoods), rh: px(readHub), fh: px(frontHub) };
 
-        // 1. Draw Wheels (Background)
+        // 1. Draw Wheels
         ctx.strokeStyle = "#c7c7cc";
         ctx.lineWidth = 2 * zoomFactor;
         [pts.rh, pts.fh].forEach(w => { ctx.beginPath(); ctx.arc(w.x, w.y, wheelR*scale, 0, 7); ctx.stroke(); });
 
         // 2. Draw Opposite (Far) Crank and Leg
-        ctx.globalAlpha = baseAlpha * 0.35; // Significant fade for background limbs
+        ctx.globalAlpha = baseAlpha * 0.35;
         ctx.strokeStyle = colors.crank || "#8e8e93"; ctx.lineWidth = 5 * zoomFactor;
         ctx.beginPath(); ctx.moveTo(pts.bb.x, pts.bb.y); ctx.lineTo(px(pedalOpp).x, px(pedalOpp).y); ctx.stroke();
         ctx.fillStyle = colors.crank || "#8e8e93"; ctx.beginPath(); ctx.arc(px(pedalOpp).x, px(pedalOpp).y, 4*zoomFactor, 0, 7); ctx.fill();
@@ -477,7 +472,7 @@
             ctx.lineTo(px(ankleOpp).x, px(ankleOpp).y); ctx.lineTo(px(pedalOpp).x, px(pedalOpp).y); ctx.stroke();
         }
 
-        // 3. Draw Bike Frame (Middle)
+        // 3. Draw Bike Frame
         ctx.globalAlpha = baseAlpha; 
         ctx.strokeStyle = colors.frame; ctx.lineWidth = 6 * zoomFactor; ctx.lineCap = "round"; ctx.lineJoin = "round";
         ctx.beginPath(); ctx.moveTo(pts.bb.x, pts.bb.y); ctx.lineTo(pts.stTop.x, pts.stTop.y); ctx.lineTo(pts.htTop.x, pts.htTop.y); ctx.lineTo(pts.bb.x, pts.bb.y); ctx.stroke();
@@ -490,9 +485,7 @@
         ctx.beginPath(); ctx.moveTo(pts.stemBase.x, pts.stemBase.y); ctx.lineTo(pts.stemEnd.x, pts.stemEnd.y); ctx.stroke();
         
         ctx.strokeStyle = "#555"; ctx.lineWidth = 4 * zoomFactor; 
-        ctx.beginPath(); 
-        ctx.moveTo(pts.stemEnd.x, pts.stemEnd.y); 
-        ctx.lineTo(pts.hoods.x, pts.hoods.y); 
+        ctx.beginPath(); ctx.moveTo(pts.stemEnd.x, pts.stemEnd.y); ctx.lineTo(pts.hoods.x, pts.hoods.y); 
         if (barType === 'drop' && drops && dropsEnd) {
             ctx.quadraticCurveTo(pts.hoods.x + vF.x * 15 * scale, pts.hoods.y + vF.y * 15 * scale, px(drops).x, px(drops).y);
             ctx.lineTo(px(dropsEnd).x, px(dropsEnd).y);
@@ -507,12 +500,46 @@
         ctx.fillStyle = colors.crank || "#555";
         [pts.bb, px(pedal)].forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, 4*zoomFactor, 0, 7); ctx.fill(); });
 
-        // 5. Draw Near Rider (Foreground)
-        const shoulder = { x: saddle.x + Math.cos(toRad(-tA))*riderData.torso, y: saddle.y + Math.sin(toRad(-tA))*riderData.torso };
+        // 5. AUTO-LEAN ALGORITHM & Foreground Rider
+        let actual_tA = tA;
+        let isAutoLeaning = false;
+        
+        // Base attempt with user's trunk angle
+        let shoulder = { x: saddle.x + Math.cos(toRad(-actual_tA))*riderData.torso, y: saddle.y + Math.sin(toRad(-actual_tA))*riderData.torso };
+        let d_shoulder_hand = Math.hypot(shoulder.x - handTarget.x, shoulder.y - handTarget.y);
+        let elbow = null;
+
+        if (d_shoulder_hand <= riderData.arm) {
+            // Can reach comfortably!
+            elbow = solveIK(shoulder, handTarget, riderData.arm*0.5, riderData.arm*0.5, false);
+        } else {
+            // Cannot reach! We need to auto-lean.
+            isAutoLeaning = true;
+            
+            // solveIK with flip=true for torso/arm puts the shoulder joint UP and FORWARD.
+            let shoulder_auto = solveIK(saddle, handTarget, riderData.torso, riderData.arm, true);
+            
+            if (shoulder_auto) {
+                // Can reach if we lean forward enough. The arm will be fully straight.
+                shoulder = shoulder_auto;
+                elbow = { x: (shoulder.x + handTarget.x)/2, y: (shoulder.y + handTarget.y)/2 };
+            } else {
+                // Completely unreachable (distance > torso + arm). Point straight at it.
+                let angle = Math.atan2(handTarget.y - saddle.y, handTarget.x - saddle.x);
+                shoulder = { x: saddle.x + Math.cos(angle)*riderData.torso, y: saddle.y + Math.sin(angle)*riderData.torso };
+                elbow = { x: shoulder.x + Math.cos(angle)*(riderData.arm*0.5), y: shoulder.y + Math.sin(angle)*(riderData.arm*0.5) };
+                // Draw arm pointing towards target but stopping at max reach
+                handTarget = { x: shoulder.x + Math.cos(angle)*riderData.arm, y: shoulder.y + Math.sin(angle)*riderData.arm };
+            }
+            // Recalculate actual effective Trunk Angle (convert from canvas Y-down coordinates)
+            actual_tA = -Math.atan2(shoulder.y - saddle.y, shoulder.x - saddle.x) * (180 / Math.PI);
+        }
+
         const knee = solveIK(saddle, ankle, riderData.thigh, riderData.shin, true);
-        const elbow = solveIK(shoulder, handTarget, riderData.arm*0.5, riderData.arm*0.5, false);
 
         ctx.strokeStyle = colors.rider; ctx.lineWidth = 9 * zoomFactor;
+        
+        // Draw Leg
         if(knee) {
             const sk = px(knee), sa = px(ankle), sp = px(pedal);
             ctx.beginPath(); ctx.moveTo(pts.saddle.x, pts.saddle.y); ctx.lineTo(sk.x, sk.y); 
@@ -525,16 +552,21 @@
             document.getElementById('stat-knee'+suffix).innerText = `ERR`;
         }
         
+        // Draw Torso and Arm
         ctx.beginPath(); ctx.moveTo(pts.saddle.x, pts.saddle.y); ctx.lineTo(px(shoulder).x, px(shoulder).y);
         if(elbow) { ctx.lineTo(px(elbow).x, px(elbow).y); ctx.lineTo(px(handTarget).x, px(handTarget).y); }
         ctx.stroke();
 
-        // Head
-        const headCenter = { x: shoulder.x + Math.cos(toRad(-tA))*180, y: shoulder.y + Math.sin(toRad(-tA))*180 };
+        // Draw Head
+        const headCenter = { x: shoulder.x + Math.cos(toRad(-actual_tA))*180, y: shoulder.y + Math.sin(toRad(-actual_tA))*180 };
         ctx.beginPath(); ctx.arc(px(headCenter).x, px(headCenter).y, 100 * scale, 0, Math.PI * 2); ctx.stroke();
 
         ctx.restore();
-        document.getElementById('stat-hip'+suffix).innerText = `${tA}°`;
+        
+        // Update Stats UI with Auto indicator
+        let hipLabel = `${Math.round(actual_tA)}°`;
+        if (isAutoLeaning) hipLabel += " (Auto)";
+        document.getElementById('stat-hip'+suffix).innerText = hipLabel;
     }
 
     function update(skipSave = false) {
@@ -556,7 +588,6 @@
         const offset = { x: dims.w * 0.35, y: groundY - (340 * scale) };
         const px = p => ({x: offset.x + p.x*scale, y: offset.y + p.y*scale});
 
-        // New Distinct Color Schemes (Purple A, Green B)
         const colorsA = { frame: "#1c1c1e", fork: "#555555", crank: "#333", rider: "rgba(88, 86, 214, 0.9)" };
         const colorsB = { frame: "#34c759", fork: "#248a3d", crank: "#248a3d", rider: "rgba(36, 138, 61, 0.9)" };
 
@@ -565,7 +596,6 @@
             document.getElementById('stat-hipB').innerText = '--';
             drawBikeAndRider('A', riderData, colorsA, 1.0, zoomFactor);
         } else {
-            // Z-Index ordering combined with increased ghosting (0.25 alpha for background)
             if (bikeAFront) {
                 drawBikeAndRider('B', riderData, colorsB, 0.25, zoomFactor); 
                 drawBikeAndRider('A', riderData, colorsA, 1.0, zoomFactor);
@@ -627,7 +657,6 @@
         event.target.value = '';
     }
 
-    // Initialization
     window.addEventListener('resize', () => { dims = initCanvas(); update(true); });
     document.querySelectorAll('input[type="range"], input[type="checkbox"], select').forEach(i => {
         i.addEventListener('input', () => { update(false); });
