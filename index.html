@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BikeFit Pro v1.0.5</title>
+    <title>BikeFit Pro v1.0.6</title>
     <style>
         :root {
             --bg-color: #f2f2f7;
@@ -35,18 +35,17 @@
         .canvas-card {
             background: white;
             width: 100%;
-            max-width: 600px;
-            aspect-ratio: 1.4 / 1;
+            max-width: 700px;
+            aspect-ratio: 1.5 / 1;
             border-radius: 18px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-            overflow: hidden;
         }
 
         canvas { width: 100%; height: 100%; display: block; }
 
         .stats-bar {
             width: 90%;
-            max-width: 580px;
+            max-width: 680px;
             background: white;
             margin-top: -15px;
             padding: 12px;
@@ -54,22 +53,27 @@
             display: flex;
             justify-content: space-around;
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
             z-index: 101;
         }
 
-        .controls-section { padding: 20px; padding-bottom: 80px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        @media (max-width: 600px) { .controls-section { grid-template-columns: 1fr; } }
+        .controls-section { 
+            padding: 20px; 
+            padding-bottom: 80px; 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
+            gap: 15px; 
+        }
 
         h2 { font-size: 11px; color: #8e8e93; text-transform: uppercase; margin: 15px 0 8px 5px; grid-column: 1 / -1; }
 
         .card { background: white; border-radius: 12px; padding: 4px 16px; margin-bottom: 5px; }
-        .row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f2f2f7; }
+        .row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f2f2f7; }
         .row:last-child { border-bottom: none; }
         
-        .label-text { font-size: 14px; flex: 1; }
-        .val-text { color: var(--accent-blue); font-weight: 600; width: 45px; text-align: right; font-size: 13px; }
+        .label-text { font-size: 13px; flex: 1; }
+        .val-text { color: var(--accent-blue); font-weight: 600; width: 45px; text-align: right; font-size: 12px; }
         input[type="range"] { flex: 2; margin: 0 10px; accent-color: var(--accent-blue); }
 
         .version-tag { position: fixed; bottom: 8px; right: 12px; font-size: 10px; color: #aeaeb2; font-weight: bold; }
@@ -82,77 +86,45 @@
         <canvas id="bikeCanvas"></canvas>
     </div>
     <div class="stats-bar">
-        <span id="stat-knee">Knee: 0°</span>
-        <span id="stat-hip">Hip: 0°</span>
-        <span id="stat-ankle">Ankle: 0°</span>
+        <span id="stat-knee">Knee: --</span>
+        <span id="stat-hip">Hip: --</span>
+        <span id="stat-back">Back: --</span>
     </div>
 </div>
 
 <div class="controls-section">
-    <h2>Bike Geometry</h2>
+    <h2>Frame Geometry</h2>
     <div class="card">
-        <div class="row">
-            <span class="label-text">Reach</span>
-            <input type="range" id="reach" min="350" max="450" value="393">
-            <span class="val-text" id="reach-val">393</span>
-        </div>
-        <div class="row">
-            <span class="label-text">Stack</span>
-            <input type="range" id="stack" min="500" max="700" value="580">
-            <span class="val-text" id="stack-val">580</span>
-        </div>
-        <div class="row">
-            <span class="label-text">Wheelbase</span>
-            <input type="range" id="wheelbase" min="950" max="1100" value="1000">
-            <span class="val-text" id="wheelbase-val">1000</span>
-        </div>
+        <div class="row"><span class="label-text">Reach</span><input type="range" id="reach" min="350" max="480" value="393"><span class="val-text" id="reach-val">393</span></div>
+        <div class="row"><span class="label-text">Stack</span><input type="range" id="stack" min="500" max="700" value="580"><span class="val-text" id="stack-val">580</span></div>
+        <div class="row"><span class="label-text">Wheelbase</span><input type="range" id="wheelbase" min="950" max="1100" value="1010"><span class="val-text" id="wheelbase-val">1010</span></div>
+        <div class="row"><span class="label-text">Seat Angle</span><input type="range" id="sta" min="70" max="80" step="0.5" value="73.5"><span class="val-text" id="sta-val">73.5</span></div>
     </div>
 
-    <h2>Saddle & Crank</h2>
+    <h2>Cockpit (mm)</h2>
     <div class="card">
-        <div class="row">
-            <span class="label-text">Height</span>
-            <input type="range" id="seatHeight" min="600" max="850" value="740">
-            <span class="val-text" id="seatHeight-val">740</span>
-        </div>
-        <div class="row">
-            <span class="label-text">Crank</span>
-            <input type="range" id="crank" min="160" max="180" step="2.5" value="172.5">
-            <span class="val-text" id="crank-val">172.5</span>
-        </div>
-        <div class="row">
-            <span class="label-text">Rotation</span>
-            <input type="range" id="crankRot" min="0" max="360" value="90">
-            <span class="val-text" id="rot-val">90</span>
-        </div>
+        <div class="row"><span class="label-text">Stem Length</span><input type="range" id="stemL" min="70" max="140" value="100"><span class="val-text" id="stemL-val">100</span></div>
+        <div class="row"><span class="label-text">Stem Angle</span><input type="range" id="stemA" min="-20" max="20" value="-6"><span class="val-text" id="stemA-val">-6</span></div>
+        <div class="row"><span class="label-text">Spacers</span><input type="range" id="spacers" min="0" max="50" value="20"><span class="val-text" id="spacers-val">20</span></div>
+        <div class="row"><span class="label-text">Bar Reach</span><input type="range" id="barR" min="60" max="100" value="80"><span class="val-text" id="barR-val">80</span></div>
     </div>
 
-    <h2>Rider Body (cm)</h2>
+    <h2>Rider State</h2>
     <div class="card">
-        <div class="row">
-            <span class="label-text">Trunk</span>
-            <input type="range" id="trunkAngle" min="0" max="90" value="45">
-            <span class="val-text" id="trunk-val">45</span>
-        </div>
-        <div class="row">
-            <span class="label-text">Thigh</span>
-            <input type="range" id="thigh" min="35" max="55" value="45">
-            <span class="val-text" id="thigh-val">45</span>
-        </div>
-        <div class="row">
-            <span class="label-text">Shin</span>
-            <input type="range" id="shin" min="35" max="55" value="50">
-            <span class="val-text" id="shin-val">50</span>
-        </div>
+        <div class="row"><span class="label-text">Trunk Angle</span><input type="range" id="trunkAngle" min="0" max="90" value="45"><span class="val-text" id="trunk-val">45</span></div>
+        <div class="row"><span class="label-text">Crank Rot</span><input type="range" id="crankRot" min="0" max="360" value="90"><span class="val-text" id="rot-val">90</span></div>
     </div>
 </div>
 
-<div class="version-tag">v1.0.5</div>
+<div class="version-tag">v1.0.6</div>
 
 <script>
     const canvas = document.getElementById('bikeCanvas');
     const ctx = canvas.getContext('2d');
     
+    const toRad = deg => deg * (Math.PI / 180);
+    const toDeg = rad => rad * (180 / Math.PI);
+
     function initCanvas() {
         const dpr = window.devicePixelRatio || 1;
         const rect = canvas.getBoundingClientRect();
@@ -162,8 +134,6 @@
         ctx.scale(dpr, dpr);
         return { w: rect.width, h: rect.height };
     }
-
-    let dims = initCanvas();
 
     function solveIK(p1, p2, l1, l2, flip) {
         const dx = p2.x - p1.x, dy = p2.y - p1.y;
@@ -176,82 +146,106 @@
         return flip ? {x: x2 - rx, y: y2 - ry} : {x: x2 + rx, y: y2 + ry};
     }
 
+    let dims = initCanvas();
+
     function update() {
         const val = id => parseFloat(document.getElementById(id).value);
-        const reach = val('reach'), stack = val('stack'), sH = val('seatHeight'), wb = val('wheelbase');
-        const cRot = val('crankRot'), cL = val('crank'), tA = val('trunkAngle');
-        const thighL = val('thigh')*10, shinL = val('shin')*10;
+        
+        // Inputs
+        const reach = val('reach'), stack = val('stack'), wb = val('wheelbase'), sta = val('sta');
+        const stemL = val('stemL'), stemA = val('stemA'), spacers = val('spacers'), barR = val('barR');
+        const trunkA = val('trunkAngle'), cRot = val('crankRot');
+        
+        const headAngle = 72; // Standard road head angle
+        const wheelR = 340;
 
-        // UI Text
-        ['reach','stack','wheelbase','seatHeight','crank','trunkAngle','crankRot','thigh','shin'].forEach(id => {
-            const display = document.getElementById(id.replace('Angle','') + '-val') || document.getElementById(id === 'crankRot' ? 'rot' : id === 'trunkAngle' ? 'trunk' : id + '-val');
+        // UI Text Sync
+        ['reach','stack','wheelbase','sta','stemL','stemA','spacers','barR','trunkAngle','crankRot'].forEach(id => {
+            const target = id.includes('Angle') ? id.replace('Angle','') : id.replace('Rot','rot');
+            const display = document.getElementById(target + '-val') || document.getElementById(target);
             if(display) display.innerText = document.getElementById(id).value;
         });
 
-        const scale = dims.w / 1400; 
-        const offset = { x: dims.w * 0.45, y: dims.h * 0.8 };
-        
-        // Coordinates (BB is 0,0)
+        // Points (BB = 0,0)
         const bb = {x:0, y:0};
-        const wheelR = 340; // 700c wheel
-        const rearWheel = {x: -wb * 0.45, y: 0};
-        const frontWheel = {x: wb * 0.55, y: 0};
-        const pedal = {x: Math.sin(cRot * Math.PI/180) * cL, y: -Math.cos(cRot * Math.PI/180) * cL};
-        const saddle = {x: Math.cos(Math.PI - (73 * Math.PI/180)) * sH, y: -Math.sin(Math.PI - (73 * Math.PI/180)) * sH};
-        const bars = {x: reach, y: -stack};
-        const shoulder = {x: saddle.x + Math.cos(-tA * Math.PI/180) * 600, y: saddle.y + Math.sin(-tA * Math.PI/180) * 600};
+        const htTop = {x: reach, y: -stack};
+        const rearHub = {x: -wb * 0.42, y: 0}; 
+        const frontHub = {x: wb * 0.58, y: 0};
         
-        const knee = solveIK(saddle, pedal, thighL, shinL, true);
-        const elbow = solveIK(shoulder, bars, 300, 300, false);
+        // Cockpit Chain
+        const steerVec = { x: Math.cos(toRad(headAngle + 90)), y: -Math.sin(toRad(headAngle + 90)) };
+        const spacerEnd = { x: htTop.x + steerVec.x * spacers, y: htTop.y + steerVec.y * spacers };
+        
+        // Stem (relative to steer tube)
+        const stemTotalAngle = (90 - headAngle) + stemA;
+        const stemEnd = {
+            x: spacerEnd.x + Math.cos(toRad(stemTotalAngle)) * stemL,
+            y: spacerEnd.y - Math.sin(toRad(stemTotalAngle)) * stemL
+        };
 
-        ctx.clearRect(0, 0, dims.w, dims.h);
+        const handPos = { x: stemEnd.x + barR, y: stemEnd.y + 20 }; // Bar hoods roughly +20mm drop/pos
+
+        // Saddle
+        const saddleH = 740; // Defaulting for now
+        const saddle = { x: Math.cos(Math.PI - toRad(sta)) * saddleH, y: -Math.sin(Math.PI - toRad(sta)) * saddleH };
+
+        // Draw Math
+        const scale = dims.w / 1400;
+        const offset = { x: dims.w * 0.4, y: dims.h * 0.75 };
         const px = p => ({x: offset.x + p.x*scale, y: offset.y + (p.y + wheelR)*scale});
 
-        // Drawing
-        const sBB = px(bb), sS = px(saddle), sP = px(pedal), sB = px(bars), sSh = px(shoulder);
-        const sRW = px(rearWheel), sFW = px(frontWheel);
-
-        // Ground Plane
-        ctx.strokeStyle = "#e5e5ea"; ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.moveTo(0, sBB.y + wheelR*scale); ctx.lineTo(dims.w, sBB.y + wheelR*scale); ctx.stroke();
-
-        // Wheels
-        ctx.strokeStyle = "#d1d1d6"; ctx.lineWidth = 4;
-        [sRW, sFW].forEach(w => {
-            ctx.beginPath(); ctx.arc(w.x, w.y, wheelR*scale, 0, Math.PI*2); ctx.stroke();
-            ctx.beginPath(); ctx.arc(w.x, w.y, 4, 0, 7); ctx.fill();
-        });
-
-        // Frame
-        ctx.strokeStyle = "#3a3a3c"; ctx.lineWidth = 5; ctx.lineJoin = "round";
-        ctx.beginPath();
-        ctx.moveTo(sRW.x, sRW.y); ctx.lineTo(sBB.x, sBB.y); ctx.lineTo(sS.x, sS.y);
-        ctx.moveTo(sBB.x, sBB.y); ctx.lineTo(sB.x, sB.y);
-        ctx.stroke();
-
-        // Rider
-        ctx.strokeStyle = "#007aff"; ctx.lineWidth = 8; ctx.lineCap = "round";
-        if(knee) {
-            const sK = px(knee);
-            ctx.beginPath(); ctx.moveTo(sS.x, sS.y); ctx.lineTo(sK.x, sK.y); ctx.lineTo(sP.x, sP.y); ctx.stroke();
-            const d = Math.hypot(saddle.x-pedal.x, saddle.y-pedal.y);
-            const kA = Math.acos((thighL**2 + shinL**2 - d**2)/(2*thighL*shinL)) * 180/Math.PI;
-            document.getElementById('stat-knee').innerText = `Knee: ${Math.round(kA)}°`;
-        }
+        ctx.clearRect(0,0, dims.w, dims.h);
         
-        ctx.beginPath(); ctx.moveTo(sS.x, sS.y); ctx.lineTo(sSh.x, sSh.y);
-        if(elbow) { 
-            const sE = px(elbow); 
-            ctx.lineTo(sE.x, sE.y); ctx.lineTo(sB.x, sB.y); 
+        // Render Components
+        const sBB = px(bb), sS = px(saddle), sHT = px(htTop), sSE = px(stemEnd), sH = px(handPos);
+        const sRH = px(rearHub), sFH = px(frontHub);
+
+        // 1. Frame Tubes
+        ctx.lineWidth = 6; ctx.lineCap = "round";
+        
+        // Seat Tube
+        ctx.strokeStyle = "#444"; ctx.beginPath(); ctx.moveTo(sBB.x, sBB.y); ctx.lineTo(sS.x, sS.y); ctx.stroke();
+        // Down Tube
+        ctx.beginPath(); ctx.moveTo(sBB.x, sBB.y); ctx.lineTo(sHT.x, sHT.y); ctx.stroke();
+        // Top Tube
+        const ttStart = {x: sS.x + (sBB.x - sS.x)*0.2, y: sS.y + (sBB.y - sS.y)*0.2};
+        ctx.beginPath(); ctx.moveTo(ttStart.x, ttStart.y); ctx.lineTo(sHT.x, sHT.y); ctx.stroke();
+        // Chainstays
+        ctx.beginPath(); ctx.moveTo(sBB.x, sBB.y); ctx.lineTo(sRH.x, sRH.y); ctx.stroke();
+        // Fork
+        ctx.beginPath(); ctx.moveTo(sHT.x, sHT.y); ctx.lineTo(sFH.x, sFH.y); ctx.stroke();
+
+        // 2. Cockpit
+        ctx.strokeStyle = "#888"; ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.moveTo(sHT.x, sHT.y); ctx.lineTo(px(spacerEnd).x, px(spacerEnd).y); ctx.stroke(); // Spacers
+        ctx.strokeStyle = "#222";
+        ctx.beginPath(); ctx.moveTo(px(spacerEnd).x, px(spacerEnd).y); ctx.lineTo(sSE.x, sSE.y); ctx.stroke(); // Stem
+        ctx.beginPath(); ctx.arc(sSE.x, sSE.y, 8*scale, 0, 7); ctx.stroke(); // Bar curve
+
+        // 3. Wheels
+        ctx.strokeStyle = "#ddd"; ctx.lineWidth = 2;
+        [sRH, sFH].forEach(w => { ctx.beginPath(); ctx.arc(w.x, w.y, wheelR*scale, 0, 7); ctx.stroke(); });
+
+        // 4. Rider IK
+        const shoulder = { x: saddle.x + Math.cos(toRad(-trunkA))*640, y: saddle.y + Math.sin(toRad(-trunkA))*640 };
+        const pedal = { x: Math.sin(toRad(cRot))*172.5, y: -Math.cos(toRad(cRot))*172.5 };
+        const knee = solveIK(saddle, pedal, 460, 510, true);
+        const elbow = solveIK(shoulder, handPos, 320, 310, false);
+
+        ctx.strokeStyle = "#007aff"; ctx.lineWidth = 8;
+        if(knee) {
+            const sK = px(knee), sP = px(pedal);
+            ctx.beginPath(); ctx.moveTo(sS.x, sS.y); ctx.lineTo(sK.x, sK.y); ctx.lineTo(sP.x, sP.y); ctx.stroke();
+        }
+        ctx.beginPath(); ctx.moveTo(sS.x, sS.y); ctx.lineTo(px(shoulder).x, px(shoulder).y);
+        if(elbow) {
+            const sE = px(elbow);
+            ctx.lineTo(sE.x, sE.y); ctx.lineTo(sH.x, sH.y);
         }
         ctx.stroke();
 
-        // Markers
-        ctx.fillStyle = "#ff3b30";
-        [sS, sSh, sP, sBB].forEach(p => {
-            ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, 7); ctx.fill();
-        });
-        document.getElementById('stat-hip').innerText = `Trunk: ${tA}°`;
+        // Stats
+        document.getElementById('stat-back').innerText = `Back: ${trunkA}°`;
     }
 
     window.addEventListener('resize', () => { dims = initCanvas(); update(); });
