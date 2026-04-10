@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BikeFit Pro Compare v2.1.0</title>
+    <title>BikeFit Pro Compare v2.1.1</title>
     <style>
         :root {
             --bg-color: #f2f2f7;
@@ -122,6 +122,9 @@
         .btn-import { background: #e5e5ea; color: var(--text-main); }
         .btn-import:hover { background: #d1d1d6; }
 
+        /* Container for collapsible Bike B settings */
+        #bikeB-settings { display: none; }
+
         .version-tag { position: fixed; bottom: 8px; right: 12px; font-size: 10px; color: #aeaeb2; font-weight: bold; z-index: 1000; pointer-events: none; }
     </style>
 </head>
@@ -134,7 +137,7 @@
         
         <h2>View Settings</h2>
         <div class="card">
-            <div class="row"><span class="label-text">Zoom</span><input type="range" id="zoom" min="-50" max="100" value="0"><span class="val-text" id="zoom-val">0%</span></div>
+            <div class="row"><span class="label-text">Zoom</span><input type="range" id="zoom" min="-50" max="100" value="-50"><span class="val-text" id="zoom-val">-50%</span></div>
         </div>
 
         <h2>Rider Position A</h2>
@@ -198,46 +201,48 @@
             </label>
         </h1>
         
-        <h2>Rider Position B</h2>
-        <div class="card">
-            <div class="row"><span class="label-text">Trunk Angle</span><input type="range" id="trunkAngleB" min="0" max="90" value="40"><span class="val-text" id="trunkAngleB-val">40°</span></div>
-            <div class="row"><span class="label-text">Crank Rot.</span><input type="range" id="crankRotB" min="0" max="360" value="180"><span class="val-text" id="crankRotB-val">180°</span></div>
-        </div>
-
-        <h2>Frame & Fork B</h2>
-        <div class="card">
-            <div class="row">
-                <span class="label-text">Preset</span>
-                <select id="presetB">
-                    <option value="custom">Custom...</option>
-                    <optgroup label="Surly MS">
-                        <option value="ms50">50cm</option>
-                        <option value="ms54">54cm</option>
-                        <option value="ms56">56cm</option>
-                        <option value="ms58" selected>58cm</option>
-                        <option value="ms60">60cm</option>
-                    </optgroup>
-                    <optgroup label="Kona Unit X">
-                        <option value="konaS">Size S</option>
-                        <option value="konaM">Size M</option>
-                        <option value="konaL">Size L</option>
-                        <option value="konaXL">Size XL</option>
-                    </optgroup>
-                </select>
+        <div id="bikeB-settings">
+            <h2>Rider Position B</h2>
+            <div class="card">
+                <div class="row"><span class="label-text">Trunk Angle</span><input type="range" id="trunkAngleB" min="0" max="90" value="40"><span class="val-text" id="trunkAngleB-val">40°</span></div>
+                <div class="row"><span class="label-text">Crank Rot.</span><input type="range" id="crankRotB" min="0" max="360" value="180"><span class="val-text" id="crankRotB-val">180°</span></div>
             </div>
-            <div class="row"><span class="label-text">Reach</span><input type="range" id="reachB" min="350" max="550" value="402"><span class="val-text" id="reachB-val">402</span></div>
-            <div class="row"><span class="label-text">Stack</span><input type="range" id="stackB" min="500" max="750" value="599"><span class="val-text" id="stackB-val">599</span></div>
-            <div class="row"><span class="label-text">Fork Angle</span><input type="range" id="faB" min="60" max="85" step="0.5" value="73"><span class="val-text" id="faB-val">73°</span></div>
-            <div class="row"><span class="label-text">Seat Tube</span><input type="range" id="stlB" min="350" max="650" value="580"><span class="val-text" id="stlB-val">580</span></div>
-        </div>
 
-        <h2>Cockpit B</h2>
-        <div class="card">
-            <div class="row"><span class="label-text">Spacers</span><input type="range" id="spacersB" min="0" max="100" value="10"><span class="val-text" id="spacersB-val">10</span></div>
-            <div class="row"><span class="label-text">Stem Length</span><input type="range" id="stemLB" min="30" max="140" value="110"><span class="val-text" id="stemLB-val">110</span></div>
-            <div class="row"><span class="label-text">Stem Angle</span><input type="range" id="stemAB" min="-25" max="25" value="-17"><span class="val-text" id="stemAB-val">-17°</span></div>
-            <div class="row"><span class="label-text">Bar Reach</span><input type="range" id="barReachB" min="0" max="150" value="80"><span class="val-text" id="barReachB-val">80</span></div>
-            <div class="row"><span class="label-text">Bar Angle</span><input type="range" id="barAngleB" min="-180" max="180" value="0"><span class="val-text" id="barAngleB-val">0°</span></div>
+            <h2>Frame & Fork B</h2>
+            <div class="card">
+                <div class="row">
+                    <span class="label-text">Preset</span>
+                    <select id="presetB">
+                        <option value="custom">Custom...</option>
+                        <optgroup label="Surly MS">
+                            <option value="ms50">50cm</option>
+                            <option value="ms54">54cm</option>
+                            <option value="ms56">56cm</option>
+                            <option value="ms58" selected>58cm</option>
+                            <option value="ms60">60cm</option>
+                        </optgroup>
+                        <optgroup label="Kona Unit X">
+                            <option value="konaS">Size S</option>
+                            <option value="konaM">Size M</option>
+                            <option value="konaL">Size L</option>
+                            <option value="konaXL">Size XL</option>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="row"><span class="label-text">Reach</span><input type="range" id="reachB" min="350" max="550" value="402"><span class="val-text" id="reachB-val">402</span></div>
+                <div class="row"><span class="label-text">Stack</span><input type="range" id="stackB" min="500" max="750" value="599"><span class="val-text" id="stackB-val">599</span></div>
+                <div class="row"><span class="label-text">Fork Angle</span><input type="range" id="faB" min="60" max="85" step="0.5" value="73"><span class="val-text" id="faB-val">73°</span></div>
+                <div class="row"><span class="label-text">Seat Tube</span><input type="range" id="stlB" min="350" max="650" value="580"><span class="val-text" id="stlB-val">580</span></div>
+            </div>
+
+            <h2>Cockpit B</h2>
+            <div class="card">
+                <div class="row"><span class="label-text">Spacers</span><input type="range" id="spacersB" min="0" max="100" value="10"><span class="val-text" id="spacersB-val">10</span></div>
+                <div class="row"><span class="label-text">Stem Length</span><input type="range" id="stemLB" min="30" max="140" value="110"><span class="val-text" id="stemLB-val">110</span></div>
+                <div class="row"><span class="label-text">Stem Angle</span><input type="range" id="stemAB" min="-25" max="25" value="-17"><span class="val-text" id="stemAB-val">-17°</span></div>
+                <div class="row"><span class="label-text">Bar Reach</span><input type="range" id="barReachB" min="0" max="150" value="80"><span class="val-text" id="barReachB-val">80</span></div>
+                <div class="row"><span class="label-text">Bar Angle</span><input type="range" id="barAngleB" min="-180" max="180" value="0"><span class="val-text" id="barAngleB-val">0°</span></div>
+            </div>
         </div>
         
         <h2 class="common">Common Rider Profile (Both Bikes)</h2>
@@ -262,7 +267,7 @@
 
 </div>
 
-<div class="version-tag">v2.1.0</div>
+<div class="version-tag">v2.1.1</div>
 
 <script>
     const canvas = document.getElementById('bikeCanvas');
@@ -409,12 +414,14 @@
             }
         });
 
+        const showBikeB = document.getElementById('enableBikeB').checked;
+        document.getElementById('bikeB-settings').style.display = showBikeB ? 'block' : 'none';
+
         const getV = id => parseFloat(document.getElementById(id).value);
         const riderData = { torso: getV('torso')*10, arm: getV('arm')*10, thigh: getV('thigh')*10, shin: getV('shin')*10, sH: getV('seatHeight') };
 
         ctx.clearRect(0,0, dims.w, dims.h);
         
-        // Zoom formula: 0 value = 1.0 scale
         const zoomFactor = 1 + (getV('zoom') / 100);
         const scale = (dims.w / 1400) * zoomFactor;
         const groundY = dims.h * 0.90;
@@ -427,8 +434,6 @@
 
         const colorsA = { frame: "#1c1c1e", fork: "#555555", rider: "rgba(0, 122, 255, 0.9)" };
         const colorsB = { frame: "#888888", fork: "#999999", rider: "rgba(0, 122, 255, 0.4)" };
-
-        const showBikeB = document.getElementById('enableBikeB').checked;
 
         if (showBikeB) {
             drawBikeAndRider('B', riderData, colorsB, 0.4, zoomFactor);
@@ -459,7 +464,7 @@
                 else i.value = stateObj[i.id];
             }
         });
-        update(true); // Don't trigger a recursive save during load
+        update(true); 
     }
 
     function exportData() {
@@ -488,7 +493,6 @@
             }
         };
         reader.readAsText(file);
-        // Reset file input
         event.target.value = '';
     }
 
