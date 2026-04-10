@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BikeFit Pro Compare v2.0.3</title>
+    <title>BikeFit Pro Compare v2.1.0</title>
     <style>
         :root {
             --bg-color: #f2f2f7;
@@ -11,6 +11,7 @@
             --accent-blue: #007aff;
             --text-main: #1c1c1e;
             --border-color: #d1d1d6;
+            --success-color: #34c759;
         }
 
         body {
@@ -22,7 +23,7 @@
             overflow: hidden;
         }
 
-        /* --- RESPONSIVE LAYOUT ENGINE V2 --- */
+        /* --- RESPONSIVE LAYOUT --- */
         .app-container {
             display: grid;
             grid-template-columns: 340px 1fr 340px;
@@ -96,7 +97,7 @@
             text-transform: uppercase;
         }
 
-        h1 { font-size: 14px; margin: 0 0 15px 0; color: var(--accent-blue); text-transform: uppercase; }
+        h1 { font-size: 14px; margin: 0 0 15px 0; color: var(--accent-blue); text-transform: uppercase; display: flex; align-items: center; justify-content: space-between; }
         h2 { font-size: 11px; color: #8e8e93; text-transform: uppercase; margin: 15px 0 6px 5px; letter-spacing: 0.5px; }
         h2.common { color: #555; font-weight: 800; border-top: 1px solid var(--border-color); padding-top: 15px; }
 
@@ -110,6 +111,16 @@
         input[type="range"] { flex: 2; margin: 0 8px; accent-color: var(--accent-blue); }
         select { flex: 2; margin: 0 8px; padding: 4px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 12px; background: white; color: var(--text-main); outline: none; }
         optgroup { font-weight: bold; color: #8e8e93; }
+        
+        input[type="checkbox"] { transform: scale(1.2); accent-color: var(--accent-blue); margin-right: 8px; cursor: pointer; }
+        .toggle-wrapper { display: flex; align-items: center; font-size: 11px; color: #555; text-transform: none; cursor: pointer; }
+
+        .btn-group { display: flex; gap: 10px; padding: 10px 0; }
+        button { flex: 1; padding: 8px 12px; border: none; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-export { background: var(--accent-blue); color: white; }
+        .btn-export:hover { background: #005ecb; }
+        .btn-import { background: #e5e5ea; color: var(--text-main); }
+        .btn-import:hover { background: #d1d1d6; }
 
         .version-tag { position: fixed; bottom: 8px; right: 12px; font-size: 10px; color: #aeaeb2; font-weight: bold; z-index: 1000; pointer-events: none; }
     </style>
@@ -123,7 +134,7 @@
         
         <h2>View Settings</h2>
         <div class="card">
-            <div class="row"><span class="label-text">Zoom</span><input type="range" id="zoom" min="40" max="180" value="95"><span class="val-text" id="zoom-val">95%</span></div>
+            <div class="row"><span class="label-text">Zoom</span><input type="range" id="zoom" min="-50" max="100" value="0"><span class="val-text" id="zoom-val">0%</span></div>
         </div>
 
         <h2>Rider Position A</h2>
@@ -180,7 +191,12 @@
     </main>
 
     <aside class="sidebar right-sidebar">
-        <h1>Bike B (Transparent)</h1>
+        <h1>
+            Bike B (Compare)
+            <label class="toggle-wrapper">
+                <input type="checkbox" id="enableBikeB"> Show
+            </label>
+        </h1>
         
         <h2>Rider Position B</h2>
         <div class="card">
@@ -220,8 +236,8 @@
             <div class="row"><span class="label-text">Spacers</span><input type="range" id="spacersB" min="0" max="100" value="10"><span class="val-text" id="spacersB-val">10</span></div>
             <div class="row"><span class="label-text">Stem Length</span><input type="range" id="stemLB" min="30" max="140" value="110"><span class="val-text" id="stemLB-val">110</span></div>
             <div class="row"><span class="label-text">Stem Angle</span><input type="range" id="stemAB" min="-25" max="25" value="-17"><span class="val-text" id="stemAB-val">-17°</span></div>
-            <div class="row"><span class="label-text">Bar Reach</span><input type="range" id="barReachB" min="0" max="150" value="75"><span class="val-text" id="barReachB-val">75</span></div>
-            <div class="row"><span class="label-text">Bar Angle</span><input type="range" id="barAngleB" min="-180" max="180" value="5"><span class="val-text" id="barAngleB-val">5°</span></div>
+            <div class="row"><span class="label-text">Bar Reach</span><input type="range" id="barReachB" min="0" max="150" value="80"><span class="val-text" id="barReachB-val">80</span></div>
+            <div class="row"><span class="label-text">Bar Angle</span><input type="range" id="barAngleB" min="-180" max="180" value="0"><span class="val-text" id="barAngleB-val">0°</span></div>
         </div>
         
         <h2 class="common">Common Rider Profile (Both Bikes)</h2>
@@ -232,12 +248,21 @@
             <div class="row"><span class="label-text">Thigh</span><input type="range" id="thigh" min="35" max="60" value="45"><span class="val-text" id="thigh-val">45</span></div>
             <div class="row"><span class="label-text">Shin</span><input type="range" id="shin" min="35" max="60" value="50"><span class="val-text" id="shin-val">50</span></div>
         </div>
+
+        <h2 class="common">Data Management</h2>
+        <div class="card">
+            <div class="btn-group">
+                <button class="btn-export" onclick="exportData()">Export Save</button>
+                <button class="btn-import" onclick="document.getElementById('importFile').click()">Import Save</button>
+                <input type="file" id="importFile" accept=".json" style="display:none;" onchange="importData(event)">
+            </div>
+        </div>
         
     </aside>
 
 </div>
 
-<div class="version-tag">v2.0.3</div>
+<div class="version-tag">v2.1.0</div>
 
 <script>
     const canvas = document.getElementById('bikeCanvas');
@@ -298,7 +323,7 @@
 
     let dims = initCanvas();
 
-    function drawBikeAndRider(suffix, riderData, colors, alpha) {
+    function drawBikeAndRider(suffix, riderData, colors, alpha, zoomFactor) {
         const val = id => parseFloat(document.getElementById(id + suffix).value);
         const reach = val('reach'), stack = val('stack'), fa = val('fa'), stl = val('stl');
         const spacers = val('spacers'), stemL = val('stemL'), stemA = val('stemA');
@@ -308,9 +333,8 @@
         ctx.save();
         ctx.globalAlpha = alpha;
 
-        const zoom = parseFloat(document.getElementById('zoom').value) / 100;
         const sta = 73.5, wheelR = 340, wb_base = 1010;
-        const scale = (dims.w / 1400) * zoom;
+        const scale = (dims.w / 1400) * zoomFactor;
         const groundY = dims.h * 0.90;
         const offset = { x: dims.w * 0.35, y: groundY - (wheelR * scale) };
         const px = p => ({x: offset.x + p.x*scale, y: offset.y + p.y*scale});
@@ -332,21 +356,21 @@
 
         // Draw Wheels
         ctx.strokeStyle = alpha === 1.0 ? "#c7c7cc" : "rgba(199, 199, 204, 0.4)";
-        ctx.lineWidth = 2 * zoom;
+        ctx.lineWidth = 2 * zoomFactor;
         [pts.rh, pts.fh].forEach(w => { ctx.beginPath(); ctx.arc(w.x, w.y, wheelR*scale, 0, 7); ctx.stroke(); });
 
         // Draw Bike
-        ctx.strokeStyle = colors.frame; ctx.lineWidth = 6 * zoom; ctx.lineCap = "round"; ctx.lineJoin = "round";
+        ctx.strokeStyle = colors.frame; ctx.lineWidth = 6 * zoomFactor; ctx.lineCap = "round"; ctx.lineJoin = "round";
         ctx.beginPath(); ctx.moveTo(pts.bb.x, pts.bb.y); ctx.lineTo(pts.stTop.x, pts.stTop.y); ctx.lineTo(pts.htTop.x, pts.htTop.y); ctx.lineTo(pts.bb.x, pts.bb.y); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(pts.bb.x, pts.bb.y); ctx.lineTo(pts.rh.x, pts.rh.y); ctx.lineTo(pts.stTop.x, pts.stTop.y); ctx.stroke();
         
-        ctx.strokeStyle = colors.fork; ctx.lineWidth = 5 * zoom; ctx.beginPath(); ctx.moveTo(pts.fh.x, pts.fh.y); ctx.lineTo(pts.htTop.x, pts.htTop.y); ctx.stroke();
-        ctx.strokeStyle = "#8e8e93"; ctx.lineWidth = 4 * zoom; ctx.beginPath(); ctx.moveTo(pts.htTop.x, pts.htTop.y); ctx.lineTo(pts.stemBase.x, pts.stemBase.y); ctx.stroke();
+        ctx.strokeStyle = colors.fork; ctx.lineWidth = 5 * zoomFactor; ctx.beginPath(); ctx.moveTo(pts.fh.x, pts.fh.y); ctx.lineTo(pts.htTop.x, pts.htTop.y); ctx.stroke();
+        ctx.strokeStyle = "#8e8e93"; ctx.lineWidth = 4 * zoomFactor; ctx.beginPath(); ctx.moveTo(pts.htTop.x, pts.htTop.y); ctx.lineTo(pts.stemBase.x, pts.stemBase.y); ctx.stroke();
         
-        ctx.strokeStyle = colors.frame; ctx.lineWidth = 5 * zoom; ctx.beginPath(); ctx.moveTo(pts.stemBase.x, pts.stemBase.y); ctx.lineTo(pts.stemEnd.x, pts.stemEnd.y); ctx.stroke();
-        ctx.strokeStyle = "#555"; ctx.lineWidth = 3 * zoom; ctx.beginPath(); ctx.moveTo(pts.stemEnd.x, pts.stemEnd.y); ctx.lineTo(pts.hoods.x, pts.hoods.y); ctx.stroke();
+        ctx.strokeStyle = colors.frame; ctx.lineWidth = 5 * zoomFactor; ctx.beginPath(); ctx.moveTo(pts.stemBase.x, pts.stemBase.y); ctx.lineTo(pts.stemEnd.x, pts.stemEnd.y); ctx.stroke();
+        ctx.strokeStyle = "#555"; ctx.lineWidth = 3 * zoomFactor; ctx.beginPath(); ctx.moveTo(pts.stemEnd.x, pts.stemEnd.y); ctx.lineTo(pts.hoods.x, pts.hoods.y); ctx.stroke();
         
-        ctx.strokeStyle = "#8e8e93"; ctx.lineWidth = 4 * zoom; ctx.beginPath(); ctx.moveTo(pts.stTop.x, pts.stTop.y); ctx.lineTo(pts.saddle.x, pts.saddle.y); ctx.stroke();
+        ctx.strokeStyle = "#8e8e93"; ctx.lineWidth = 4 * zoomFactor; ctx.beginPath(); ctx.moveTo(pts.stTop.x, pts.stTop.y); ctx.lineTo(pts.saddle.x, pts.saddle.y); ctx.stroke();
 
         // Draw Rider (IK)
         const shoulder = { x: saddle.x + Math.cos(toRad(-tA))*riderData.torso, y: saddle.y + Math.sin(toRad(-tA))*riderData.torso };
@@ -354,7 +378,7 @@
         const knee = solveIK(saddle, pedal, riderData.thigh, riderData.shin, true);
         const elbow = solveIK(shoulder, hoods, riderData.arm*0.5, riderData.arm*0.5, false);
 
-        ctx.strokeStyle = colors.rider; ctx.lineWidth = 9 * zoom;
+        ctx.strokeStyle = colors.rider; ctx.lineWidth = 9 * zoomFactor;
         if(knee) {
             const sk = px(knee), sp = px(pedal);
             ctx.beginPath(); ctx.moveTo(pts.saddle.x, pts.saddle.y); ctx.lineTo(sk.x, sk.y); ctx.lineTo(sp.x, sp.y); ctx.stroke();
@@ -372,8 +396,8 @@
         document.getElementById('stat-hip'+suffix).innerText = `${tA}°`;
     }
 
-    function update() {
-        // Robust UI Update logic
+    function update(skipSave = false) {
+        // UI Labels update
         document.querySelectorAll('input[type="range"]').forEach(i => {
             const valSpan = document.getElementById(i.id + '-val');
             if (valSpan) {
@@ -390,8 +414,9 @@
 
         ctx.clearRect(0,0, dims.w, dims.h);
         
-        const zoom = getV('zoom') / 100;
-        const scale = (dims.w / 1400) * zoom;
+        // Zoom formula: 0 value = 1.0 scale
+        const zoomFactor = 1 + (getV('zoom') / 100);
+        const scale = (dims.w / 1400) * zoomFactor;
         const groundY = dims.h * 0.90;
         
         ctx.strokeStyle = "#8e8e93"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, groundY); ctx.lineTo(dims.w, groundY); ctx.stroke();
@@ -400,17 +425,86 @@
         const px = p => ({x: offset.x + p.x*scale, y: offset.y + p.y*scale});
         ctx.fillStyle = "#ff3b30"; ctx.beginPath(); ctx.arc(px({x:0,y:0}).x, px({x:0,y:0}).y, 4, 0, 7); ctx.fill();
 
-        // Bike B is transparent (drawn first), Bike A is solid
-        const colorsB = { frame: "#888888", fork: "#999999", rider: "rgba(0, 122, 255, 0.4)" };
         const colorsA = { frame: "#1c1c1e", fork: "#555555", rider: "rgba(0, 122, 255, 0.9)" };
+        const colorsB = { frame: "#888888", fork: "#999999", rider: "rgba(0, 122, 255, 0.4)" };
 
-        drawBikeAndRider('B', riderData, colorsB, 0.4);
-        drawBikeAndRider('A', riderData, colorsA, 1.0);
+        const showBikeB = document.getElementById('enableBikeB').checked;
+
+        if (showBikeB) {
+            drawBikeAndRider('B', riderData, colorsB, 0.4, zoomFactor);
+        } else {
+            document.getElementById('stat-kneeB').innerText = '--';
+            document.getElementById('stat-hipB').innerText = '--';
+        }
+        drawBikeAndRider('A', riderData, colorsA, 1.0, zoomFactor);
+
+        if (!skipSave) saveToLocalStorage();
     }
 
-    window.addEventListener('resize', () => { dims = initCanvas(); update(); });
-    document.querySelectorAll('input, select').forEach(i => i.addEventListener('input', update));
-    setTimeout(() => { dims = initCanvas(); update(); }, 150);
+    // --- DATA MANAGEMENT ---
+    function saveToLocalStorage() {
+        const state = {};
+        document.querySelectorAll('input, select').forEach(i => {
+            if (i.type === 'file') return;
+            state[i.id] = i.type === 'checkbox' ? i.checked : i.value;
+        });
+        localStorage.setItem('bikeFitData', JSON.stringify(state));
+    }
+
+    function loadFromState(stateObj) {
+        document.querySelectorAll('input, select').forEach(i => {
+            if (i.type === 'file') return;
+            if (stateObj[i.id] !== undefined) {
+                if (i.type === 'checkbox') i.checked = stateObj[i.id];
+                else i.value = stateObj[i.id];
+            }
+        });
+        update(true); // Don't trigger a recursive save during load
+    }
+
+    function exportData() {
+        const data = localStorage.getItem('bikeFitData');
+        if (!data) return alert("No data to save.");
+        const blob = new Blob([data], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = "bikefit-setup.json";
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function importData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const state = JSON.parse(e.target.result);
+                loadFromState(state);
+                alert("Setup imported successfully!");
+            } catch (err) {
+                alert("Invalid save file.");
+            }
+        };
+        reader.readAsText(file);
+        // Reset file input
+        event.target.value = '';
+    }
+
+    // Initialization
+    window.addEventListener('resize', () => { dims = initCanvas(); update(true); });
+    document.querySelectorAll('input, select').forEach(i => i.addEventListener('input', () => update(false)));
+    
+    setTimeout(() => { 
+        dims = initCanvas(); 
+        const saved = localStorage.getItem('bikeFitData');
+        if (saved) {
+            try { loadFromState(JSON.parse(saved)); } catch(e) { update(true); }
+        } else {
+            update(true); 
+        }
+    }, 150);
 </script>
 </body>
 </html>
