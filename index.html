@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BikeFit Pro v1.1.8</title>
+    <title>BikeFit Pro v1.1.9</title>
     <style>
         :root {
             --bg-color: #f2f2f7;
@@ -74,8 +74,11 @@
         .row:last-child { border-bottom: none; }
         
         .label-text { font-size: 13px; flex: 1; }
-        .val-text { color: var(--accent-blue); font-weight: 600; width: 60px; text-align: right; font-size: 12px; }
+        .val-text { color: var(--accent-blue); font-weight: 600; width: 60px; text-align: right; font-size: 12px; font-variant-numeric: tabular-nums; }
+        
         input[type="range"] { flex: 2; margin: 0 10px; accent-color: var(--accent-blue); }
+        
+        select { flex: 2; margin: 0 10px; padding: 6px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: white; color: var(--text-main); outline: none; }
 
         .version-tag { position: fixed; bottom: 8px; right: 12px; font-size: 10px; color: #aeaeb2; font-weight: bold; }
     </style>
@@ -101,10 +104,21 @@
 
     <h2>Frame & Fork</h2>
     <div class="card">
+        <div class="row">
+            <span class="label-text">Preset</span>
+            <select id="preset">
+                <option value="custom">Custom</option>
+                <option value="50">Surly MS 50cm</option>
+                <option value="54">Surly MS 54cm</option>
+                <option value="56" selected>Surly MS 56cm</option>
+                <option value="58">Surly MS 58cm</option>
+                <option value="60">Surly MS 60cm</option>
+            </select>
+        </div>
         <div class="row"><span class="label-text">Reach</span><input type="range" id="reach" min="350" max="480" value="393"><span class="val-text" id="reach-val">393</span></div>
         <div class="row"><span class="label-text">Stack</span><input type="range" id="stack" min="500" max="750" value="580"><span class="val-text" id="stack-val">580</span></div>
-        <div class="row"><span class="label-text">Fork Angle</span><input type="range" id="fa" min="65" max="85" step="0.5" value="72.5"><span class="val-text" id="fa-val">72.5°</span></div>
-        <div class="row"><span class="label-text">Seat Tube (STL)</span><input type="range" id="stl" min="400" max="620" value="520"><span class="val-text" id="stl-val">520</span></div>
+        <div class="row"><span class="label-text">Fork Angle</span><input type="range" id="fa" min="65" max="85" step="0.5" value="73"><span class="val-text" id="fa-val">73°</span></div>
+        <div class="row"><span class="label-text">Seat Tube (STL)</span><input type="range" id="stl" min="400" max="620" value="560"><span class="val-text" id="stl-val">560</span></div>
     </div>
 
     <h2>Cockpit</h2>
@@ -132,12 +146,41 @@
     </div>
 </div>
 
-<div class="version-tag">v1.1.8</div>
+<div class="version-tag">v1.1.9</div>
 
 <script>
     const canvas = document.getElementById('bikeCanvas');
     const ctx = canvas.getContext('2d');
     const toRad = deg => deg * (Math.PI / 180);
+
+    // Surly Midnight Special Geometry Factory Database
+    const bikePresets = {
+        "50": { reach: 379, stack: 544, fa: 72.0, stl: 500 },
+        "54": { reach: 389, stack: 560, fa: 72.5, stl: 540 },
+        "56": { reach: 393, stack: 580, fa: 73.0, stl: 560 },
+        "58": { reach: 402, stack: 599, fa: 73.0, stl: 580 },
+        "60": { reach: 409, stack: 620, fa: 73.5, stl: 600 }
+    };
+
+    // Preset selector logic
+    const presetSelect = document.getElementById('preset');
+    presetSelect.addEventListener('change', function() {
+        if (this.value !== 'custom') {
+            const p = bikePresets[this.value];
+            document.getElementById('reach').value = p.reach;
+            document.getElementById('stack').value = p.stack;
+            document.getElementById('fa').value = p.fa;
+            document.getElementById('stl').value = p.stl;
+            update();
+        }
+    });
+
+    // Reset to "Custom" if frame values are tweaked manually
+    ['reach', 'stack', 'fa', 'stl'].forEach(id => {
+        document.getElementById(id).addEventListener('input', () => {
+            presetSelect.value = 'custom';
+        });
+    });
 
     function initCanvas() {
         const dpr = window.devicePixelRatio || 1;
@@ -188,7 +231,6 @@
         const scale = baseScale * zoom;
         
         // Ground is anchored at 92% of the canvas height.
-        // BB is positioned exactly wheelR above the ground.
         const groundY = dims.h * 0.92;
         const offset = { x: dims.w * 0.40, y: groundY - (wheelR * scale) };
         
@@ -196,7 +238,7 @@
 
         // 1. Calculations (BB is 0,0)
         const bb = {x:0, y:0};
-        const rearHub = {x: -wb_base * 0.42, y: 0}; // Wheels are at the same horizontal level as BB in this model
+        const rearHub = {x: -wb_base * 0.42, y: 0}; 
         const htTop = {x: reach, y: -stack}; 
         
         // FORK/STEERER VECTOR
@@ -205,7 +247,7 @@
             y: -Math.sin(toRad(fa)) 
         };
         
-        // Front Hub (distance down to y=0 plane)
+        // Front Hub
         const hubDist = stack / Math.sin(toRad(fa));
         const frontHub = { x: htTop.x - (steererVec.x * hubDist), y: 0 };
         
@@ -231,7 +273,7 @@
         ctx.strokeStyle = "#8e8e93"; ctx.lineWidth = 2;
         ctx.beginPath(); ctx.moveTo(0, groundY); ctx.lineTo(dims.w, groundY); ctx.stroke();
 
-        // Wheels (Anchored to groundY)
+        // Wheels
         ctx.strokeStyle = "#d1d1d6"; ctx.lineWidth = 1.5;
         [pts.rh, pts.fh].forEach(w => { 
             ctx.beginPath(); 
@@ -288,7 +330,7 @@
     }
 
     window.addEventListener('resize', () => { dims = initCanvas(); update(); });
-    document.querySelectorAll('input').forEach(i => i.oninput = update);
+    document.querySelectorAll('input').forEach(i => i.addEventListener('input', update));
     setTimeout(() => { dims = initCanvas(); update(); }, 200);
 </script>
 </body>
