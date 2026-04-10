@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BikeFit Pro Compare v3.1.0</title>
+    <title>BikeFit Pro Compare v3.2.0</title>
     <style>
         :root {
             --bg-color: #f2f2f7;
@@ -115,7 +115,7 @@
         .stat-group { display: flex; gap: 16px; flex: 1; justify-content: center; }
         .stat-item { color: #666; font-weight: 500; }
         .stat-val { font-weight: 700; color: #111; font-variant-numeric: tabular-nums; }
-        .fit-status { font-weight: 800; text-transform: uppercase; text-align: right; width: 160px; }
+        .fit-status { font-weight: 800; text-transform: uppercase; text-align: right; width: 180px; }
 
         h1 { font-size: 14px; margin: 0 0 15px 0; color: var(--accent-purple); text-transform: uppercase; display: flex; align-items: center; justify-content: space-between; }
         h1.bike-b { color: var(--accent-red); } 
@@ -262,7 +262,7 @@
                 <div class="stat-group">
                     <span class="stat-item">Max Knee: <span class="stat-val" id="stat-kneeA">--</span></span>
                     <span class="stat-item">Hip: <span class="stat-val" id="stat-hipA">--</span></span>
-                    <span class="stat-item">Shldr: <span class="stat-val" id="stat-shldrA">--</span></span>
+                    <span class="stat-item">Shldr (UA): <span class="stat-val" id="stat-shldrA">--</span></span>
                 </div>
                 <span class="fit-status" id="fit-statusA">--</span>
             </div>
@@ -271,7 +271,7 @@
                 <div class="stat-group">
                     <span class="stat-item">Max Knee: <span class="stat-val" id="stat-kneeB">--</span></span>
                     <span class="stat-item">Hip: <span class="stat-val" id="stat-hipB">--</span></span>
-                    <span class="stat-item">Shldr: <span class="stat-val" id="stat-shldrB">--</span></span>
+                    <span class="stat-item">Shldr (UA): <span class="stat-val" id="stat-shldrB">--</span></span>
                 </div>
                 <span class="fit-status" id="fit-statusB">--</span>
             </div>
@@ -375,7 +375,7 @@
 
 </div>
 
-<div class="version-tag">v3.1.0</div>
+<div class="version-tag">v3.2.0</div>
 
 <script>
     const canvas = document.getElementById('bikeCanvas');
@@ -413,8 +413,10 @@
     function toggleAnimation() {
         const isAnimating = document.getElementById('animatePedaling').checked;
         ['A', 'B'].forEach(suffix => {
-            document.getElementById('crankRot'+suffix).disabled = isAnimating;
-            document.getElementById('crankRot'+suffix+'-num').disabled = isAnimating;
+            const slider = document.getElementById('crankRot'+suffix);
+            const num = document.getElementById('crankRot'+suffix+'-num');
+            if(slider) slider.disabled = isAnimating;
+            if(num) num.disabled = isAnimating;
         });
 
         if (isAnimating) {
@@ -432,7 +434,6 @@
             const slider = document.getElementById('crankRot'+suffix);
             const num = document.getElementById('crankRot'+suffix+'-num');
             if (slider && num) {
-                // Offset Bike B slightly for cool visual effect if both are shown, or keep sync. Let's sync for precise comparison.
                 slider.value = Math.round(globalCrank);
                 num.value = Math.round(globalCrank);
             }
@@ -497,6 +498,32 @@
         const x2 = p1.x + a*dx/d, y2 = p1.y + a*dy/d;
         const rx = -dy*(h/d), ry = dx*(h/d);
         return flip ? {x: x2 - rx, y: y2 - ry} : {x: x2 + rx, y: y2 + ry};
+    }
+
+    // New Improved Shoulder Angle Calculation (Focus on Humerus/Upper Arm)
+    // Assumes elbow solved successfully. If arm straight, fall back to simple stick arm logic.
+    function calcUpperArmShldrAngle(saddle, shoulder, handTarget, riderData) {
+        const elbow = solveIK(shoulder, handTarget, riderData.arm*0.5, riderData.arm*0.5, false);
+        if (!elbow) {
+            // Fallback for straight arm: Saddle-Shoulder-Hand triangle (stick arm proxy)
+            const a = Math.hypot(handTarget.x - saddle.x, handTarget.y - saddle.y);
+            const b = riderData.torso;
+            // The stick arm is a straight line, proxy for total reach
+            const c = Math.hypot(handTarget.x - shoulder.x, handTarget.y - shoulder.y); 
+            let angle = Math.acos((b**2 + c**2 - a**2) / (2*b*c)) * 180 / Math.PI;
+            return isNaN(angle) ? 180 : angle;
+        }
+        // Biomechanically correct: Angle between Trunk and Upper Arm
+        // Vectors sharing start point Shoulder
+        const vUA = { x: elbow.x - shoulder.x, y: elbow.y - shoulder.y }; // Vector Upper Arm
+        const vT = { x: saddle.x - shoulder.x, y: saddle.y - shoulder.y }; // Vector Trunk
+        
+        const dot = vUA.x * vT.x + vUA.y * vT.y;
+        const lenUA = Math.hypot(vUA.x, vUA.y); // riderData.arm*0.5
+        const lenT = Math.hypot(vT.x, vT.y); // riderData.torso
+        
+        let angle = Math.acos(dot / (lenUA * lenT)) * 180 / Math.PI;
+        return isNaN(angle) ? 180 : angle;
     }
 
     let dims = initCanvas();
@@ -605,24 +632,29 @@
         ctx.fillStyle = colors.crank || "#555";
         [pts.bb, px(pedal)].forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, 4*zoomFactor, 0, 7); ctx.fill(); });
 
-        // AUTO-TRUNK ALGORITHM
+        // AUTO-TRUNK ALGORITHM & Improved Shoulder Angle Calculation
         let actual_tA = tA;
         let isAutoLeaning = false;
         let shoulder, elbow, d_shoulder_hand;
+
+        // sustainable limits for recreational/road riding, won't allow hobbist into TimeTrial pose
+        const MIN_SAFE_TRUNK = 35; 
+        const MAX_SAFE_TRUNK = 60; 
         
         if (autoTrunk) {
             let best_tA = null;
             let min_penalty = Infinity;
             let best_shoulder = null;
 
-            // Sweep through possible angles to find optimal shoulder angle (90 deg)
-            for (let test_tA = 0; test_tA <= 90; test_tA += 0.5) {
+            // Search for best sustainable angle (now respect constraints)
+            // Penalty uses new felkar-focused shoulder calculation
+            for (let test_tA = MIN_SAFE_TRUNK; test_tA <= MAX_SAFE_TRUNK; test_tA += 0.5) {
                 let s = { x: saddle.x + Math.cos(toRad(-test_tA))*riderData.torso, y: saddle.y + Math.sin(toRad(-test_tA))*riderData.torso };
                 let d = Math.hypot(s.x - handTarget.x, s.y - handTarget.y);
                 if (d <= riderData.arm) {
-                    let aDist = Math.hypot(handTarget.x - saddle.x, handTarget.y - saddle.y);
-                    let shldrAngle = Math.acos((riderData.torso**2 + d**2 - aDist**2) / (2*riderData.torso*d)) * 180 / Math.PI;
-                    let penalty = Math.abs(shldrAngle - 90); 
+                    // Use new improved calculation inside loop for accurate penalty
+                    let shldrAngleUA = calcUpperArmShldrAngle(saddle, s, handTarget, riderData);
+                    let penalty = Math.abs(shldrAngleUA - 90); // Target 90deg upper arm angle
                     if (penalty < min_penalty) {
                         min_penalty = penalty;
                         best_tA = test_tA;
@@ -636,6 +668,7 @@
                 shoulder = best_shoulder;
                 elbow = solveIK(shoulder, handTarget, riderData.arm*0.5, riderData.arm*0.5, false);
             } else {
+                // If not reachable within constraints, use standard straight-arm/max lean approach
                 isAutoLeaning = true;
                 let shoulder_auto = solveIK(saddle, handTarget, riderData.torso, riderData.arm, true);
                 if (shoulder_auto) {
@@ -655,7 +688,7 @@
             document.getElementById('trunkAngle'+suffix+'-num').value = Math.round(actual_tA);
             
         } else {
-            // Manual Mode
+            // Manual Mode logic remains mostly the same, just setup points
             shoulder = { x: saddle.x + Math.cos(toRad(-actual_tA))*riderData.torso, y: saddle.y + Math.sin(toRad(-actual_tA))*riderData.torso };
             d_shoulder_hand = Math.hypot(shoulder.x - handTarget.x, shoulder.y - handTarget.y);
             if (d_shoulder_hand <= riderData.arm) {
@@ -678,7 +711,7 @@
 
         const knee = solveIK(saddle, ankle, riderData.thigh, riderData.shin, true);
 
-        // GLOBAL MAX KNEE EXTENSION CALCULATION
+        // GLOBAL MAX KNEE EXTENSION CALCULATION (Validates whole cycle)
         let maxKneeAngle = 0;
         let legTooShort = false;
         for (let testCrank = 0; testCrank < 360; testCrank += 5) {
@@ -709,12 +742,8 @@
         if(elbow) { ctx.lineTo(px(elbow).x, px(elbow).y); ctx.lineTo(px(handTarget).x, px(handTarget).y); }
         ctx.stroke();
 
-        // Calculate Shoulder Angle
-        const aDist = Math.hypot(handTarget.x - saddle.x, handTarget.y - saddle.y);
-        const bDist = riderData.torso;
-        const cDist = Math.hypot(handTarget.x - shoulder.x, handTarget.y - shoulder.y);
-        let finalShldrAngle = Math.acos((bDist**2 + cDist**2 - aDist**2) / (2*bDist*cDist)) * 180 / Math.PI;
-        if(isNaN(finalShldrAngle)) finalShldrAngle = 180;
+        // Calculate Shoulder Angle (Improved Felkar focused)
+        let finalShldrAngle = calcUpperArmShldrAngle(saddle, shoulder, handTarget, riderData);
 
         // Draw Head
         const headCenter = { x: shoulder.x + Math.cos(toRad(-actual_tA))*180, y: shoulder.y + Math.sin(toRad(-actual_tA))*180 };
@@ -724,13 +753,14 @@
         
         // Update Stats UI
         document.getElementById('stat-knee'+suffix).innerText = `${Math.round(maxKneeAngle)}°`;
-        document.getElementById('stat-hip'+suffix).innerText = `${Math.round(actual_tA)}°${isAutoLeaning ? " (Max)" : ""}`;
+        document.getElementById('stat-hip'+suffix).innerText = `${Math.round(actual_tA)}°${isAutoLeaning ? " (Limit)" : ""}`;
         document.getElementById('stat-shldr'+suffix).innerText = `${Math.round(finalShldrAngle)}°`;
 
-        // Evaluate Bike Fit Rules
+        // Evaluate Bike Fit Rules (Retain English status messages as per v3.0.0 onwards)
         let fitColor = "var(--accent-green)";
         let fitMsgs = [];
         
+        // Lower body validation ( cycle based)
         if (legTooShort || maxKneeAngle > 150) { 
             fitMsgs.push("Saddle too high"); 
             fitColor = "var(--accent-red)"; 
@@ -739,15 +769,21 @@
             fitColor = "var(--accent-orange)"; 
         }
 
+        // Upper body validation (Improved warnings for cockpit issues)
         if (isAutoLeaning) {
-            fitMsgs.push("Reach too long");
+            // Cannot reach bars even with max allowed lean
+            fitMsgs.push("Reach extreme (Setup wrong)");
             fitColor = "var(--accent-red)";
         } else {
-            if (finalShldrAngle < 80) { 
+            // Diagnostic check when setup forces user against anatomical limits
+            if (autoTrunk && finalShldrAngle > 105 && Math.abs(actual_tA - MIN_SAFE_TRUNK) < 0.1) {
+                fitMsgs.push("Setup too long (Shorten Cockpit)");
+                fitColor = "var(--accent-orange)";
+            } else if (finalShldrAngle > 105) {
+                fitMsgs.push("Over-stretched");
+                if(fitColor === "var(--accent-green)") fitColor = "var(--accent-orange)";
+            } else if (finalShldrAngle < 80) { 
                 fitMsgs.push("Cramped reach"); 
-                if(fitColor === "var(--accent-green)") fitColor = "var(--accent-orange)"; 
-            } else if (finalShldrAngle > 105) { 
-                fitMsgs.push("Over-stretched"); 
                 if(fitColor === "var(--accent-green)") fitColor = "var(--accent-orange)"; 
             }
         }
