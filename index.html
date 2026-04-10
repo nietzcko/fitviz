@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BikeFit Pro Compare v2.0.2</title>
+    <title>BikeFit Pro Compare v2.0.3</title>
     <style>
         :root {
             --bg-color: #f2f2f7;
@@ -128,7 +128,7 @@
 
         <h2>Rider Position A</h2>
         <div class="card">
-            <div class="row"><span class="label-text">Trunk Angle</span><input type="range" id="trunkAngleA" min="0" max="90" value="45"><span class="val-text" id="trunkAngleA-val">45°</span></div>
+            <div class="row"><span class="label-text">Trunk Angle</span><input type="range" id="trunkAngleA" min="0" max="90" value="40"><span class="val-text" id="trunkAngleA-val">40°</span></div>
             <div class="row"><span class="label-text">Crank Rot.</span><input type="range" id="crankRotA" min="0" max="360" value="90"><span class="val-text" id="crankRotA-val">90°</span></div>
         </div>
 
@@ -164,7 +164,7 @@
             <div class="row"><span class="label-text">Spacers</span><input type="range" id="spacersA" min="0" max="100" value="30"><span class="val-text" id="spacersA-val">30</span></div>
             <div class="row"><span class="label-text">Stem Length</span><input type="range" id="stemLA" min="30" max="140" value="100"><span class="val-text" id="stemLA-val">100</span></div>
             <div class="row"><span class="label-text">Stem Angle</span><input type="range" id="stemAA" min="-25" max="25" value="-6"><span class="val-text" id="stemAA-val">-6°</span></div>
-            <div class="row"><span class="label-text">Bar Reach</span><input type="range" id="barReachA" min="30" max="150" value="80"><span class="val-text" id="barReachA-val">80</span></div>
+            <div class="row"><span class="label-text">Bar Reach</span><input type="range" id="barReachA" min="0" max="150" value="80"><span class="val-text" id="barReachA-val">80</span></div>
             <div class="row"><span class="label-text">Bar Angle</span><input type="range" id="barAngleA" min="-180" max="180" value="0"><span class="val-text" id="barAngleA-val">0°</span></div>
         </div>
     </aside>
@@ -220,7 +220,7 @@
             <div class="row"><span class="label-text">Spacers</span><input type="range" id="spacersB" min="0" max="100" value="10"><span class="val-text" id="spacersB-val">10</span></div>
             <div class="row"><span class="label-text">Stem Length</span><input type="range" id="stemLB" min="30" max="140" value="110"><span class="val-text" id="stemLB-val">110</span></div>
             <div class="row"><span class="label-text">Stem Angle</span><input type="range" id="stemAB" min="-25" max="25" value="-17"><span class="val-text" id="stemAB-val">-17°</span></div>
-            <div class="row"><span class="label-text">Bar Reach</span><input type="range" id="barReachB" min="30" max="150" value="75"><span class="val-text" id="barReachB-val">75</span></div>
+            <div class="row"><span class="label-text">Bar Reach</span><input type="range" id="barReachB" min="0" max="150" value="75"><span class="val-text" id="barReachB-val">75</span></div>
             <div class="row"><span class="label-text">Bar Angle</span><input type="range" id="barAngleB" min="-180" max="180" value="5"><span class="val-text" id="barAngleB-val">5°</span></div>
         </div>
         
@@ -237,7 +237,7 @@
 
 </div>
 
-<div class="version-tag">v2.0.2</div>
+<div class="version-tag">v2.0.3</div>
 
 <script>
     const canvas = document.getElementById('bikeCanvas');
@@ -245,15 +245,15 @@
     const toRad = deg => deg * (Math.PI / 180);
 
     const bikePresets = {
-        "ms50": { reach: 379, stack: 544, fa: 72.0, stl: 500 },
-        "ms54": { reach: 389, stack: 560, fa: 72.5, stl: 540 },
-        "ms56": { reach: 393, stack: 580, fa: 73.0, stl: 560 },
-        "ms58": { reach: 402, stack: 599, fa: 73.0, stl: 580 },
-        "ms60": { reach: 409, stack: 620, fa: 73.5, stl: 600 },
-        "konaS": { reach: 425, stack: 588, fa: 68.0, stl: 370 },
-        "konaM": { reach: 450, stack: 597, fa: 68.0, stl: 420 },
-        "konaL": { reach: 475, stack: 606, fa: 68.0, stl: 470 },
-        "konaXL": { reach: 510, stack: 615, fa: 68.0, stl: 530 }
+        "ms50": { reach: 379, stack: 544, fa: 72.0, stl: 500, barReach: 80, barAngle: 0 },
+        "ms54": { reach: 389, stack: 560, fa: 72.5, stl: 540, barReach: 80, barAngle: 0 },
+        "ms56": { reach: 393, stack: 580, fa: 73.0, stl: 560, barReach: 80, barAngle: 0 },
+        "ms58": { reach: 402, stack: 599, fa: 73.0, stl: 580, barReach: 80, barAngle: 0 },
+        "ms60": { reach: 409, stack: 620, fa: 73.5, stl: 600, barReach: 80, barAngle: 0 },
+        "konaS": { reach: 425, stack: 588, fa: 68.0, stl: 370, barReach: 20, barAngle: 90 },
+        "konaM": { reach: 450, stack: 597, fa: 68.0, stl: 420, barReach: 20, barAngle: 90 },
+        "konaL": { reach: 475, stack: 606, fa: 68.0, stl: 470, barReach: 20, barAngle: 90 },
+        "konaXL": { reach: 510, stack: 615, fa: 68.0, stl: 530, barReach: 20, barAngle: 90 }
     };
 
     function setupPreset(suffix) {
@@ -265,10 +265,12 @@
                 document.getElementById('stack'+suffix).value = p.stack;
                 document.getElementById('fa'+suffix).value = p.fa;
                 document.getElementById('stl'+suffix).value = p.stl;
+                if (p.barReach !== undefined) document.getElementById('barReach'+suffix).value = p.barReach;
+                if (p.barAngle !== undefined) document.getElementById('barAngle'+suffix).value = p.barAngle;
                 update();
             }
         });
-        ['reach'+suffix, 'stack'+suffix, 'fa'+suffix, 'stl'+suffix].forEach(id => {
+        ['reach'+suffix, 'stack'+suffix, 'fa'+suffix, 'stl'+suffix, 'barReach'+suffix, 'barAngle'+suffix].forEach(id => {
             document.getElementById(id).addEventListener('input', () => { select.value = 'custom'; });
         });
     }
