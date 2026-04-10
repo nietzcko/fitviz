@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BikeFit Pro Compare v2.0.1</title>
+    <title>BikeFit Pro Compare v2.0.2</title>
     <style>
         :root {
             --bg-color: #f2f2f7;
@@ -52,7 +52,6 @@
             position: relative;
         }
 
-        /* Mobil nézet: A canvas ugorjon felülre! */
         @media (max-width: 1200px) {
             body { overflow: auto; height: auto; }
             .app-container { display: flex; flex-direction: column; height: auto; }
@@ -60,7 +59,7 @@
             .right-sidebar { border: none; }
             
             .visualizer-section { 
-                order: -1; /* <--- EZ TESZI LEG FELÜLRE MOBILON */
+                order: -1; 
                 position: sticky; 
                 top: 0; 
                 z-index: 100; 
@@ -238,7 +237,7 @@
 
 </div>
 
-<div class="version-tag">v2.0.1</div>
+<div class="version-tag">v2.0.2</div>
 
 <script>
     const canvas = document.getElementById('bikeCanvas');
@@ -329,18 +328,23 @@
 
         const pts = { bb: px(bb), stTop: px(stTop), saddle: px(saddle), htTop: px(htTop), stemBase: px(stemBase), stemEnd: px(stemEnd), hoods: px(hoods), rh: px(readHub), fh: px(frontHub) };
 
+        // Draw Wheels
+        ctx.strokeStyle = alpha === 1.0 ? "#c7c7cc" : "rgba(199, 199, 204, 0.4)";
+        ctx.lineWidth = 2 * zoom;
+        [pts.rh, pts.fh].forEach(w => { ctx.beginPath(); ctx.arc(w.x, w.y, wheelR*scale, 0, 7); ctx.stroke(); });
+
         // Draw Bike
-        ctx.strokeStyle = colors.frame; ctx.lineWidth = 6; ctx.lineCap = "round"; ctx.lineJoin = "round";
+        ctx.strokeStyle = colors.frame; ctx.lineWidth = 6 * zoom; ctx.lineCap = "round"; ctx.lineJoin = "round";
         ctx.beginPath(); ctx.moveTo(pts.bb.x, pts.bb.y); ctx.lineTo(pts.stTop.x, pts.stTop.y); ctx.lineTo(pts.htTop.x, pts.htTop.y); ctx.lineTo(pts.bb.x, pts.bb.y); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(pts.bb.x, pts.bb.y); ctx.lineTo(pts.rh.x, pts.rh.y); ctx.lineTo(pts.stTop.x, pts.stTop.y); ctx.stroke();
         
-        ctx.strokeStyle = colors.fork; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(pts.fh.x, pts.fh.y); ctx.lineTo(pts.htTop.x, pts.htTop.y); ctx.stroke();
-        ctx.strokeStyle = "#8e8e93"; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(pts.htTop.x, pts.htTop.y); ctx.lineTo(pts.stemBase.x, pts.stemBase.y); ctx.stroke();
+        ctx.strokeStyle = colors.fork; ctx.lineWidth = 5 * zoom; ctx.beginPath(); ctx.moveTo(pts.fh.x, pts.fh.y); ctx.lineTo(pts.htTop.x, pts.htTop.y); ctx.stroke();
+        ctx.strokeStyle = "#8e8e93"; ctx.lineWidth = 4 * zoom; ctx.beginPath(); ctx.moveTo(pts.htTop.x, pts.htTop.y); ctx.lineTo(pts.stemBase.x, pts.stemBase.y); ctx.stroke();
         
-        ctx.strokeStyle = colors.frame; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(pts.stemBase.x, pts.stemBase.y); ctx.lineTo(pts.stemEnd.x, pts.stemEnd.y); ctx.stroke();
-        ctx.strokeStyle = "#555"; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(pts.stemEnd.x, pts.stemEnd.y); ctx.lineTo(pts.hoods.x, pts.hoods.y); ctx.stroke();
+        ctx.strokeStyle = colors.frame; ctx.lineWidth = 5 * zoom; ctx.beginPath(); ctx.moveTo(pts.stemBase.x, pts.stemBase.y); ctx.lineTo(pts.stemEnd.x, pts.stemEnd.y); ctx.stroke();
+        ctx.strokeStyle = "#555"; ctx.lineWidth = 3 * zoom; ctx.beginPath(); ctx.moveTo(pts.stemEnd.x, pts.stemEnd.y); ctx.lineTo(pts.hoods.x, pts.hoods.y); ctx.stroke();
         
-        ctx.strokeStyle = "#8e8e93"; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(pts.stTop.x, pts.stTop.y); ctx.lineTo(pts.saddle.x, pts.saddle.y); ctx.stroke();
+        ctx.strokeStyle = "#8e8e93"; ctx.lineWidth = 4 * zoom; ctx.beginPath(); ctx.moveTo(pts.stTop.x, pts.stTop.y); ctx.lineTo(pts.saddle.x, pts.saddle.y); ctx.stroke();
 
         // Draw Rider (IK)
         const shoulder = { x: saddle.x + Math.cos(toRad(-tA))*riderData.torso, y: saddle.y + Math.sin(toRad(-tA))*riderData.torso };
@@ -348,7 +352,7 @@
         const knee = solveIK(saddle, pedal, riderData.thigh, riderData.shin, true);
         const elbow = solveIK(shoulder, hoods, riderData.arm*0.5, riderData.arm*0.5, false);
 
-        ctx.strokeStyle = colors.rider; ctx.lineWidth = 9;
+        ctx.strokeStyle = colors.rider; ctx.lineWidth = 9 * zoom;
         if(knee) {
             const sk = px(knee), sp = px(pedal);
             ctx.beginPath(); ctx.moveTo(pts.saddle.x, pts.saddle.y); ctx.lineTo(sk.x, sk.y); ctx.lineTo(sp.x, sp.y); ctx.stroke();
