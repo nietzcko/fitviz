@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BikeFit Pro Compare v2.1.1</title>
+    <title>BikeFit Pro Compare v2.2.0</title>
     <style>
         :root {
             --bg-color: #f2f2f7;
@@ -106,12 +106,18 @@
         .row:last-child { border-bottom: none; }
         
         .label-text { font-size: 12px; flex: 1; color: #444; font-weight: 500; }
-        .val-text { color: var(--accent-blue); font-weight: 600; width: 45px; text-align: right; font-size: 11px; font-variant-numeric: tabular-nums; }
-        
         input[type="range"] { flex: 2; margin: 0 8px; accent-color: var(--accent-blue); }
         select { flex: 2; margin: 0 8px; padding: 4px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 12px; background: white; color: var(--text-main); outline: none; }
         optgroup { font-weight: bold; color: #8e8e93; }
         
+        /* Editable Number Inputs */
+        .val-container { display: flex; align-items: center; justify-content: flex-end; width: 50px; }
+        .val-input { width: 40px; border: 1px solid transparent; border-radius: 4px; font-weight: 600; color: var(--accent-blue); text-align: right; background: #f2f2f7; font-size: 11px; font-family: inherit; margin: 0; padding: 2px 4px; outline: none; transition: 0.2s; }
+        .val-input:focus { border-color: var(--accent-blue); background: white; }
+        .val-input::-webkit-outer-spin-button, .val-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .val-input[type=number] { -moz-appearance: textfield; }
+        .unit { font-size: 11px; color: var(--accent-blue); font-weight: 600; margin-left: 2px; }
+
         input[type="checkbox"] { transform: scale(1.2); accent-color: var(--accent-blue); margin-right: 8px; cursor: pointer; }
         .toggle-wrapper { display: flex; align-items: center; font-size: 11px; color: #555; text-transform: none; cursor: pointer; }
 
@@ -122,9 +128,7 @@
         .btn-import { background: #e5e5ea; color: var(--text-main); }
         .btn-import:hover { background: #d1d1d6; }
 
-        /* Container for collapsible Bike B settings */
         #bikeB-settings { display: none; }
-
         .version-tag { position: fixed; bottom: 8px; right: 12px; font-size: 10px; color: #aeaeb2; font-weight: bold; z-index: 1000; pointer-events: none; }
     </style>
 </head>
@@ -137,13 +141,14 @@
         
         <h2>View Settings</h2>
         <div class="card">
-            <div class="row"><span class="label-text">Zoom</span><input type="range" id="zoom" min="-50" max="100" value="-50"><span class="val-text" id="zoom-val">-50%</span></div>
+            <div class="row"><span class="label-text">Zoom</span><input type="range" id="zoom" min="-50" max="100" value="-50"><div class="val-container"><input type="number" id="zoom-num" class="val-input" value="-50"><span class="unit">%</span></div></div>
         </div>
 
         <h2>Rider Position A</h2>
         <div class="card">
-            <div class="row"><span class="label-text">Trunk Angle</span><input type="range" id="trunkAngleA" min="0" max="90" value="40"><span class="val-text" id="trunkAngleA-val">40°</span></div>
-            <div class="row"><span class="label-text">Crank Rot.</span><input type="range" id="crankRotA" min="0" max="360" value="90"><span class="val-text" id="crankRotA-val">90°</span></div>
+            <div class="row"><span class="label-text">Trunk Angle</span><input type="range" id="trunkAngleA" min="0" max="90" value="40"><div class="val-container"><input type="number" id="trunkAngleA-num" class="val-input" value="40"><span class="unit">°</span></div></div>
+            <div class="row"><span class="label-text">Foot Angle</span><input type="range" id="footAngleA" min="-30" max="45" value="0"><div class="val-container"><input type="number" id="footAngleA-num" class="val-input" value="0"><span class="unit">°</span></div></div>
+            <div class="row"><span class="label-text">Crank Rot.</span><input type="range" id="crankRotA" min="0" max="360" value="90"><div class="val-container"><input type="number" id="crankRotA-num" class="val-input" value="90"><span class="unit">°</span></div></div>
         </div>
 
         <h2>Frame & Fork A</h2>
@@ -167,19 +172,19 @@
                     </optgroup>
                 </select>
             </div>
-            <div class="row"><span class="label-text">Reach</span><input type="range" id="reachA" min="350" max="550" value="393"><span class="val-text" id="reachA-val">393</span></div>
-            <div class="row"><span class="label-text">Stack</span><input type="range" id="stackA" min="500" max="750" value="580"><span class="val-text" id="stackA-val">580</span></div>
-            <div class="row"><span class="label-text">Fork Angle</span><input type="range" id="faA" min="60" max="85" step="0.5" value="73"><span class="val-text" id="faA-val">73°</span></div>
-            <div class="row"><span class="label-text">Seat Tube</span><input type="range" id="stlA" min="350" max="650" value="560"><span class="val-text" id="stlA-val">560</span></div>
+            <div class="row"><span class="label-text">Reach</span><input type="range" id="reachA" min="350" max="550" value="393"><div class="val-container"><input type="number" id="reachA-num" class="val-input" value="393"></div></div>
+            <div class="row"><span class="label-text">Stack</span><input type="range" id="stackA" min="500" max="750" value="580"><div class="val-container"><input type="number" id="stackA-num" class="val-input" value="580"></div></div>
+            <div class="row"><span class="label-text">Fork Angle</span><input type="range" id="faA" min="60" max="85" step="0.5" value="73"><div class="val-container"><input type="number" id="faA-num" class="val-input" value="73"><span class="unit">°</span></div></div>
+            <div class="row"><span class="label-text">Seat Tube</span><input type="range" id="stlA" min="350" max="650" value="560"><div class="val-container"><input type="number" id="stlA-num" class="val-input" value="560"></div></div>
         </div>
 
         <h2>Cockpit A</h2>
         <div class="card">
-            <div class="row"><span class="label-text">Spacers</span><input type="range" id="spacersA" min="0" max="100" value="30"><span class="val-text" id="spacersA-val">30</span></div>
-            <div class="row"><span class="label-text">Stem Length</span><input type="range" id="stemLA" min="30" max="140" value="100"><span class="val-text" id="stemLA-val">100</span></div>
-            <div class="row"><span class="label-text">Stem Angle</span><input type="range" id="stemAA" min="-25" max="25" value="-6"><span class="val-text" id="stemAA-val">-6°</span></div>
-            <div class="row"><span class="label-text">Bar Reach</span><input type="range" id="barReachA" min="0" max="150" value="80"><span class="val-text" id="barReachA-val">80</span></div>
-            <div class="row"><span class="label-text">Bar Angle</span><input type="range" id="barAngleA" min="-180" max="180" value="0"><span class="val-text" id="barAngleA-val">0°</span></div>
+            <div class="row"><span class="label-text">Spacers</span><input type="range" id="spacersA" min="0" max="100" value="30"><div class="val-container"><input type="number" id="spacersA-num" class="val-input" value="30"></div></div>
+            <div class="row"><span class="label-text">Stem Length</span><input type="range" id="stemLA" min="30" max="140" value="100"><div class="val-container"><input type="number" id="stemLA-num" class="val-input" value="100"></div></div>
+            <div class="row"><span class="label-text">Stem Angle</span><input type="range" id="stemAA" min="-25" max="25" value="-6"><div class="val-container"><input type="number" id="stemAA-num" class="val-input" value="-6"><span class="unit">°</span></div></div>
+            <div class="row"><span class="label-text">Bar Reach</span><input type="range" id="barReachA" min="0" max="150" value="80"><div class="val-container"><input type="number" id="barReachA-num" class="val-input" value="80"></div></div>
+            <div class="row"><span class="label-text">Bar Angle</span><input type="range" id="barAngleA" min="-180" max="180" value="0"><div class="val-container"><input type="number" id="barAngleA-num" class="val-input" value="0"><span class="unit">°</span></div></div>
         </div>
     </aside>
 
@@ -204,8 +209,9 @@
         <div id="bikeB-settings">
             <h2>Rider Position B</h2>
             <div class="card">
-                <div class="row"><span class="label-text">Trunk Angle</span><input type="range" id="trunkAngleB" min="0" max="90" value="40"><span class="val-text" id="trunkAngleB-val">40°</span></div>
-                <div class="row"><span class="label-text">Crank Rot.</span><input type="range" id="crankRotB" min="0" max="360" value="180"><span class="val-text" id="crankRotB-val">180°</span></div>
+                <div class="row"><span class="label-text">Trunk Angle</span><input type="range" id="trunkAngleB" min="0" max="90" value="40"><div class="val-container"><input type="number" id="trunkAngleB-num" class="val-input" value="40"><span class="unit">°</span></div></div>
+                <div class="row"><span class="label-text">Foot Angle</span><input type="range" id="footAngleB" min="-30" max="45" value="0"><div class="val-container"><input type="number" id="footAngleB-num" class="val-input" value="0"><span class="unit">°</span></div></div>
+                <div class="row"><span class="label-text">Crank Rot.</span><input type="range" id="crankRotB" min="0" max="360" value="180"><div class="val-container"><input type="number" id="crankRotB-num" class="val-input" value="180"><span class="unit">°</span></div></div>
             </div>
 
             <h2>Frame & Fork B</h2>
@@ -229,29 +235,30 @@
                         </optgroup>
                     </select>
                 </div>
-                <div class="row"><span class="label-text">Reach</span><input type="range" id="reachB" min="350" max="550" value="402"><span class="val-text" id="reachB-val">402</span></div>
-                <div class="row"><span class="label-text">Stack</span><input type="range" id="stackB" min="500" max="750" value="599"><span class="val-text" id="stackB-val">599</span></div>
-                <div class="row"><span class="label-text">Fork Angle</span><input type="range" id="faB" min="60" max="85" step="0.5" value="73"><span class="val-text" id="faB-val">73°</span></div>
-                <div class="row"><span class="label-text">Seat Tube</span><input type="range" id="stlB" min="350" max="650" value="580"><span class="val-text" id="stlB-val">580</span></div>
+                <div class="row"><span class="label-text">Reach</span><input type="range" id="reachB" min="350" max="550" value="402"><div class="val-container"><input type="number" id="reachB-num" class="val-input" value="402"></div></div>
+                <div class="row"><span class="label-text">Stack</span><input type="range" id="stackB" min="500" max="750" value="599"><div class="val-container"><input type="number" id="stackB-num" class="val-input" value="599"></div></div>
+                <div class="row"><span class="label-text">Fork Angle</span><input type="range" id="faB" min="60" max="85" step="0.5" value="73"><div class="val-container"><input type="number" id="faB-num" class="val-input" value="73"><span class="unit">°</span></div></div>
+                <div class="row"><span class="label-text">Seat Tube</span><input type="range" id="stlB" min="350" max="650" value="580"><div class="val-container"><input type="number" id="stlB-num" class="val-input" value="580"></div></div>
             </div>
 
             <h2>Cockpit B</h2>
             <div class="card">
-                <div class="row"><span class="label-text">Spacers</span><input type="range" id="spacersB" min="0" max="100" value="10"><span class="val-text" id="spacersB-val">10</span></div>
-                <div class="row"><span class="label-text">Stem Length</span><input type="range" id="stemLB" min="30" max="140" value="110"><span class="val-text" id="stemLB-val">110</span></div>
-                <div class="row"><span class="label-text">Stem Angle</span><input type="range" id="stemAB" min="-25" max="25" value="-17"><span class="val-text" id="stemAB-val">-17°</span></div>
-                <div class="row"><span class="label-text">Bar Reach</span><input type="range" id="barReachB" min="0" max="150" value="80"><span class="val-text" id="barReachB-val">80</span></div>
-                <div class="row"><span class="label-text">Bar Angle</span><input type="range" id="barAngleB" min="-180" max="180" value="0"><span class="val-text" id="barAngleB-val">0°</span></div>
+                <div class="row"><span class="label-text">Spacers</span><input type="range" id="spacersB" min="0" max="100" value="10"><div class="val-container"><input type="number" id="spacersB-num" class="val-input" value="10"></div></div>
+                <div class="row"><span class="label-text">Stem Length</span><input type="range" id="stemLB" min="30" max="140" value="110"><div class="val-container"><input type="number" id="stemLB-num" class="val-input" value="110"></div></div>
+                <div class="row"><span class="label-text">Stem Angle</span><input type="range" id="stemAB" min="-25" max="25" value="-17"><div class="val-container"><input type="number" id="stemAB-num" class="val-input" value="-17"><span class="unit">°</span></div></div>
+                <div class="row"><span class="label-text">Bar Reach</span><input type="range" id="barReachB" min="0" max="150" value="80"><div class="val-container"><input type="number" id="barReachB-num" class="val-input" value="80"></div></div>
+                <div class="row"><span class="label-text">Bar Angle</span><input type="range" id="barAngleB" min="-180" max="180" value="0"><div class="val-container"><input type="number" id="barAngleB-num" class="val-input" value="0"><span class="unit">°</span></div></div>
             </div>
         </div>
         
-        <h2 class="common">Common Rider Profile (Both Bikes)</h2>
+        <h2 class="common">Common Rider Profile</h2>
         <div class="card">
-            <div class="row"><span class="label-text">Saddle Height</span><input type="range" id="seatHeight" min="600" max="950" value="760"><span class="val-text" id="seatHeight-val">760</span></div>
-            <div class="row"><span class="label-text">Torso</span><input type="range" id="torso" min="50" max="80" value="65"><span class="val-text" id="torso-val">65</span></div>
-            <div class="row"><span class="label-text">Arm</span><input type="range" id="arm" min="40" max="80" value="60"><span class="val-text" id="arm-val">60</span></div>
-            <div class="row"><span class="label-text">Thigh</span><input type="range" id="thigh" min="35" max="60" value="45"><span class="val-text" id="thigh-val">45</span></div>
-            <div class="row"><span class="label-text">Shin</span><input type="range" id="shin" min="35" max="60" value="50"><span class="val-text" id="shin-val">50</span></div>
+            <div class="row"><span class="label-text">Saddle Height</span><input type="range" id="seatHeight" min="600" max="950" value="760"><div class="val-container"><input type="number" id="seatHeight-num" class="val-input" value="760"></div></div>
+            <div class="row"><span class="label-text">Torso</span><input type="range" id="torso" min="50" max="80" value="65"><div class="val-container"><input type="number" id="torso-num" class="val-input" value="65"></div></div>
+            <div class="row"><span class="label-text">Arm</span><input type="range" id="arm" min="40" max="80" value="60"><div class="val-container"><input type="number" id="arm-num" class="val-input" value="60"></div></div>
+            <div class="row"><span class="label-text">Thigh</span><input type="range" id="thigh" min="35" max="60" value="45"><div class="val-container"><input type="number" id="thigh-num" class="val-input" value="45"></div></div>
+            <div class="row"><span class="label-text">Shin</span><input type="range" id="shin" min="35" max="60" value="50"><div class="val-container"><input type="number" id="shin-num" class="val-input" value="50"></div></div>
+            <div class="row"><span class="label-text">Ankle-Pedal Dist</span><input type="range" id="foot" min="5" max="20" value="12"><div class="val-container"><input type="number" id="foot-num" class="val-input" value="12"></div></div>
         </div>
 
         <h2 class="common">Data Management</h2>
@@ -267,7 +274,7 @@
 
 </div>
 
-<div class="version-tag">v2.1.1</div>
+<div class="version-tag">v2.2.0</div>
 
 <script>
     const canvas = document.getElementById('bikeCanvas');
@@ -306,6 +313,29 @@
     }
     setupPreset('A'); setupPreset('B');
 
+    // Sync Sliders and Number Inputs securely
+    document.querySelectorAll('input[type="range"]').forEach(slider => {
+        const numId = slider.id + '-num';
+        const numInput = document.getElementById(numId);
+        if(numInput) {
+            slider.addEventListener('input', () => { numInput.value = slider.value; });
+            numInput.addEventListener('input', () => { 
+                slider.value = numInput.value; 
+                update(false); 
+            });
+            numInput.addEventListener('blur', () => {
+                let v = parseFloat(numInput.value);
+                let min = parseFloat(slider.min), max = parseFloat(slider.max);
+                if (v < min) v = min;
+                if (v > max) v = max;
+                if (isNaN(v)) v = parseFloat(slider.value);
+                numInput.value = v;
+                slider.value = v;
+                update(false);
+            });
+        }
+    });
+
     function initCanvas() {
         const dpr = window.devicePixelRatio || 1;
         const rect = canvas.parentNode.getBoundingClientRect();
@@ -333,7 +363,7 @@
         const reach = val('reach'), stack = val('stack'), fa = val('fa'), stl = val('stl');
         const spacers = val('spacers'), stemL = val('stemL'), stemA = val('stemA');
         const barReach = val('barReach'), barAngle = val('barAngle');
-        const tA = val('trunkAngle'), cRot = val('crankRot');
+        const tA = val('trunkAngle'), cRot = val('crankRot'), fA = val('footAngle');
         
         ctx.save();
         ctx.globalAlpha = alpha;
@@ -357,6 +387,10 @@
         const stTop = { x: Math.cos(Math.PI - toRad(sta)) * stl, y: -Math.sin(Math.PI - toRad(sta)) * stl };
         const saddle = { x: Math.cos(Math.PI - toRad(sta)) * riderData.sH, y: -Math.sin(Math.PI - toRad(sta)) * riderData.sH };
 
+        // Crankset points
+        const pedal = { x: Math.sin(toRad(cRot))*172.5, y: -Math.cos(toRad(cRot))*172.5 };
+        const pedalOpp = { x: Math.sin(toRad(cRot + 180))*172.5, y: -Math.cos(toRad(cRot + 180))*172.5 };
+
         const pts = { bb: px(bb), stTop: px(stTop), saddle: px(saddle), htTop: px(htTop), stemBase: px(stemBase), stemEnd: px(stemEnd), hoods: px(hoods), rh: px(readHub), fh: px(frontHub) };
 
         // Draw Wheels
@@ -364,7 +398,7 @@
         ctx.lineWidth = 2 * zoomFactor;
         [pts.rh, pts.fh].forEach(w => { ctx.beginPath(); ctx.arc(w.x, w.y, wheelR*scale, 0, 7); ctx.stroke(); });
 
-        // Draw Bike
+        // Draw Bike Frame
         ctx.strokeStyle = colors.frame; ctx.lineWidth = 6 * zoomFactor; ctx.lineCap = "round"; ctx.lineJoin = "round";
         ctx.beginPath(); ctx.moveTo(pts.bb.x, pts.bb.y); ctx.lineTo(pts.stTop.x, pts.stTop.y); ctx.lineTo(pts.htTop.x, pts.htTop.y); ctx.lineTo(pts.bb.x, pts.bb.y); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(pts.bb.x, pts.bb.y); ctx.lineTo(pts.rh.x, pts.rh.y); ctx.lineTo(pts.stTop.x, pts.stTop.y); ctx.stroke();
@@ -377,24 +411,52 @@
         
         ctx.strokeStyle = "#8e8e93"; ctx.lineWidth = 4 * zoomFactor; ctx.beginPath(); ctx.moveTo(pts.stTop.x, pts.stTop.y); ctx.lineTo(pts.saddle.x, pts.saddle.y); ctx.stroke();
 
-        // Draw Rider (IK)
+        // Draw Cranks
+        ctx.strokeStyle = colors.crank || "#555"; ctx.lineWidth = 5 * zoomFactor;
+        ctx.beginPath(); ctx.moveTo(pts.bb.x, pts.bb.y); ctx.lineTo(px(pedal).x, px(pedal).y); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(pts.bb.x, pts.bb.y); ctx.lineTo(px(pedalOpp).x, px(pedalOpp).y); ctx.stroke();
+        // Pivot points
+        ctx.fillStyle = colors.crank || "#555";
+        [pts.bb, px(pedal), px(pedalOpp)].forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, 4*zoomFactor, 0, 7); ctx.fill(); });
+
+        // Calculate Ankle position based on pedal, foot angle, and foot length
+        // A positive foot angle implies the toe is pointed down, raising the heel (ankle)
+        const ankle = {
+            x: pedal.x - Math.cos(toRad(-fA)) * riderData.foot,
+            y: pedal.y - Math.sin(toRad(-fA)) * riderData.foot
+        };
+
+        // Solve IK based on the ANKLE, not the pedal
         const shoulder = { x: saddle.x + Math.cos(toRad(-tA))*riderData.torso, y: saddle.y + Math.sin(toRad(-tA))*riderData.torso };
-        const pedal = { x: Math.sin(toRad(cRot))*172.5, y: -Math.cos(toRad(cRot))*172.5 };
-        const knee = solveIK(saddle, pedal, riderData.thigh, riderData.shin, true);
+        const knee = solveIK(saddle, ankle, riderData.thigh, riderData.shin, true);
         const elbow = solveIK(shoulder, hoods, riderData.arm*0.5, riderData.arm*0.5, false);
 
+        // Draw Rider
         ctx.strokeStyle = colors.rider; ctx.lineWidth = 9 * zoomFactor;
         if(knee) {
-            const sk = px(knee), sp = px(pedal);
-            ctx.beginPath(); ctx.moveTo(pts.saddle.x, pts.saddle.y); ctx.lineTo(sk.x, sk.y); ctx.lineTo(sp.x, sp.y); ctx.stroke();
-            const d = Math.hypot(saddle.x-pedal.x, saddle.y-pedal.y);
+            const sk = px(knee), sa = px(ankle), sp = px(pedal);
+            ctx.beginPath(); 
+            ctx.moveTo(pts.saddle.x, pts.saddle.y); 
+            ctx.lineTo(sk.x, sk.y); 
+            ctx.lineTo(sa.x, sa.y); 
+            ctx.lineTo(sp.x, sp.y); // Foot segment
+            ctx.stroke();
+            
+            const d = Math.hypot(saddle.x-ankle.x, saddle.y-ankle.y);
             const kAngle = Math.acos((riderData.thigh**2 + riderData.shin**2 - d**2)/(2*riderData.thigh*riderData.shin)) * 180/Math.PI;
             document.getElementById('stat-knee'+suffix).innerText = `${Math.round(kAngle)}°`;
         } else {
             document.getElementById('stat-knee'+suffix).innerText = `ERR`;
         }
+        
         ctx.beginPath(); ctx.moveTo(pts.saddle.x, pts.saddle.y); ctx.lineTo(px(shoulder).x, px(shoulder).y);
         if(elbow) { ctx.lineTo(px(elbow).x, px(elbow).y); ctx.lineTo(pts.hoods.x, pts.hoods.y); }
+        ctx.stroke();
+
+        // Draw Head (Circle continuing from torso)
+        const headCenter = { x: shoulder.x + Math.cos(toRad(-tA))*180, y: shoulder.y + Math.sin(toRad(-tA))*180 };
+        ctx.beginPath();
+        ctx.arc(px(headCenter).x, px(headCenter).y, 100 * scale, 0, Math.PI * 2);
         ctx.stroke();
 
         ctx.restore();
@@ -402,15 +464,11 @@
     }
 
     function update(skipSave = false) {
-        // UI Labels update
-        document.querySelectorAll('input[type="range"]').forEach(i => {
-            const valSpan = document.getElementById(i.id + '-val');
-            if (valSpan) {
-                let unit = '';
-                const id = i.id;
-                if (id.includes('Angle') || id.includes('fa') || id.includes('stemA') || id.includes('Rot')) unit = '°';
-                if (id === 'zoom') unit = '%';
-                valSpan.innerText = i.value + unit;
+        // Sync sliders to number inputs
+        document.querySelectorAll('input[type="range"]').forEach(slider => {
+            const num = document.getElementById(slider.id + '-num');
+            if (num && document.activeElement !== num) {
+                num.value = slider.value;
             }
         });
 
@@ -418,7 +476,14 @@
         document.getElementById('bikeB-settings').style.display = showBikeB ? 'block' : 'none';
 
         const getV = id => parseFloat(document.getElementById(id).value);
-        const riderData = { torso: getV('torso')*10, arm: getV('arm')*10, thigh: getV('thigh')*10, shin: getV('shin')*10, sH: getV('seatHeight') };
+        const riderData = { 
+            torso: getV('torso')*10, 
+            arm: getV('arm')*10, 
+            thigh: getV('thigh')*10, 
+            shin: getV('shin')*10, 
+            foot: getV('foot')*10,
+            sH: getV('seatHeight') 
+        };
 
         ctx.clearRect(0,0, dims.w, dims.h);
         
@@ -430,10 +495,9 @@
         
         const offset = { x: dims.w * 0.35, y: groundY - (340 * scale) };
         const px = p => ({x: offset.x + p.x*scale, y: offset.y + p.y*scale});
-        ctx.fillStyle = "#ff3b30"; ctx.beginPath(); ctx.arc(px({x:0,y:0}).x, px({x:0,y:0}).y, 4, 0, 7); ctx.fill();
 
-        const colorsA = { frame: "#1c1c1e", fork: "#555555", rider: "rgba(0, 122, 255, 0.9)" };
-        const colorsB = { frame: "#888888", fork: "#999999", rider: "rgba(0, 122, 255, 0.4)" };
+        const colorsA = { frame: "#1c1c1e", fork: "#555555", crank: "#333", rider: "rgba(0, 122, 255, 0.9)" };
+        const colorsB = { frame: "#888888", fork: "#999999", crank: "#aaa", rider: "rgba(0, 122, 255, 0.4)" };
 
         if (showBikeB) {
             drawBikeAndRider('B', riderData, colorsB, 0.4, zoomFactor);
@@ -450,7 +514,7 @@
     function saveToLocalStorage() {
         const state = {};
         document.querySelectorAll('input, select').forEach(i => {
-            if (i.type === 'file') return;
+            if (i.type === 'file' || i.type === 'number') return; // Just save range and select
             state[i.id] = i.type === 'checkbox' ? i.checked : i.value;
         });
         localStorage.setItem('bikeFitData', JSON.stringify(state));
@@ -458,7 +522,7 @@
 
     function loadFromState(stateObj) {
         document.querySelectorAll('input, select').forEach(i => {
-            if (i.type === 'file') return;
+            if (i.type === 'file' || i.type === 'number') return;
             if (stateObj[i.id] !== undefined) {
                 if (i.type === 'checkbox') i.checked = stateObj[i.id];
                 else i.value = stateObj[i.id];
@@ -498,7 +562,7 @@
 
     // Initialization
     window.addEventListener('resize', () => { dims = initCanvas(); update(true); });
-    document.querySelectorAll('input, select').forEach(i => i.addEventListener('input', () => update(false)));
+    document.querySelectorAll('input[type="range"], input[type="checkbox"], select').forEach(i => i.addEventListener('input', () => update(false)));
     
     setTimeout(() => { 
         dims = initCanvas(); 
