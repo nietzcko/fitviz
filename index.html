@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BikeFit Pro Compare v2.5.0</title>
+    <title>BikeFit Pro Compare v3.0.0</title>
     <style>
         :root {
             --bg-color: #f2f2f7;
             --sidebar-bg: #ffffff;
             --accent-purple: #5856d6; 
-            --accent-green: #248a3d;  
-            --accent-red: #ff3b30;    
+            --accent-green: #34c759;  
+            --accent-red: #ff3b30;
+            --accent-orange: #ff9500;
             --text-main: #1c1c1e;
             --border-color: #d1d1d6;
         }
@@ -83,20 +84,38 @@
 
         canvas { width: 100%; height: 100%; display: block; }
 
-        .stats-bar {
+        /* --- NEW STATS DASHBOARD --- */
+        .stats-panel {
             width: 90%;
-            max-width: 680px;
+            max-width: 800px;
             background: white;
             margin-top: 15px;
-            padding: 12px;
+            padding: 12px 16px;
             border-radius: 12px;
             display: flex;
-            justify-content: space-around;
+            flex-direction: column;
+            gap: 8px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
         }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 8px;
+            background: #f2f2f7;
+            font-size: 12px;
+        }
+
+        .stat-row.bike-a { border-left: 4px solid var(--accent-purple); }
+        .stat-row.bike-b { border-left: 4px solid var(--accent-red); }
+
+        .stat-title { font-weight: 800; color: #333; text-transform: uppercase; width: 60px; }
+        .stat-group { display: flex; gap: 16px; flex: 1; justify-content: center; }
+        .stat-item { color: #666; font-weight: 500; }
+        .stat-val { font-weight: 700; color: #111; font-variant-numeric: tabular-nums; }
+        .fit-status { font-weight: 800; text-transform: uppercase; text-align: right; width: 140px; }
 
         h1 { font-size: 14px; margin: 0 0 15px 0; color: var(--accent-purple); text-transform: uppercase; display: flex; align-items: center; justify-content: space-between; }
         h1.bike-b { color: var(--accent-red); } 
@@ -143,7 +162,7 @@
 <div class="app-container">
 
     <aside class="sidebar left-sidebar">
-        <h1>Bike A (Fő)</h1>
+        <h1>Bike A (Main)</h1>
         
         <h2>View Settings</h2>
         <div class="card">
@@ -219,17 +238,34 @@
         <div class="canvas-card">
             <canvas id="bikeCanvas"></canvas>
         </div>
-        <div class="stats-bar">
-            <span>Knee A: <span id="stat-kneeA" style="color:var(--accent-purple)">--</span> / B: <span id="stat-kneeB" style="color:var(--accent-green)">--</span></span>
-            <span>Hip A: <span id="stat-hipA" style="color:var(--accent-purple)">--</span> / B: <span id="stat-hipB" style="color:var(--accent-green)">--</span></span>
+        
+        <div class="stats-panel">
+            <div class="stat-row bike-a">
+                <span class="stat-title" style="color: var(--accent-purple)">Bike A</span>
+                <div class="stat-group">
+                    <span class="stat-item">Knee: <span class="stat-val" id="stat-kneeA">--</span></span>
+                    <span class="stat-item">Hip: <span class="stat-val" id="stat-hipA">--</span></span>
+                    <span class="stat-item">Shldr: <span class="stat-val" id="stat-shldrA">--</span></span>
+                </div>
+                <span class="fit-status" id="fit-statusA">--</span>
+            </div>
+            <div class="stat-row bike-b" id="stat-row-b" style="display:none;">
+                <span class="stat-title" style="color: var(--accent-red)">Bike B</span>
+                <div class="stat-group">
+                    <span class="stat-item">Knee: <span class="stat-val" id="stat-kneeB">--</span></span>
+                    <span class="stat-item">Hip: <span class="stat-val" id="stat-hipB">--</span></span>
+                    <span class="stat-item">Shldr: <span class="stat-val" id="stat-shldrB">--</span></span>
+                </div>
+                <span class="fit-status" id="fit-statusB">--</span>
+            </div>
         </div>
     </main>
 
     <aside class="sidebar right-sidebar">
         <h1 class="bike-b">
-            Bike B (Összehasonlító)
+            Bike B (Compare)
             <label class="toggle-wrapper" style="color:var(--accent-red)">
-                <input type="checkbox" id="enableBikeB" style="accent-color:var(--accent-red)"> Mutat
+                <input type="checkbox" id="enableBikeB" style="accent-color:var(--accent-red)"> Show
             </label>
         </h1>
         
@@ -316,7 +352,7 @@
 
 </div>
 
-<div class="version-tag">v2.5.0</div>
+<div class="version-tag">v3.0.0</div>
 
 <script>
     const canvas = document.getElementById('bikeCanvas');
@@ -366,7 +402,6 @@
     }
     setupPreset('A'); setupPreset('B');
 
-    // Sync Sliders and Number Inputs securely
     document.querySelectorAll('input[type="range"]').forEach(slider => {
         const numInput = document.getElementById(slider.id + '-num');
         if(numInput) {
@@ -420,7 +455,7 @@
         const offset = { x: dims.w * 0.35, y: groundY - (wheelR * scale) };
         const px = p => ({x: offset.x + p.x*scale, y: offset.y + p.y*scale});
 
-        // Frame Geometry
+        // Frame
         const bb = {x:0, y:0};
         const readHub = {x: -wb_base * 0.42, y: 0};
         const htTop = {x: reach, y: -stack}; 
@@ -430,7 +465,7 @@
         const stemTotalRad = toRad((90-fa) + stemA);
         const stemEnd = { x: stemBase.x + Math.cos(stemTotalRad) * stemL, y: stemBase.y - Math.sin(stemTotalRad) * stemL };
         
-        // Handlebars Logic
+        // Handlebars
         const barRad = toRad(barAngle);
         const vF = { x: Math.cos(barRad), y: -Math.sin(barRad) }; 
         const vD = { x: Math.sin(barRad), y: Math.cos(barRad) };  
@@ -448,7 +483,7 @@
         const stTop = { x: Math.cos(Math.PI - toRad(sta)) * stl, y: -Math.sin(Math.PI - toRad(sta)) * stl };
         const saddle = { x: Math.cos(Math.PI - toRad(sta)) * riderData.sH, y: -Math.sin(Math.PI - toRad(sta)) * riderData.sH };
 
-        // Crankset & Legs
+        // Crankset
         const pedal = { x: Math.sin(toRad(cRot))*172.5, y: -Math.cos(toRad(cRot))*172.5 };
         const pedalOpp = { x: Math.sin(toRad(cRot + 180))*172.5, y: -Math.cos(toRad(cRot + 180))*172.5 };
         
@@ -457,12 +492,12 @@
 
         const pts = { bb: px(bb), stTop: px(stTop), saddle: px(saddle), htTop: px(htTop), stemBase: px(stemBase), stemEnd: px(stemEnd), hoods: px(hoods), rh: px(readHub), fh: px(frontHub) };
 
-        // 1. Draw Wheels (BLACK and BOLDER)
+        // Draw Wheels
         ctx.strokeStyle = "#000000"; 
         ctx.lineWidth = 6 * (dims.w / 1400); 
         [pts.rh, pts.fh].forEach(w => { ctx.beginPath(); ctx.arc(w.x, w.y, wheelR*scale, 0, 7); ctx.stroke(); });
 
-        // 2. Draw Opposite (Far) Crank and Leg
+        // Draw Far Leg
         ctx.globalAlpha = baseAlpha * 0.35; 
         ctx.strokeStyle = colors.crank || "#8e8e93"; ctx.lineWidth = 5 * zoomFactor;
         ctx.beginPath(); ctx.moveTo(pts.bb.x, pts.bb.y); ctx.lineTo(px(pedalOpp).x, px(pedalOpp).y); ctx.stroke();
@@ -475,7 +510,7 @@
             ctx.lineTo(px(ankleOpp).x, px(ankleOpp).y); ctx.lineTo(px(pedalOpp).x, px(pedalOpp).y); ctx.stroke();
         }
 
-        // 3. Draw Bike Frame (Middle)
+        // Draw Frame
         ctx.globalAlpha = baseAlpha; 
         ctx.strokeStyle = colors.frame; ctx.lineWidth = 6 * zoomFactor; ctx.lineCap = "round"; ctx.lineJoin = "round";
         ctx.beginPath(); ctx.moveTo(pts.bb.x, pts.bb.y); ctx.lineTo(pts.stTop.x, pts.stTop.y); ctx.lineTo(pts.htTop.x, pts.htTop.y); ctx.lineTo(pts.bb.x, pts.bb.y); ctx.stroke();
@@ -484,7 +519,6 @@
         ctx.strokeStyle = colors.fork; ctx.lineWidth = 5 * zoomFactor; ctx.beginPath(); ctx.moveTo(pts.fh.x, pts.fh.y); ctx.lineTo(pts.htTop.x, pts.htTop.y); ctx.stroke();
         ctx.strokeStyle = "#8e8e93"; ctx.lineWidth = 4 * zoomFactor; ctx.beginPath(); ctx.moveTo(pts.htTop.x, pts.htTop.y); ctx.lineTo(pts.stemBase.x, pts.stemBase.y); ctx.stroke();
         
-        // Handlebars Rendering
         ctx.strokeStyle = colors.frame; ctx.lineWidth = 5 * zoomFactor; 
         ctx.beginPath(); ctx.moveTo(pts.stemBase.x, pts.stemBase.y); ctx.lineTo(pts.stemEnd.x, pts.stemEnd.y); ctx.stroke();
         
@@ -500,47 +534,43 @@
         
         ctx.strokeStyle = "#8e8e93"; ctx.lineWidth = 4 * zoomFactor; ctx.beginPath(); ctx.moveTo(pts.stTop.x, pts.stTop.y); ctx.lineTo(pts.saddle.x, pts.saddle.y); ctx.stroke();
 
-        // 4. Draw Near Crank
+        // Draw Near Crank
         ctx.strokeStyle = colors.crank || "#555"; ctx.lineWidth = 5 * zoomFactor;
         ctx.beginPath(); ctx.moveTo(pts.bb.x, pts.bb.y); ctx.lineTo(px(pedal).x, px(pedal).y); ctx.stroke();
         ctx.fillStyle = colors.crank || "#555";
         [pts.bb, px(pedal)].forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, 4*zoomFactor, 0, 7); ctx.fill(); });
 
-        // 5. AUTO-LEAN ALGORITHM & Foreground Rider
+        // AUTO-LEAN ALGORITHM
         let actual_tA = tA;
         let isAutoLeaning = false;
         
-        // Base attempt with user's trunk angle
         let shoulder = { x: saddle.x + Math.cos(toRad(-actual_tA))*riderData.torso, y: saddle.y + Math.sin(toRad(-actual_tA))*riderData.torso };
         let d_shoulder_hand = Math.hypot(shoulder.x - handTarget.x, shoulder.y - handTarget.y);
         let elbow = null;
 
         if (d_shoulder_hand <= riderData.arm) {
-            // Can reach comfortably
             elbow = solveIK(shoulder, handTarget, riderData.arm*0.5, riderData.arm*0.5, false);
         } else {
-            // Cannot reach! We need to auto-lean.
             isAutoLeaning = true;
-            
-            // solveIK with flip=true for torso/arm puts the shoulder joint UP and FORWARD.
             let shoulder_auto = solveIK(saddle, handTarget, riderData.torso, riderData.arm, true);
             
             if (shoulder_auto) {
-                // Can reach if we lean forward enough. The arm will be fully straight.
                 shoulder = shoulder_auto;
                 elbow = { x: (shoulder.x + handTarget.x)/2, y: (shoulder.y + handTarget.y)/2 };
             } else {
-                // Completely unreachable. Point straight at it.
                 let angle = Math.atan2(handTarget.y - saddle.y, handTarget.x - saddle.x);
                 shoulder = { x: saddle.x + Math.cos(angle)*riderData.torso, y: saddle.y + Math.sin(angle)*riderData.torso };
                 elbow = { x: shoulder.x + Math.cos(angle)*(riderData.arm*0.5), y: shoulder.y + Math.sin(angle)*(riderData.arm*0.5) };
                 handTarget = { x: shoulder.x + Math.cos(angle)*riderData.arm, y: shoulder.y + Math.sin(angle)*riderData.arm };
             }
-            // Recalculate actual effective Trunk Angle (convert from canvas Y-down coordinates)
             actual_tA = -Math.atan2(shoulder.y - saddle.y, shoulder.x - saddle.x) * (180 / Math.PI);
         }
 
         const knee = solveIK(saddle, ankle, riderData.thigh, riderData.shin, true);
+
+        // Calculate Biomechanical Angles for Dashboard
+        let finalKneeAngle = 0;
+        let finalShldrAngle = 0;
 
         ctx.strokeStyle = colors.rider; ctx.lineWidth = 9 * zoomFactor;
         
@@ -551,16 +581,23 @@
             ctx.lineTo(sa.x, sa.y); ctx.lineTo(sp.x, sp.y); ctx.stroke();
             
             const d = Math.hypot(saddle.x-ankle.x, saddle.y-ankle.y);
-            const kAngle = Math.acos((riderData.thigh**2 + riderData.shin**2 - d**2)/(2*riderData.thigh*riderData.shin)) * 180/Math.PI;
-            document.getElementById('stat-knee'+suffix).innerText = `${Math.round(kAngle)}°`;
+            finalKneeAngle = Math.acos((riderData.thigh**2 + riderData.shin**2 - d**2)/(2*riderData.thigh*riderData.shin)) * 180/Math.PI;
+            document.getElementById('stat-knee'+suffix).innerText = `${Math.round(finalKneeAngle)}°`;
         } else {
             document.getElementById('stat-knee'+suffix).innerText = `ERR`;
         }
         
-        // Draw Torso and Arm
+        // Draw Upper Body
         ctx.beginPath(); ctx.moveTo(pts.saddle.x, pts.saddle.y); ctx.lineTo(px(shoulder).x, px(shoulder).y);
         if(elbow) { ctx.lineTo(px(elbow).x, px(elbow).y); ctx.lineTo(px(handTarget).x, px(handTarget).y); }
         ctx.stroke();
+
+        // Calculate Shoulder Angle (Law of Cosines on Saddle-Shoulder-Hand triangle)
+        const aDist = Math.hypot(handTarget.x - saddle.x, handTarget.y - saddle.y);
+        const bDist = riderData.torso;
+        const cDist = Math.hypot(handTarget.x - shoulder.x, handTarget.y - shoulder.y);
+        finalShldrAngle = Math.acos((bDist**2 + cDist**2 - aDist**2) / (2*bDist*cDist)) * 180 / Math.PI;
+        if(isNaN(finalShldrAngle)) finalShldrAngle = 180; // If perfectly straight
 
         // Draw Head
         const headCenter = { x: shoulder.x + Math.cos(toRad(-actual_tA))*180, y: shoulder.y + Math.sin(toRad(-actual_tA))*180 };
@@ -568,16 +605,55 @@
 
         ctx.restore();
         
-        // Update Stats UI with Auto indicator
-        let hipLabel = `${Math.round(actual_tA)}°`;
-        if (isAutoLeaning) hipLabel += " (Auto)";
-        document.getElementById('stat-hip'+suffix).innerText = hipLabel;
+        // Update Stats UI
+        document.getElementById('stat-hip'+suffix).innerText = `${Math.round(actual_tA)}°${isAutoLeaning ? " (Auto)" : ""}`;
+        document.getElementById('stat-shldr'+suffix).innerText = `${Math.round(finalShldrAngle)}°`;
+
+        // Evaluate Bike Fit Rules
+        let fitColor = "var(--accent-green)";
+        let fitMsgs = [];
+        
+        if (!knee) {
+            fitMsgs.push("Legs too short");
+            fitColor = "var(--accent-red)";
+        } else if (isAutoLeaning) {
+            fitMsgs.push("Reach too long");
+            fitColor = "var(--accent-red)";
+        } else {
+            // Upper body check
+            if (finalShldrAngle < 80) { fitMsgs.push("Cramped reach"); fitColor = "var(--accent-orange)"; }
+            else if (finalShldrAngle > 105) { fitMsgs.push("Over-stretched"); fitColor = "var(--accent-orange)"; }
+
+            // Lower body check (only valid near BDC)
+            let cR = cRot % 360;
+            if (cR < 0) cR += 360;
+            
+            if (cR >= 160 && cR <= 200) {
+                if (finalKneeAngle > 150) { fitMsgs.push("Saddle high"); fitColor = "var(--accent-red)"; }
+                else if (finalKneeAngle < 137) { fitMsgs.push("Saddle low"); fitColor = "var(--accent-orange)"; }
+            } else {
+                if (fitMsgs.length === 0) {
+                    fitMsgs.push("Rotate crank to 180°");
+                    fitColor = "#8e8e93";
+                }
+            }
+        }
+
+        if (fitMsgs.length === 0) {
+            fitMsgs.push("Optimal Fit ✓");
+            fitColor = "var(--accent-green)";
+        }
+
+        const statEl = document.getElementById('fit-status'+suffix);
+        statEl.innerText = fitMsgs.join(" | ");
+        statEl.style.color = fitColor;
     }
 
     function update(skipSave = false) {
         const showBikeB = document.getElementById('enableBikeB').checked;
         const bikeAFront = document.getElementById('bikeAFront').checked;
         document.getElementById('bikeB-settings').style.display = showBikeB ? 'block' : 'none';
+        document.getElementById('stat-row-b').style.display = showBikeB ? 'flex' : 'none';
 
         const getV = id => parseFloat(document.getElementById(id).value);
         const riderData = { torso: getV('torso')*10, arm: getV('arm')*10, thigh: getV('thigh')*10, shin: getV('shin')*10, foot: getV('foot')*10, sH: getV('seatHeight') };
@@ -593,16 +669,12 @@
         const offset = { x: dims.w * 0.35, y: groundY - (340 * scale) };
         const px = p => ({x: offset.x + p.x*scale, y: offset.y + p.y*scale});
 
-        // Distinct schemes: Purple A, Red bike B, Green rider B
         const colorsA = { frame: "#1c1c1e", fork: "#555555", crank: "#333", rider: "rgba(88, 86, 214, 0.9)" };
-        const colorsB = { frame: "#ff3b30", fork: "#cc2211", crank: "#cc2211", rider: "rgba(36, 138, 61, 0.9)" };
+        const colorsB = { frame: "#ff3b30", fork: "#cc2211", crank: "#cc2211", rider: "rgba(52, 199, 89, 0.9)" };
 
         if (!showBikeB) {
-            document.getElementById('stat-kneeB').innerText = '--';
-            document.getElementById('stat-hipB').innerText = '--';
             drawBikeAndRider('A', riderData, colorsA, 1.0, zoomFactor);
         } else {
-            // Z-Index ordering combined with high ghosting (0.25 alpha for background)
             if (bikeAFront) {
                 drawBikeAndRider('B', riderData, colorsB, 0.25, zoomFactor); 
                 drawBikeAndRider('A', riderData, colorsA, 1.0, zoomFactor);
@@ -664,7 +736,6 @@
         event.target.value = '';
     }
 
-    // Initialization
     window.addEventListener('resize', () => { dims = initCanvas(); update(true); });
     document.querySelectorAll('input[type="range"], input[type="checkbox"], select').forEach(i => {
         i.addEventListener('input', () => { update(false); });
