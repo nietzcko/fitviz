@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BikeFit Pro v1.1.6</title>
+    <title>BikeFit Pro v1.1.7</title>
     <style>
         :root {
             --bg-color: #f2f2f7;
@@ -36,7 +36,8 @@
             background: white;
             width: 100%;
             max-width: 800px;
-            aspect-ratio: 1.6 / 1;
+            /* Taller aspect ratio to fit the rider better vertically */
+            aspect-ratio: 1.25 / 1;
             border-radius: 18px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.1);
         }
@@ -96,7 +97,7 @@
 <div class="controls-section">
     <h2>View Settings</h2>
     <div class="card">
-        <div class="row"><span class="label-text">Zoom</span><input type="range" id="zoom" min="50" max="150" value="95"><span class="val-text" id="zoom-val">95%</span></div>
+        <div class="row"><span class="label-text">Zoom</span><input type="range" id="zoom" min="40" max="150" value="85"><span class="val-text" id="zoom-val">85%</span></div>
     </div>
 
     <h2>Frame & Fork</h2>
@@ -132,7 +133,7 @@
     </div>
 </div>
 
-<div class="version-tag">v1.1.6</div>
+<div class="version-tag">v1.1.7</div>
 
 <script>
     const canvas = document.getElementById('bikeCanvas');
@@ -184,18 +185,20 @@
         });
 
         // Dynamic Scale & Zoom logic
-        // Increased base divider to make everything smaller initially, then apply zoom slider
-        const baseScale = dims.w / 1850; 
+        // We use a base divisor that fits the bike comfortably, then multiply by user zoom
+        const baseScale = dims.w / 1400; 
         const scale = baseScale * zoom;
         
-        // Origin point offset (BB centered horizontally, placed lower vertically)
-        const offset = { x: dims.w * 0.48, y: dims.h * 0.82 };
-        const px = p => ({x: offset.x + p.x*scale, y: offset.y + (p.y + wheelR)*scale});
+        // Offset: Anchor the BB (Bottom Bracket) at exactly 40% width and 80% height of the canvas.
+        // This ensures that when zooming, the bike scales predictably around the crankset.
+        const offset = { x: dims.w * 0.40, y: dims.h * 0.80 };
+        const px = p => ({x: offset.x + p.x*scale, y: offset.y + p.y*scale});
 
-        // 1. Calculations
+        // 1. Calculations (BB is exactly 0,0)
         const bb = {x:0, y:0};
-        const rearHub = {x: -wb_base * 0.42, y: 0};
-        const htTop = {x: reach, y: -stack};
+        // Move wheels down by wheelR so tires touch the ground line (y = wheelR)
+        const rearHub = {x: -wb_base * 0.42, y: -wheelR};
+        const htTop = {x: reach, y: -stack - wheelR}; 
         
         // FIXED FORK/STEERER VECTOR: Negative X points back, Negative Y points UP.
         const steererVec = { 
@@ -205,7 +208,7 @@
         
         // Front Hub
         const hubDist = stack / Math.sin(toRad(fa));
-        const frontHub = { x: htTop.x - (steererVec.x * hubDist), y: 0 };
+        const frontHub = { x: htTop.x - (steererVec.x * hubDist), y: -wheelR };
         
         // Spacers
         const stemBase = { x: htTop.x + (steererVec.x * spacers), y: htTop.y + (steererVec.y * spacers) };
@@ -219,8 +222,8 @@
         const hoods = { x: stemEnd.x + Math.cos(barRad) * barReach, y: stemEnd.y - Math.sin(barRad) * barReach };
 
         // Saddle section
-        const stTop = { x: Math.cos(Math.PI - toRad(sta)) * stl, y: -Math.sin(Math.PI - toRad(sta)) * stl };
-        const saddle = { x: Math.cos(Math.PI - toRad(sta)) * sH, y: -Math.sin(Math.PI - toRad(sta)) * sH };
+        const stTop = { x: Math.cos(Math.PI - toRad(sta)) * stl, y: -Math.sin(Math.PI - toRad(sta)) * stl - wheelR };
+        const saddle = { x: Math.cos(Math.PI - toRad(sta)) * sH, y: -Math.sin(Math.PI - toRad(sta)) * sH - wheelR };
 
         ctx.clearRect(0,0, dims.w, dims.h);
         const pts = { bb: px(bb), stTop: px(stTop), saddle: px(saddle), htTop: px(htTop), stemBase: px(stemBase), stemEnd: px(stemEnd), hoods: px(hoods), rh: px(rearHub), fh: px(frontHub) };
@@ -228,45 +231,45 @@
         // RENDER
         // Floor
         ctx.strokeStyle = "#e5e5ea"; ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.moveTo(0, pts.bb.y + wheelR*scale); ctx.lineTo(dims.w, pts.bb.y + wheelR*scale); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, pts.bb.y); ctx.lineTo(dims.w, pts.bb.y); ctx.stroke();
 
         // Wheels
         ctx.strokeStyle = "#d1d1d6"; ctx.lineWidth = 1.5;
         [pts.rh, pts.fh].forEach(w => { ctx.beginPath(); ctx.arc(w.x, w.y, wheelR*scale, 0, 7); ctx.stroke(); });
 
         // Frame
-        ctx.strokeStyle = "#3a3a3c"; ctx.lineWidth = 8; ctx.lineCap = "round"; ctx.lineJoin = "round";
+        ctx.strokeStyle = "#3a3a3c"; ctx.lineWidth = 8 * (zoom > 1 ? 1 : zoom); ctx.lineCap = "round"; ctx.lineJoin = "round";
         ctx.beginPath();
-        ctx.moveTo(pts.bb.x, pts.bb.y); ctx.lineTo(pts.stTop.x, pts.stTop.y);
-        ctx.lineTo(pts.htTop.x, pts.htTop.y); ctx.lineTo(pts.bb.x, pts.bb.y);
+        ctx.moveTo(pts.bb.x, pts.bb.y - wheelR*scale); ctx.lineTo(pts.stTop.x, pts.stTop.y);
+        ctx.lineTo(pts.htTop.x, pts.htTop.y); ctx.lineTo(pts.bb.x, pts.bb.y - wheelR*scale);
         ctx.stroke();
         
-        ctx.lineWidth = 6; // Rear triangle
-        ctx.beginPath(); ctx.moveTo(pts.bb.x, pts.bb.y); ctx.lineTo(pts.rh.x, pts.rh.y); ctx.lineTo(pts.stTop.x, pts.stTop.y); ctx.stroke();
+        ctx.lineWidth = 6 * (zoom > 1 ? 1 : zoom); // Rear triangle
+        ctx.beginPath(); ctx.moveTo(pts.bb.x, pts.bb.y - wheelR*scale); ctx.lineTo(pts.rh.x, pts.rh.y); ctx.lineTo(pts.stTop.x, pts.stTop.y); ctx.stroke();
 
         // Fork Assembly
-        ctx.strokeStyle = "#1c1c1e"; ctx.lineWidth = 7;
+        ctx.strokeStyle = "#1c1c1e"; ctx.lineWidth = 7 * (zoom > 1 ? 1 : zoom);
         ctx.beginPath(); ctx.moveTo(pts.fh.x, pts.fh.y); ctx.lineTo(pts.htTop.x, pts.htTop.y); ctx.stroke();
-        ctx.strokeStyle = "#8e8e93"; ctx.lineWidth = 5; 
+        ctx.strokeStyle = "#8e8e93"; ctx.lineWidth = 5 * (zoom > 1 ? 1 : zoom); 
         ctx.beginPath(); ctx.moveTo(pts.htTop.x, pts.htTop.y); ctx.lineTo(pts.stemBase.x, pts.stemBase.y); ctx.stroke();
 
         // Cockpit
-        ctx.strokeStyle = "#1c1c1e"; ctx.lineWidth = 6;
+        ctx.strokeStyle = "#1c1c1e"; ctx.lineWidth = 6 * (zoom > 1 ? 1 : zoom);
         ctx.beginPath(); ctx.moveTo(pts.stemBase.x, pts.stemBase.y); ctx.lineTo(pts.stemEnd.x, pts.stemEnd.y); ctx.stroke();
-        ctx.strokeStyle = "#555"; ctx.lineWidth = 4;
+        ctx.strokeStyle = "#555"; ctx.lineWidth = 4 * (zoom > 1 ? 1 : zoom);
         ctx.beginPath(); ctx.moveTo(pts.stemEnd.x, pts.stemEnd.y); ctx.lineTo(pts.hoods.x, pts.hoods.y); ctx.stroke();
 
         // Seatpost
-        ctx.strokeStyle = "#8e8e93"; ctx.lineWidth = 5;
+        ctx.strokeStyle = "#8e8e93"; ctx.lineWidth = 5 * (zoom > 1 ? 1 : zoom);
         ctx.beginPath(); ctx.moveTo(pts.stTop.x, pts.stTop.y); ctx.lineTo(pts.saddle.x, pts.saddle.y); ctx.stroke();
 
         // Rider (IK)
         const shoulder = { x: saddle.x + Math.cos(toRad(-tA))*torsoL, y: saddle.y + Math.sin(toRad(-tA))*torsoL };
-        const pedal = { x: Math.sin(toRad(cRot))*172.5, y: -Math.cos(toRad(cRot))*172.5 };
+        const pedal = { x: Math.sin(toRad(cRot))*172.5, y: -Math.cos(toRad(cRot))*172.5 - wheelR };
         const knee = solveIK(saddle, pedal, thighL, shinL, true);
         const elbow = solveIK(shoulder, hoods, armL*0.5, armL*0.5, false);
 
-        ctx.strokeStyle = "rgba(0, 122, 255, 0.85)"; ctx.lineWidth = 10;
+        ctx.strokeStyle = "rgba(0, 122, 255, 0.85)"; ctx.lineWidth = 10 * (zoom > 1 ? 1 : zoom);
         if(knee) {
             const sk = px(knee), sp = px(pedal);
             ctx.beginPath(); ctx.moveTo(pts.saddle.x, pts.saddle.y); ctx.lineTo(sk.x, sk.y); ctx.lineTo(sp.x, sp.y); ctx.stroke();
