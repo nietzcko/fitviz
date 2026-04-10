@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BikeFit Pro Compare v3.0.0</title>
+    <title>BikeFit Pro Compare v3.1.0</title>
     <style>
         :root {
             --bg-color: #f2f2f7;
@@ -84,7 +84,7 @@
 
         canvas { width: 100%; height: 100%; display: block; }
 
-        /* --- NEW STATS DASHBOARD --- */
+        /* --- STATS DASHBOARD --- */
         .stats-panel {
             width: 90%;
             max-width: 800px;
@@ -115,7 +115,7 @@
         .stat-group { display: flex; gap: 16px; flex: 1; justify-content: center; }
         .stat-item { color: #666; font-weight: 500; }
         .stat-val { font-weight: 700; color: #111; font-variant-numeric: tabular-nums; }
-        .fit-status { font-weight: 800; text-transform: uppercase; text-align: right; width: 140px; }
+        .fit-status { font-weight: 800; text-transform: uppercase; text-align: right; width: 160px; }
 
         h1 { font-size: 14px; margin: 0 0 15px 0; color: var(--accent-purple); text-transform: uppercase; display: flex; align-items: center; justify-content: space-between; }
         h1.bike-b { color: var(--accent-red); } 
@@ -126,14 +126,16 @@
         .row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f2f2f7; }
         .row:last-child { border-bottom: none; }
         
-        .label-text { font-size: 12px; flex: 1; color: #444; font-weight: 500; }
+        .label-text { font-size: 12px; flex: 1; color: #444; font-weight: 500; display: flex; align-items: center; }
         input[type="range"] { flex: 2; margin: 0 8px; accent-color: var(--accent-purple); }
+        input[type="range"]:disabled { opacity: 0.5; }
         select { flex: 2; margin: 0 8px; padding: 4px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 12px; background: white; color: var(--text-main); outline: none; }
         
         /* Editable Number Inputs */
         .val-container { display: flex; align-items: center; justify-content: flex-end; width: 50px; }
         .val-input { width: 40px; border: 1px solid transparent; border-radius: 4px; font-weight: 600; color: var(--accent-purple); text-align: right; background: #f2f2f7; font-size: 11px; font-family: inherit; margin: 0; padding: 2px 4px; outline: none; transition: 0.2s; }
         .val-input:focus { border-color: var(--accent-purple); background: white; }
+        .val-input:disabled { background: transparent; color: #8e8e93; }
         .val-input::-webkit-outer-spin-button, .val-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         .val-input[type=number] { -moz-appearance: textfield; }
         .unit { font-size: 11px; color: var(--accent-purple); font-weight: 600; margin-left: 2px; }
@@ -143,6 +145,9 @@
         .unit-b { color: var(--accent-red); }
 
         input[type="checkbox"] { transform: scale(1.2); accent-color: var(--accent-purple); margin-right: 8px; cursor: pointer; }
+        .auto-checkbox { transform: scale(0.9) !important; margin-left: 6px; margin-right: 4px !important; }
+        .auto-label { font-size: 10px; color: #8e8e93; font-weight: bold; text-transform: uppercase; display: flex; align-items: center; cursor: pointer; }
+
         .toggle-wrapper { display: flex; align-items: center; font-size: 11px; color: #555; text-transform: none; cursor: pointer; }
 
         .btn-group { display: flex; gap: 10px; padding: 10px 0; }
@@ -173,11 +178,23 @@
                     <span style="font-weight:bold; color: var(--accent-purple)">Bring Bike A to Front</span>
                 </label>
             </div>
+            <div class="row">
+                <label class="toggle-wrapper" style="width:100%;">
+                    <input type="checkbox" id="animatePedaling" onchange="toggleAnimation()"> 
+                    <span style="font-weight:bold; color: var(--text-main)">Animate Pedaling</span>
+                </label>
+            </div>
         </div>
 
         <h2>Rider Position A</h2>
         <div class="card">
-            <div class="row"><span class="label-text">Trunk Angle</span><input type="range" id="trunkAngleA" min="0" max="90" value="40"><div class="val-container"><input type="number" id="trunkAngleA-num" class="val-input" value="40"><span class="unit">°</span></div></div>
+            <div class="row">
+                <span class="label-text">Trunk Angle
+                    <label class="auto-label"><input type="checkbox" id="autoTrunkA" class="auto-checkbox" checked onchange="toggleAutoTrunk('A')"> Auto</label>
+                </span>
+                <input type="range" id="trunkAngleA" min="0" max="90" value="40" disabled>
+                <div class="val-container"><input type="number" id="trunkAngleA-num" class="val-input" value="40" disabled><span class="unit">°</span></div>
+            </div>
             <div class="row"><span class="label-text">Foot Angle</span><input type="range" id="footAngleA" min="-30" max="45" value="0"><div class="val-container"><input type="number" id="footAngleA-num" class="val-input" value="0"><span class="unit">°</span></div></div>
             <div class="row"><span class="label-text">Crank Rot.</span><input type="range" id="crankRotA" min="0" max="360" value="90"><div class="val-container"><input type="number" id="crankRotA-num" class="val-input" value="90"><span class="unit">°</span></div></div>
         </div>
@@ -243,7 +260,7 @@
             <div class="stat-row bike-a">
                 <span class="stat-title" style="color: var(--accent-purple)">Bike A</span>
                 <div class="stat-group">
-                    <span class="stat-item">Knee: <span class="stat-val" id="stat-kneeA">--</span></span>
+                    <span class="stat-item">Max Knee: <span class="stat-val" id="stat-kneeA">--</span></span>
                     <span class="stat-item">Hip: <span class="stat-val" id="stat-hipA">--</span></span>
                     <span class="stat-item">Shldr: <span class="stat-val" id="stat-shldrA">--</span></span>
                 </div>
@@ -252,7 +269,7 @@
             <div class="stat-row bike-b" id="stat-row-b" style="display:none;">
                 <span class="stat-title" style="color: var(--accent-red)">Bike B</span>
                 <div class="stat-group">
-                    <span class="stat-item">Knee: <span class="stat-val" id="stat-kneeB">--</span></span>
+                    <span class="stat-item">Max Knee: <span class="stat-val" id="stat-kneeB">--</span></span>
                     <span class="stat-item">Hip: <span class="stat-val" id="stat-hipB">--</span></span>
                     <span class="stat-item">Shldr: <span class="stat-val" id="stat-shldrB">--</span></span>
                 </div>
@@ -272,7 +289,13 @@
         <div id="bikeB-settings">
             <h2>Rider Position B</h2>
             <div class="card">
-                <div class="row"><span class="label-text">Trunk Angle</span><input type="range" id="trunkAngleB" min="0" max="90" value="40" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="trunkAngleB-num" class="val-input bike-b-input" value="40"><span class="unit unit-b">°</span></div></div>
+                <div class="row">
+                    <span class="label-text">Trunk Angle
+                        <label class="auto-label"><input type="checkbox" id="autoTrunkB" class="auto-checkbox" checked onchange="toggleAutoTrunk('B')" style="accent-color: var(--accent-red)"> Auto</label>
+                    </span>
+                    <input type="range" id="trunkAngleB" min="0" max="90" value="40" disabled style="accent-color: var(--accent-red)">
+                    <div class="val-container"><input type="number" id="trunkAngleB-num" class="val-input bike-b-input" value="40" disabled><span class="unit unit-b">°</span></div>
+                </div>
                 <div class="row"><span class="label-text">Foot Angle</span><input type="range" id="footAngleB" min="-30" max="45" value="0" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="footAngleB-num" class="val-input bike-b-input" value="0"><span class="unit unit-b">°</span></div></div>
                 <div class="row"><span class="label-text">Crank Rot.</span><input type="range" id="crankRotB" min="0" max="360" value="180" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="crankRotB-num" class="val-input bike-b-input" value="180"><span class="unit unit-b">°</span></div></div>
             </div>
@@ -352,12 +375,15 @@
 
 </div>
 
-<div class="version-tag">v3.0.0</div>
+<div class="version-tag">v3.1.0</div>
 
 <script>
     const canvas = document.getElementById('bikeCanvas');
     const ctx = canvas.getContext('2d');
     const toRad = deg => deg * (Math.PI / 180);
+
+    let animationId = null;
+    let globalCrank = 0;
 
     const bikePresets = {
         "ms50": { reach: 379, stack: 544, fa: 72.0, stl: 500, barType: 'drop', barReach: 80, barDrop: 120, barAngle: 0, handPos: 'hoods' },
@@ -375,6 +401,44 @@
         const type = document.getElementById('barType' + suffix).value;
         document.getElementById('row-barDrop' + suffix).style.display = (type === 'drop') ? 'flex' : 'none';
         document.getElementById('row-handPos' + suffix).style.display = (type === 'drop') ? 'flex' : 'none';
+    }
+
+    function toggleAutoTrunk(suffix) {
+        const isAuto = document.getElementById('autoTrunk'+suffix).checked;
+        document.getElementById('trunkAngle'+suffix).disabled = isAuto;
+        document.getElementById('trunkAngle'+suffix+'-num').disabled = isAuto;
+        update(false);
+    }
+
+    function toggleAnimation() {
+        const isAnimating = document.getElementById('animatePedaling').checked;
+        ['A', 'B'].forEach(suffix => {
+            document.getElementById('crankRot'+suffix).disabled = isAnimating;
+            document.getElementById('crankRot'+suffix+'-num').disabled = isAnimating;
+        });
+
+        if (isAnimating) {
+            globalCrank = parseFloat(document.getElementById('crankRotA').value) || 0;
+            animateFrame();
+        } else {
+            cancelAnimationFrame(animationId);
+            update(false);
+        }
+    }
+
+    function animateFrame() {
+        globalCrank = (globalCrank + 3) % 360;
+        ['A', 'B'].forEach(suffix => {
+            const slider = document.getElementById('crankRot'+suffix);
+            const num = document.getElementById('crankRot'+suffix+'-num');
+            if (slider && num) {
+                // Offset Bike B slightly for cool visual effect if both are shown, or keep sync. Let's sync for precise comparison.
+                slider.value = Math.round(globalCrank);
+                num.value = Math.round(globalCrank);
+            }
+        });
+        update(true); // Don't save to local storage on every frame
+        animationId = requestAnimationFrame(animateFrame);
     }
 
     function setupPreset(suffix) {
@@ -440,6 +504,7 @@
     function drawBikeAndRider(suffix, riderData, colors, baseAlpha, zoomFactor) {
         const val = id => parseFloat(document.getElementById(id + suffix).value);
         const strVal = id => document.getElementById(id + suffix).value;
+        const autoTrunk = document.getElementById('autoTrunk' + suffix).checked;
         
         const reach = val('reach'), stack = val('stack'), fa = val('fa'), stl = val('stl');
         const spacers = val('spacers'), stemL = val('stemL'), stemA = val('stemA');
@@ -540,37 +605,95 @@
         ctx.fillStyle = colors.crank || "#555";
         [pts.bb, px(pedal)].forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, 4*zoomFactor, 0, 7); ctx.fill(); });
 
-        // AUTO-LEAN ALGORITHM
+        // AUTO-TRUNK ALGORITHM
         let actual_tA = tA;
         let isAutoLeaning = false;
+        let shoulder, elbow, d_shoulder_hand;
         
-        let shoulder = { x: saddle.x + Math.cos(toRad(-actual_tA))*riderData.torso, y: saddle.y + Math.sin(toRad(-actual_tA))*riderData.torso };
-        let d_shoulder_hand = Math.hypot(shoulder.x - handTarget.x, shoulder.y - handTarget.y);
-        let elbow = null;
+        if (autoTrunk) {
+            let best_tA = null;
+            let min_penalty = Infinity;
+            let best_shoulder = null;
 
-        if (d_shoulder_hand <= riderData.arm) {
-            elbow = solveIK(shoulder, handTarget, riderData.arm*0.5, riderData.arm*0.5, false);
-        } else {
-            isAutoLeaning = true;
-            let shoulder_auto = solveIK(saddle, handTarget, riderData.torso, riderData.arm, true);
-            
-            if (shoulder_auto) {
-                shoulder = shoulder_auto;
-                elbow = { x: (shoulder.x + handTarget.x)/2, y: (shoulder.y + handTarget.y)/2 };
-            } else {
-                let angle = Math.atan2(handTarget.y - saddle.y, handTarget.x - saddle.x);
-                shoulder = { x: saddle.x + Math.cos(angle)*riderData.torso, y: saddle.y + Math.sin(angle)*riderData.torso };
-                elbow = { x: shoulder.x + Math.cos(angle)*(riderData.arm*0.5), y: shoulder.y + Math.sin(angle)*(riderData.arm*0.5) };
-                handTarget = { x: shoulder.x + Math.cos(angle)*riderData.arm, y: shoulder.y + Math.sin(angle)*riderData.arm };
+            // Sweep through possible angles to find optimal shoulder angle (90 deg)
+            for (let test_tA = 0; test_tA <= 90; test_tA += 0.5) {
+                let s = { x: saddle.x + Math.cos(toRad(-test_tA))*riderData.torso, y: saddle.y + Math.sin(toRad(-test_tA))*riderData.torso };
+                let d = Math.hypot(s.x - handTarget.x, s.y - handTarget.y);
+                if (d <= riderData.arm) {
+                    let aDist = Math.hypot(handTarget.x - saddle.x, handTarget.y - saddle.y);
+                    let shldrAngle = Math.acos((riderData.torso**2 + d**2 - aDist**2) / (2*riderData.torso*d)) * 180 / Math.PI;
+                    let penalty = Math.abs(shldrAngle - 90); 
+                    if (penalty < min_penalty) {
+                        min_penalty = penalty;
+                        best_tA = test_tA;
+                        best_shoulder = s;
+                    }
+                }
             }
-            actual_tA = -Math.atan2(shoulder.y - saddle.y, shoulder.x - saddle.x) * (180 / Math.PI);
+            
+            if (best_tA !== null) {
+                actual_tA = best_tA;
+                shoulder = best_shoulder;
+                elbow = solveIK(shoulder, handTarget, riderData.arm*0.5, riderData.arm*0.5, false);
+            } else {
+                isAutoLeaning = true;
+                let shoulder_auto = solveIK(saddle, handTarget, riderData.torso, riderData.arm, true);
+                if (shoulder_auto) {
+                    shoulder = shoulder_auto;
+                    elbow = { x: (shoulder.x + handTarget.x)/2, y: (shoulder.y + handTarget.y)/2 };
+                } else {
+                    let angle = Math.atan2(handTarget.y - saddle.y, handTarget.x - saddle.x);
+                    shoulder = { x: saddle.x + Math.cos(angle)*riderData.torso, y: saddle.y + Math.sin(angle)*riderData.torso };
+                    elbow = { x: shoulder.x + Math.cos(angle)*(riderData.arm*0.5), y: shoulder.y + Math.sin(angle)*(riderData.arm*0.5) };
+                    handTarget = { x: shoulder.x + Math.cos(angle)*riderData.arm, y: shoulder.y + Math.sin(angle)*riderData.arm };
+                }
+                actual_tA = -Math.atan2(shoulder.y - saddle.y, shoulder.x - saddle.x) * (180 / Math.PI);
+            }
+            
+            // Bypass event loops, update visual sliders for user feedback
+            document.getElementById('trunkAngle'+suffix).value = Math.round(actual_tA);
+            document.getElementById('trunkAngle'+suffix+'-num').value = Math.round(actual_tA);
+            
+        } else {
+            // Manual Mode
+            shoulder = { x: saddle.x + Math.cos(toRad(-actual_tA))*riderData.torso, y: saddle.y + Math.sin(toRad(-actual_tA))*riderData.torso };
+            d_shoulder_hand = Math.hypot(shoulder.x - handTarget.x, shoulder.y - handTarget.y);
+            if (d_shoulder_hand <= riderData.arm) {
+                elbow = solveIK(shoulder, handTarget, riderData.arm*0.5, riderData.arm*0.5, false);
+            } else {
+                isAutoLeaning = true;
+                let shoulder_auto = solveIK(saddle, handTarget, riderData.torso, riderData.arm, true);
+                if (shoulder_auto) {
+                    shoulder = shoulder_auto;
+                    elbow = { x: (shoulder.x + handTarget.x)/2, y: (shoulder.y + handTarget.y)/2 };
+                } else {
+                    let angle = Math.atan2(handTarget.y - saddle.y, handTarget.x - saddle.x);
+                    shoulder = { x: saddle.x + Math.cos(angle)*riderData.torso, y: saddle.y + Math.sin(angle)*riderData.torso };
+                    elbow = { x: shoulder.x + Math.cos(angle)*(riderData.arm*0.5), y: shoulder.y + Math.sin(angle)*(riderData.arm*0.5) };
+                    handTarget = { x: shoulder.x + Math.cos(angle)*riderData.arm, y: shoulder.y + Math.sin(angle)*riderData.arm };
+                }
+                actual_tA = -Math.atan2(shoulder.y - saddle.y, shoulder.x - saddle.x) * (180 / Math.PI);
+            }
         }
 
         const knee = solveIK(saddle, ankle, riderData.thigh, riderData.shin, true);
 
-        // Calculate Biomechanical Angles for Dashboard
-        let finalKneeAngle = 0;
-        let finalShldrAngle = 0;
+        // GLOBAL MAX KNEE EXTENSION CALCULATION
+        let maxKneeAngle = 0;
+        let legTooShort = false;
+        for (let testCrank = 0; testCrank < 360; testCrank += 5) {
+            let p = { x: Math.sin(toRad(testCrank))*172.5, y: -Math.cos(toRad(testCrank))*172.5 };
+            let a = { x: p.x - Math.cos(toRad(-fA)) * riderData.foot, y: p.y - Math.sin(toRad(-fA)) * riderData.foot };
+            let d = Math.hypot(saddle.x - a.x, saddle.y - a.y);
+            
+            if (d > riderData.thigh + riderData.shin) {
+                maxKneeAngle = 180;
+                legTooShort = true;
+            } else {
+                let k = Math.acos((riderData.thigh**2 + riderData.shin**2 - d**2)/(2*riderData.thigh*riderData.shin)) * 180/Math.PI;
+                if (!isNaN(k) && k > maxKneeAngle) maxKneeAngle = k;
+            }
+        }
 
         ctx.strokeStyle = colors.rider; ctx.lineWidth = 9 * zoomFactor;
         
@@ -579,12 +702,6 @@
             const sk = px(knee), sa = px(ankle), sp = px(pedal);
             ctx.beginPath(); ctx.moveTo(pts.saddle.x, pts.saddle.y); ctx.lineTo(sk.x, sk.y); 
             ctx.lineTo(sa.x, sa.y); ctx.lineTo(sp.x, sp.y); ctx.stroke();
-            
-            const d = Math.hypot(saddle.x-ankle.x, saddle.y-ankle.y);
-            finalKneeAngle = Math.acos((riderData.thigh**2 + riderData.shin**2 - d**2)/(2*riderData.thigh*riderData.shin)) * 180/Math.PI;
-            document.getElementById('stat-knee'+suffix).innerText = `${Math.round(finalKneeAngle)}°`;
-        } else {
-            document.getElementById('stat-knee'+suffix).innerText = `ERR`;
         }
         
         // Draw Upper Body
@@ -592,12 +709,12 @@
         if(elbow) { ctx.lineTo(px(elbow).x, px(elbow).y); ctx.lineTo(px(handTarget).x, px(handTarget).y); }
         ctx.stroke();
 
-        // Calculate Shoulder Angle (Law of Cosines on Saddle-Shoulder-Hand triangle)
+        // Calculate Shoulder Angle
         const aDist = Math.hypot(handTarget.x - saddle.x, handTarget.y - saddle.y);
         const bDist = riderData.torso;
         const cDist = Math.hypot(handTarget.x - shoulder.x, handTarget.y - shoulder.y);
-        finalShldrAngle = Math.acos((bDist**2 + cDist**2 - aDist**2) / (2*bDist*cDist)) * 180 / Math.PI;
-        if(isNaN(finalShldrAngle)) finalShldrAngle = 180; // If perfectly straight
+        let finalShldrAngle = Math.acos((bDist**2 + cDist**2 - aDist**2) / (2*bDist*cDist)) * 180 / Math.PI;
+        if(isNaN(finalShldrAngle)) finalShldrAngle = 180;
 
         // Draw Head
         const headCenter = { x: shoulder.x + Math.cos(toRad(-actual_tA))*180, y: shoulder.y + Math.sin(toRad(-actual_tA))*180 };
@@ -606,36 +723,32 @@
         ctx.restore();
         
         // Update Stats UI
-        document.getElementById('stat-hip'+suffix).innerText = `${Math.round(actual_tA)}°${isAutoLeaning ? " (Auto)" : ""}`;
+        document.getElementById('stat-knee'+suffix).innerText = `${Math.round(maxKneeAngle)}°`;
+        document.getElementById('stat-hip'+suffix).innerText = `${Math.round(actual_tA)}°${isAutoLeaning ? " (Max)" : ""}`;
         document.getElementById('stat-shldr'+suffix).innerText = `${Math.round(finalShldrAngle)}°`;
 
         // Evaluate Bike Fit Rules
         let fitColor = "var(--accent-green)";
         let fitMsgs = [];
         
-        if (!knee) {
-            fitMsgs.push("Legs too short");
-            fitColor = "var(--accent-red)";
-        } else if (isAutoLeaning) {
+        if (legTooShort || maxKneeAngle > 150) { 
+            fitMsgs.push("Saddle too high"); 
+            fitColor = "var(--accent-red)"; 
+        } else if (maxKneeAngle < 137) { 
+            fitMsgs.push("Saddle too low"); 
+            fitColor = "var(--accent-orange)"; 
+        }
+
+        if (isAutoLeaning) {
             fitMsgs.push("Reach too long");
             fitColor = "var(--accent-red)";
         } else {
-            // Upper body check
-            if (finalShldrAngle < 80) { fitMsgs.push("Cramped reach"); fitColor = "var(--accent-orange)"; }
-            else if (finalShldrAngle > 105) { fitMsgs.push("Over-stretched"); fitColor = "var(--accent-orange)"; }
-
-            // Lower body check (only valid near BDC)
-            let cR = cRot % 360;
-            if (cR < 0) cR += 360;
-            
-            if (cR >= 160 && cR <= 200) {
-                if (finalKneeAngle > 150) { fitMsgs.push("Saddle high"); fitColor = "var(--accent-red)"; }
-                else if (finalKneeAngle < 137) { fitMsgs.push("Saddle low"); fitColor = "var(--accent-orange)"; }
-            } else {
-                if (fitMsgs.length === 0) {
-                    fitMsgs.push("Rotate crank to 180°");
-                    fitColor = "#8e8e93";
-                }
+            if (finalShldrAngle < 80) { 
+                fitMsgs.push("Cramped reach"); 
+                if(fitColor === "var(--accent-green)") fitColor = "var(--accent-orange)"; 
+            } else if (finalShldrAngle > 105) { 
+                fitMsgs.push("Over-stretched"); 
+                if(fitColor === "var(--accent-green)") fitColor = "var(--accent-orange)"; 
             }
         }
 
@@ -706,6 +819,7 @@
             }
         });
         updateBarUI('A'); updateBarUI('B');
+        toggleAutoTrunk('A'); toggleAutoTrunk('B');
         update(true); 
     }
 
@@ -738,16 +852,18 @@
 
     window.addEventListener('resize', () => { dims = initCanvas(); update(true); });
     document.querySelectorAll('input[type="range"], input[type="checkbox"], select').forEach(i => {
-        i.addEventListener('input', () => { update(false); });
+        if (i.id !== 'animatePedaling') { // handled via specific listener
+            i.addEventListener('input', () => { update(false); });
+        }
     });
     
     setTimeout(() => { 
         dims = initCanvas(); 
         const saved = localStorage.getItem('bikeFitData');
         if (saved) {
-            try { loadFromState(JSON.parse(saved)); } catch(e) { updateBarUI('A'); updateBarUI('B'); update(true); }
+            try { loadFromState(JSON.parse(saved)); } catch(e) { updateBarUI('A'); updateBarUI('B'); toggleAutoTrunk('A'); toggleAutoTrunk('B'); update(true); }
         } else {
-            updateBarUI('A'); updateBarUI('B'); update(true); 
+            updateBarUI('A'); updateBarUI('B'); toggleAutoTrunk('A'); toggleAutoTrunk('B'); update(true); 
         }
     }, 150);
 </script>
