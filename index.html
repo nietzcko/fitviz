@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BikeFit Pro Compare v3.2.0</title>
+    <title>BikeFit Pro Compare v3.3.0</title>
     <style>
         :root {
             --bg-color: #f2f2f7;
@@ -12,6 +12,7 @@
             --accent-green: #34c759;  
             --accent-red: #ff3b30;
             --accent-orange: #ff9500;
+            --accent-blue: #0a84ff;
             --text-main: #1c1c1e;
             --border-color: #d1d1d6;
         }
@@ -87,7 +88,7 @@
         /* --- STATS DASHBOARD --- */
         .stats-panel {
             width: 90%;
-            max-width: 800px;
+            max-width: 850px;
             background: white;
             margin-top: 15px;
             padding: 12px 16px;
@@ -105,17 +106,17 @@
             padding: 8px 12px;
             border-radius: 8px;
             background: #f2f2f7;
-            font-size: 12px;
+            font-size: 11px;
         }
 
         .stat-row.bike-a { border-left: 4px solid var(--accent-purple); }
         .stat-row.bike-b { border-left: 4px solid var(--accent-red); }
 
-        .stat-title { font-weight: 800; color: #333; text-transform: uppercase; width: 60px; }
-        .stat-group { display: flex; gap: 16px; flex: 1; justify-content: center; }
+        .stat-title { font-weight: 800; color: #333; text-transform: uppercase; width: 50px; }
+        .stat-group { display: flex; gap: 14px; flex: 1; justify-content: center; }
         .stat-item { color: #666; font-weight: 500; }
         .stat-val { font-weight: 700; color: #111; font-variant-numeric: tabular-nums; }
-        .fit-status { font-weight: 800; text-transform: uppercase; text-align: right; width: 180px; }
+        .fit-status { font-weight: 800; text-transform: uppercase; text-align: right; width: 190px; }
 
         h1 { font-size: 14px; margin: 0 0 15px 0; color: var(--accent-purple); text-transform: uppercase; display: flex; align-items: center; justify-content: space-between; }
         h1.bike-b { color: var(--accent-red); } 
@@ -224,6 +225,7 @@
             <div class="row"><span class="label-text">Stack</span><input type="range" id="stackA" min="500" max="750" value="580"><div class="val-container"><input type="number" id="stackA-num" class="val-input" value="580"></div></div>
             <div class="row"><span class="label-text">Fork Angle</span><input type="range" id="faA" min="60" max="85" step="0.5" value="73"><div class="val-container"><input type="number" id="faA-num" class="val-input" value="73"><span class="unit">°</span></div></div>
             <div class="row"><span class="label-text">Seat Tube</span><input type="range" id="stlA" min="350" max="650" value="560"><div class="val-container"><input type="number" id="stlA-num" class="val-input" value="560"></div></div>
+            <div class="row"><span class="label-text">Saddle Offset</span><input type="range" id="saddleOffsetA" min="-60" max="60" value="0"><div class="val-container"><input type="number" id="saddleOffsetA-num" class="val-input" value="0"></div></div>
         </div>
 
         <h2>Cockpit A</h2>
@@ -261,7 +263,7 @@
                 <span class="stat-title" style="color: var(--accent-purple)">Bike A</span>
                 <div class="stat-group">
                     <span class="stat-item">Max Knee: <span class="stat-val" id="stat-kneeA">--</span></span>
-                    <span class="stat-item">Hip: <span class="stat-val" id="stat-hipA">--</span></span>
+                    <span class="stat-item">KOPS: <span class="stat-val" id="stat-kopsA">--</span></span>
                     <span class="stat-item">Shldr (UA): <span class="stat-val" id="stat-shldrA">--</span></span>
                 </div>
                 <span class="fit-status" id="fit-statusA">--</span>
@@ -270,7 +272,7 @@
                 <span class="stat-title" style="color: var(--accent-red)">Bike B</span>
                 <div class="stat-group">
                     <span class="stat-item">Max Knee: <span class="stat-val" id="stat-kneeB">--</span></span>
-                    <span class="stat-item">Hip: <span class="stat-val" id="stat-hipB">--</span></span>
+                    <span class="stat-item">KOPS: <span class="stat-val" id="stat-kopsB">--</span></span>
                     <span class="stat-item">Shldr (UA): <span class="stat-val" id="stat-shldrB">--</span></span>
                 </div>
                 <span class="fit-status" id="fit-statusB">--</span>
@@ -325,6 +327,7 @@
                 <div class="row"><span class="label-text">Stack</span><input type="range" id="stackB" min="500" max="750" value="599" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="stackB-num" class="val-input bike-b-input" value="599"></div></div>
                 <div class="row"><span class="label-text">Fork Angle</span><input type="range" id="faB" min="60" max="85" step="0.5" value="73" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="faB-num" class="val-input bike-b-input" value="73"><span class="unit unit-b">°</span></div></div>
                 <div class="row"><span class="label-text">Seat Tube</span><input type="range" id="stlB" min="350" max="650" value="580" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="stlB-num" class="val-input bike-b-input" value="580"></div></div>
+                <div class="row"><span class="label-text">Saddle Offset</span><input type="range" id="saddleOffsetB" min="-60" max="60" value="0" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="saddleOffsetB-num" class="val-input bike-b-input" value="0"></div></div>
             </div>
 
             <h2>Cockpit B</h2>
@@ -375,7 +378,7 @@
 
 </div>
 
-<div class="version-tag">v3.2.0</div>
+<div class="version-tag">v3.3.0</div>
 
 <script>
     const canvas = document.getElementById('bikeCanvas');
@@ -386,15 +389,15 @@
     let globalCrank = 0;
 
     const bikePresets = {
-        "ms50": { reach: 379, stack: 544, fa: 72.0, stl: 500, barType: 'drop', barReach: 80, barDrop: 120, barAngle: 0, handPos: 'hoods' },
-        "ms54": { reach: 389, stack: 560, fa: 72.5, stl: 540, barType: 'drop', barReach: 80, barDrop: 120, barAngle: 0, handPos: 'hoods' },
-        "ms56": { reach: 393, stack: 580, fa: 73.0, stl: 560, barType: 'drop', barReach: 80, barDrop: 120, barAngle: 0, handPos: 'hoods' },
-        "ms58": { reach: 402, stack: 599, fa: 73.0, stl: 580, barType: 'drop', barReach: 80, barDrop: 120, barAngle: 0, handPos: 'hoods' },
-        "ms60": { reach: 409, stack: 620, fa: 73.5, stl: 600, barType: 'drop', barReach: 80, barDrop: 120, barAngle: 0, handPos: 'hoods' },
-        "konaS": { reach: 425, stack: 588, fa: 68.0, stl: 370, barType: 'flat', barReach: 20, barAngle: 90 },
-        "konaM": { reach: 450, stack: 597, fa: 68.0, stl: 420, barType: 'flat', barReach: 20, barAngle: 90 },
-        "konaL": { reach: 475, stack: 606, fa: 68.0, stl: 470, barType: 'flat', barReach: 20, barAngle: 90 },
-        "konaXL": { reach: 510, stack: 615, fa: 68.0, stl: 530, barType: 'flat', barReach: 20, barAngle: 90 }
+        "ms50": { reach: 379, stack: 544, fa: 72.0, stl: 500, saddleOffset: 0, barType: 'drop', barReach: 80, barDrop: 120, barAngle: 0, handPos: 'hoods' },
+        "ms54": { reach: 389, stack: 560, fa: 72.5, stl: 540, saddleOffset: 0, barType: 'drop', barReach: 80, barDrop: 120, barAngle: 0, handPos: 'hoods' },
+        "ms56": { reach: 393, stack: 580, fa: 73.0, stl: 560, saddleOffset: 0, barType: 'drop', barReach: 80, barDrop: 120, barAngle: 0, handPos: 'hoods' },
+        "ms58": { reach: 402, stack: 599, fa: 73.0, stl: 580, saddleOffset: 0, barType: 'drop', barReach: 80, barDrop: 120, barAngle: 0, handPos: 'hoods' },
+        "ms60": { reach: 409, stack: 620, fa: 73.5, stl: 600, saddleOffset: 0, barType: 'drop', barReach: 80, barDrop: 120, barAngle: 0, handPos: 'hoods' },
+        "konaS": { reach: 425, stack: 588, fa: 68.0, stl: 370, saddleOffset: 0, barType: 'flat', barReach: 20, barAngle: 90 },
+        "konaM": { reach: 450, stack: 597, fa: 68.0, stl: 420, saddleOffset: 0, barType: 'flat', barReach: 20, barAngle: 90 },
+        "konaL": { reach: 475, stack: 606, fa: 68.0, stl: 470, saddleOffset: 0, barType: 'flat', barReach: 20, barAngle: 90 },
+        "konaXL": { reach: 510, stack: 615, fa: 68.0, stl: 530, saddleOffset: 0, barType: 'flat', barReach: 20, barAngle: 90 }
     };
 
     function updateBarUI(suffix) {
@@ -438,7 +441,7 @@
                 num.value = Math.round(globalCrank);
             }
         });
-        update(true); // Don't save to local storage on every frame
+        update(true); 
         animationId = requestAnimationFrame(animateFrame);
     }
 
@@ -452,6 +455,7 @@
                 document.getElementById('fa'+suffix).value = p.fa;
                 document.getElementById('stl'+suffix).value = p.stl;
                 
+                if (p.saddleOffset !== undefined) document.getElementById('saddleOffset'+suffix).value = p.saddleOffset;
                 if (p.barType) { document.getElementById('barType'+suffix).value = p.barType; updateBarUI(suffix); }
                 if (p.barDrop) document.getElementById('barDrop'+suffix).value = p.barDrop;
                 if (p.handPos) document.getElementById('handPos'+suffix).value = p.handPos;
@@ -461,8 +465,9 @@
                 update();
             }
         });
-        ['reach'+suffix, 'stack'+suffix, 'fa'+suffix, 'stl'+suffix, 'barReach'+suffix, 'barDrop'+suffix, 'barAngle'+suffix, 'barType'+suffix, 'handPos'+suffix].forEach(id => {
-            document.getElementById(id).addEventListener('input', () => { select.value = 'custom'; });
+        ['reach'+suffix, 'stack'+suffix, 'fa'+suffix, 'stl'+suffix, 'saddleOffset'+suffix, 'barReach'+suffix, 'barDrop'+suffix, 'barAngle'+suffix, 'barType'+suffix, 'handPos'+suffix].forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.addEventListener('input', () => { select.value = 'custom'; });
         });
     }
     setupPreset('A'); setupPreset('B');
@@ -500,28 +505,20 @@
         return flip ? {x: x2 - rx, y: y2 - ry} : {x: x2 + rx, y: y2 + ry};
     }
 
-    // New Improved Shoulder Angle Calculation (Focus on Humerus/Upper Arm)
-    // Assumes elbow solved successfully. If arm straight, fall back to simple stick arm logic.
     function calcUpperArmShldrAngle(saddle, shoulder, handTarget, riderData) {
         const elbow = solveIK(shoulder, handTarget, riderData.arm*0.5, riderData.arm*0.5, false);
         if (!elbow) {
-            // Fallback for straight arm: Saddle-Shoulder-Hand triangle (stick arm proxy)
             const a = Math.hypot(handTarget.x - saddle.x, handTarget.y - saddle.y);
             const b = riderData.torso;
-            // The stick arm is a straight line, proxy for total reach
             const c = Math.hypot(handTarget.x - shoulder.x, handTarget.y - shoulder.y); 
             let angle = Math.acos((b**2 + c**2 - a**2) / (2*b*c)) * 180 / Math.PI;
             return isNaN(angle) ? 180 : angle;
         }
-        // Biomechanically correct: Angle between Trunk and Upper Arm
-        // Vectors sharing start point Shoulder
-        const vUA = { x: elbow.x - shoulder.x, y: elbow.y - shoulder.y }; // Vector Upper Arm
-        const vT = { x: saddle.x - shoulder.x, y: saddle.y - shoulder.y }; // Vector Trunk
-        
+        const vUA = { x: elbow.x - shoulder.x, y: elbow.y - shoulder.y }; 
+        const vT = { x: saddle.x - shoulder.x, y: saddle.y - shoulder.y }; 
         const dot = vUA.x * vT.x + vUA.y * vT.y;
-        const lenUA = Math.hypot(vUA.x, vUA.y); // riderData.arm*0.5
-        const lenT = Math.hypot(vT.x, vT.y); // riderData.torso
-        
+        const lenUA = Math.hypot(vUA.x, vUA.y); 
+        const lenT = Math.hypot(vT.x, vT.y); 
         let angle = Math.acos(dot / (lenUA * lenT)) * 180 / Math.PI;
         return isNaN(angle) ? 180 : angle;
     }
@@ -533,7 +530,7 @@
         const strVal = id => document.getElementById(id + suffix).value;
         const autoTrunk = document.getElementById('autoTrunk' + suffix).checked;
         
-        const reach = val('reach'), stack = val('stack'), fa = val('fa'), stl = val('stl');
+        const reach = val('reach'), stack = val('stack'), fa = val('fa'), stl = val('stl'), sOffset = val('saddleOffset');
         const spacers = val('spacers'), stemL = val('stemL'), stemA = val('stemA');
         const barType = strVal('barType'), barReach = val('barReach'), barDrop = val('barDrop'), barAngle = val('barAngle'), handPos = strVal('handPos');
         const tA = val('trunkAngle'), cRot = val('crankRot'), fA = val('footAngle');
@@ -573,7 +570,8 @@
         }
 
         const stTop = { x: Math.cos(Math.PI - toRad(sta)) * stl, y: -Math.sin(Math.PI - toRad(sta)) * stl };
-        const saddle = { x: Math.cos(Math.PI - toRad(sta)) * riderData.sH, y: -Math.sin(Math.PI - toRad(sta)) * riderData.sH };
+        // Applied Saddle Offset (Fore/Aft)
+        const saddle = { x: Math.cos(Math.PI - toRad(sta)) * riderData.sH + sOffset, y: -Math.sin(Math.PI - toRad(sta)) * riderData.sH };
 
         // Crankset
         const pedal = { x: Math.sin(toRad(cRot))*172.5, y: -Math.cos(toRad(cRot))*172.5 };
@@ -625,6 +623,8 @@
         ctx.stroke();
         
         ctx.strokeStyle = "#8e8e93"; ctx.lineWidth = 4 * zoomFactor; ctx.beginPath(); ctx.moveTo(pts.stTop.x, pts.stTop.y); ctx.lineTo(pts.saddle.x, pts.saddle.y); ctx.stroke();
+        // Saddle horizontal line to show offset visually
+        ctx.strokeStyle = "#c7c7cc"; ctx.lineWidth = 2 * zoomFactor; ctx.beginPath(); ctx.moveTo(pts.stTop.x, pts.stTop.y); ctx.lineTo(pts.saddle.x, pts.saddle.y); ctx.stroke();
 
         // Draw Near Crank
         ctx.strokeStyle = colors.crank || "#555"; ctx.lineWidth = 5 * zoomFactor;
@@ -632,12 +632,10 @@
         ctx.fillStyle = colors.crank || "#555";
         [pts.bb, px(pedal)].forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, 4*zoomFactor, 0, 7); ctx.fill(); });
 
-        // AUTO-TRUNK ALGORITHM & Improved Shoulder Angle Calculation
+        // AUTO-TRUNK ALGORITHM
         let actual_tA = tA;
         let isAutoLeaning = false;
         let shoulder, elbow, d_shoulder_hand;
-
-        // sustainable limits for recreational/road riding, won't allow hobbist into TimeTrial pose
         const MIN_SAFE_TRUNK = 35; 
         const MAX_SAFE_TRUNK = 60; 
         
@@ -646,15 +644,12 @@
             let min_penalty = Infinity;
             let best_shoulder = null;
 
-            // Search for best sustainable angle (now respect constraints)
-            // Penalty uses new felkar-focused shoulder calculation
             for (let test_tA = MIN_SAFE_TRUNK; test_tA <= MAX_SAFE_TRUNK; test_tA += 0.5) {
                 let s = { x: saddle.x + Math.cos(toRad(-test_tA))*riderData.torso, y: saddle.y + Math.sin(toRad(-test_tA))*riderData.torso };
                 let d = Math.hypot(s.x - handTarget.x, s.y - handTarget.y);
                 if (d <= riderData.arm) {
-                    // Use new improved calculation inside loop for accurate penalty
                     let shldrAngleUA = calcUpperArmShldrAngle(saddle, s, handTarget, riderData);
-                    let penalty = Math.abs(shldrAngleUA - 90); // Target 90deg upper arm angle
+                    let penalty = Math.abs(shldrAngleUA - 90); 
                     if (penalty < min_penalty) {
                         min_penalty = penalty;
                         best_tA = test_tA;
@@ -668,7 +663,6 @@
                 shoulder = best_shoulder;
                 elbow = solveIK(shoulder, handTarget, riderData.arm*0.5, riderData.arm*0.5, false);
             } else {
-                // If not reachable within constraints, use standard straight-arm/max lean approach
                 isAutoLeaning = true;
                 let shoulder_auto = solveIK(saddle, handTarget, riderData.torso, riderData.arm, true);
                 if (shoulder_auto) {
@@ -683,12 +677,10 @@
                 actual_tA = -Math.atan2(shoulder.y - saddle.y, shoulder.x - saddle.x) * (180 / Math.PI);
             }
             
-            // Bypass event loops, update visual sliders for user feedback
             document.getElementById('trunkAngle'+suffix).value = Math.round(actual_tA);
             document.getElementById('trunkAngle'+suffix+'-num').value = Math.round(actual_tA);
             
         } else {
-            // Manual Mode logic remains mostly the same, just setup points
             shoulder = { x: saddle.x + Math.cos(toRad(-actual_tA))*riderData.torso, y: saddle.y + Math.sin(toRad(-actual_tA))*riderData.torso };
             d_shoulder_hand = Math.hypot(shoulder.x - handTarget.x, shoulder.y - handTarget.y);
             if (d_shoulder_hand <= riderData.arm) {
@@ -711,7 +703,7 @@
 
         const knee = solveIK(saddle, ankle, riderData.thigh, riderData.shin, true);
 
-        // GLOBAL MAX KNEE EXTENSION CALCULATION (Validates whole cycle)
+        // GLOBAL MAX KNEE EXTENSION CALCULATION
         let maxKneeAngle = 0;
         let legTooShort = false;
         for (let testCrank = 0; testCrank < 360; testCrank += 5) {
@@ -728,6 +720,11 @@
             }
         }
 
+        // KOPS CALCULATION
+        let kopsDelta = 0;
+        let cR = cRot % 360;
+        if (cR < 0) cR += 360;
+
         ctx.strokeStyle = colors.rider; ctx.lineWidth = 9 * zoomFactor;
         
         // Draw Leg
@@ -735,6 +732,21 @@
             const sk = px(knee), sa = px(ankle), sp = px(pedal);
             ctx.beginPath(); ctx.moveTo(pts.saddle.x, pts.saddle.y); ctx.lineTo(sk.x, sk.y); 
             ctx.lineTo(sa.x, sa.y); ctx.lineTo(sp.x, sp.y); ctx.stroke();
+
+            kopsDelta = knee.x - pedal.x; // Real world mm distance
+
+            // Draw KOPS Plumb line if crank is around 90 deg
+            if (cR >= 80 && cR <= 100) {
+                ctx.save();
+                ctx.beginPath();
+                ctx.setLineDash([5*zoomFactor, 5*zoomFactor]);
+                ctx.strokeStyle = "var(--accent-blue)";
+                ctx.lineWidth = 2 * zoomFactor;
+                ctx.moveTo(sk.x, sk.y);
+                ctx.lineTo(sk.x, sp.y + 30*scale);
+                ctx.stroke();
+                ctx.restore();
+            }
         }
         
         // Draw Upper Body
@@ -742,7 +754,6 @@
         if(elbow) { ctx.lineTo(px(elbow).x, px(elbow).y); ctx.lineTo(px(handTarget).x, px(handTarget).y); }
         ctx.stroke();
 
-        // Calculate Shoulder Angle (Improved Felkar focused)
         let finalShldrAngle = calcUpperArmShldrAngle(saddle, shoulder, handTarget, riderData);
 
         // Draw Head
@@ -755,12 +766,14 @@
         document.getElementById('stat-knee'+suffix).innerText = `${Math.round(maxKneeAngle)}°`;
         document.getElementById('stat-hip'+suffix).innerText = `${Math.round(actual_tA)}°${isAutoLeaning ? " (Limit)" : ""}`;
         document.getElementById('stat-shldr'+suffix).innerText = `${Math.round(finalShldrAngle)}°`;
+        
+        let kopsLabel = knee ? (kopsDelta > 0 ? `+${Math.round(kopsDelta)}mm` : `${Math.round(kopsDelta)}mm`) : '--';
+        document.getElementById('stat-kops'+suffix).innerText = kopsLabel;
 
-        // Evaluate Bike Fit Rules (Retain English status messages as per v3.0.0 onwards)
+        // Evaluate Bike Fit Rules
         let fitColor = "var(--accent-green)";
         let fitMsgs = [];
         
-        // Lower body validation ( cycle based)
         if (legTooShort || maxKneeAngle > 150) { 
             fitMsgs.push("Saddle too high"); 
             fitColor = "var(--accent-red)"; 
@@ -769,22 +782,35 @@
             fitColor = "var(--accent-orange)"; 
         }
 
-        // Upper body validation (Improved warnings for cockpit issues)
+        // KOPS evaluation (only precise near 90deg)
+        if (cR >= 80 && cR <= 100) {
+            if (kopsDelta > 20) { 
+                fitMsgs.push("Saddle too forward (KOPS)"); 
+                if(fitColor === "var(--accent-green)") fitColor = "var(--accent-orange)"; 
+            } else if (kopsDelta < -20) { 
+                fitMsgs.push("Saddle too far back (KOPS)"); 
+                if(fitColor === "var(--accent-green)") fitColor = "var(--accent-orange)"; 
+            }
+        } else {
+            if (fitMsgs.length === 0) {
+                fitMsgs.push("Set crank to 90° for KOPS");
+                fitColor = "#8e8e93";
+            }
+        }
+
         if (isAutoLeaning) {
-            // Cannot reach bars even with max allowed lean
             fitMsgs.push("Reach extreme (Setup wrong)");
             fitColor = "var(--accent-red)";
         } else {
-            // Diagnostic check when setup forces user against anatomical limits
             if (autoTrunk && finalShldrAngle > 105 && Math.abs(actual_tA - MIN_SAFE_TRUNK) < 0.1) {
                 fitMsgs.push("Setup too long (Shorten Cockpit)");
                 fitColor = "var(--accent-orange)";
             } else if (finalShldrAngle > 105) {
                 fitMsgs.push("Over-stretched");
-                if(fitColor === "var(--accent-green)") fitColor = "var(--accent-orange)";
+                if(fitColor === "var(--accent-green)" || fitColor === "#8e8e93") fitColor = "var(--accent-orange)";
             } else if (finalShldrAngle < 80) { 
                 fitMsgs.push("Cramped reach"); 
-                if(fitColor === "var(--accent-green)") fitColor = "var(--accent-orange)"; 
+                if(fitColor === "var(--accent-green)" || fitColor === "#8e8e93") fitColor = "var(--accent-orange)"; 
             }
         }
 
@@ -888,7 +914,7 @@
 
     window.addEventListener('resize', () => { dims = initCanvas(); update(true); });
     document.querySelectorAll('input[type="range"], input[type="checkbox"], select').forEach(i => {
-        if (i.id !== 'animatePedaling') { // handled via specific listener
+        if (i.id !== 'animatePedaling') { 
             i.addEventListener('input', () => { update(false); });
         }
     });
