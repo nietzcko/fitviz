@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BikeFit Pro Compare v3.3.0</title>
+    <title>BikeFit Pro Compare v3.3.1</title>
     <style>
         :root {
             --bg-color: #f2f2f7;
@@ -87,8 +87,8 @@
 
         /* --- STATS DASHBOARD --- */
         .stats-panel {
-            width: 90%;
-            max-width: 850px;
+            width: 95%;
+            max-width: 900px;
             background: white;
             margin-top: 15px;
             padding: 12px 16px;
@@ -112,8 +112,8 @@
         .stat-row.bike-a { border-left: 4px solid var(--accent-purple); }
         .stat-row.bike-b { border-left: 4px solid var(--accent-red); }
 
-        .stat-title { font-weight: 800; color: #333; text-transform: uppercase; width: 50px; }
-        .stat-group { display: flex; gap: 14px; flex: 1; justify-content: center; }
+        .stat-title { font-weight: 800; color: #333; text-transform: uppercase; width: 45px; }
+        .stat-group { display: flex; gap: 10px; flex: 1; justify-content: center; flex-wrap: wrap; }
         .stat-item { color: #666; font-weight: 500; }
         .stat-val { font-weight: 700; color: #111; font-variant-numeric: tabular-nums; }
         .fit-status { font-weight: 800; text-transform: uppercase; text-align: right; width: 190px; }
@@ -262,18 +262,20 @@
             <div class="stat-row bike-a">
                 <span class="stat-title" style="color: var(--accent-purple)">Bike A</span>
                 <div class="stat-group">
-                    <span class="stat-item">Max Knee: <span class="stat-val" id="stat-kneeA">--</span></span>
+                    <span class="stat-item">Knee: <span class="stat-val" id="stat-kneeA">--</span></span>
+                    <span class="stat-item">Hip: <span class="stat-val" id="stat-hipA">--</span></span>
                     <span class="stat-item">KOPS: <span class="stat-val" id="stat-kopsA">--</span></span>
-                    <span class="stat-item">Shldr (UA): <span class="stat-val" id="stat-shldrA">--</span></span>
+                    <span class="stat-item">Shldr: <span class="stat-val" id="stat-shldrA">--</span></span>
                 </div>
                 <span class="fit-status" id="fit-statusA">--</span>
             </div>
             <div class="stat-row bike-b" id="stat-row-b" style="display:none;">
                 <span class="stat-title" style="color: var(--accent-red)">Bike B</span>
                 <div class="stat-group">
-                    <span class="stat-item">Max Knee: <span class="stat-val" id="stat-kneeB">--</span></span>
+                    <span class="stat-item">Knee: <span class="stat-val" id="stat-kneeB">--</span></span>
+                    <span class="stat-item">Hip: <span class="stat-val" id="stat-hipB">--</span></span>
                     <span class="stat-item">KOPS: <span class="stat-val" id="stat-kopsB">--</span></span>
-                    <span class="stat-item">Shldr (UA): <span class="stat-val" id="stat-shldrB">--</span></span>
+                    <span class="stat-item">Shldr: <span class="stat-val" id="stat-shldrB">--</span></span>
                 </div>
                 <span class="fit-status" id="fit-statusB">--</span>
             </div>
@@ -378,7 +380,7 @@
 
 </div>
 
-<div class="version-tag">v3.3.0</div>
+<div class="version-tag">v3.3.1</div>
 
 <script>
     const canvas = document.getElementById('bikeCanvas');
@@ -570,7 +572,6 @@
         }
 
         const stTop = { x: Math.cos(Math.PI - toRad(sta)) * stl, y: -Math.sin(Math.PI - toRad(sta)) * stl };
-        // Applied Saddle Offset (Fore/Aft)
         const saddle = { x: Math.cos(Math.PI - toRad(sta)) * riderData.sH + sOffset, y: -Math.sin(Math.PI - toRad(sta)) * riderData.sH };
 
         // Crankset
@@ -623,7 +624,6 @@
         ctx.stroke();
         
         ctx.strokeStyle = "#8e8e93"; ctx.lineWidth = 4 * zoomFactor; ctx.beginPath(); ctx.moveTo(pts.stTop.x, pts.stTop.y); ctx.lineTo(pts.saddle.x, pts.saddle.y); ctx.stroke();
-        // Saddle horizontal line to show offset visually
         ctx.strokeStyle = "#c7c7cc"; ctx.lineWidth = 2 * zoomFactor; ctx.beginPath(); ctx.moveTo(pts.stTop.x, pts.stTop.y); ctx.lineTo(pts.saddle.x, pts.saddle.y); ctx.stroke();
 
         // Draw Near Crank
@@ -703,7 +703,7 @@
 
         const knee = solveIK(saddle, ankle, riderData.thigh, riderData.shin, true);
 
-        // GLOBAL MAX KNEE EXTENSION CALCULATION
+        // GLOBAL MAX KNEE EXTENSION
         let maxKneeAngle = 0;
         let legTooShort = false;
         for (let testCrank = 0; testCrank < 360; testCrank += 5) {
@@ -720,7 +720,6 @@
             }
         }
 
-        // KOPS CALCULATION
         let kopsDelta = 0;
         let cR = cRot % 360;
         if (cR < 0) cR += 360;
@@ -733,9 +732,8 @@
             ctx.beginPath(); ctx.moveTo(pts.saddle.x, pts.saddle.y); ctx.lineTo(sk.x, sk.y); 
             ctx.lineTo(sa.x, sa.y); ctx.lineTo(sp.x, sp.y); ctx.stroke();
 
-            kopsDelta = knee.x - pedal.x; // Real world mm distance
+            kopsDelta = knee.x - pedal.x; 
 
-            // Draw KOPS Plumb line if crank is around 90 deg
             if (cR >= 80 && cR <= 100) {
                 ctx.save();
                 ctx.beginPath();
@@ -762,15 +760,13 @@
 
         ctx.restore();
         
-        // Update Stats UI
+        // Update Stats UI (BUGFIXED)
         document.getElementById('stat-knee'+suffix).innerText = `${Math.round(maxKneeAngle)}°`;
-        document.getElementById('stat-hip'+suffix).innerText = `${Math.round(actual_tA)}°${isAutoLeaning ? " (Limit)" : ""}`;
-        document.getElementById('stat-shldr'+suffix).innerText = `${Math.round(finalShldrAngle)}°`;
-        
+        document.getElementById('stat-hip'+suffix).innerText = `${Math.round(actual_tA)}°`;
         let kopsLabel = knee ? (kopsDelta > 0 ? `+${Math.round(kopsDelta)}mm` : `${Math.round(kopsDelta)}mm`) : '--';
         document.getElementById('stat-kops'+suffix).innerText = kopsLabel;
+        document.getElementById('stat-shldr'+suffix).innerText = `${Math.round(finalShldrAngle)}°`;
 
-        // Evaluate Bike Fit Rules
         let fitColor = "var(--accent-green)";
         let fitMsgs = [];
         
@@ -782,19 +778,13 @@
             fitColor = "var(--accent-orange)"; 
         }
 
-        // KOPS evaluation (only precise near 90deg)
         if (cR >= 80 && cR <= 100) {
             if (kopsDelta > 20) { 
-                fitMsgs.push("Saddle too forward (KOPS)"); 
+                fitMsgs.push("Saddle too forward"); 
                 if(fitColor === "var(--accent-green)") fitColor = "var(--accent-orange)"; 
             } else if (kopsDelta < -20) { 
-                fitMsgs.push("Saddle too far back (KOPS)"); 
+                fitMsgs.push("Saddle too far back"); 
                 if(fitColor === "var(--accent-green)") fitColor = "var(--accent-orange)"; 
-            }
-        } else {
-            if (fitMsgs.length === 0) {
-                fitMsgs.push("Set crank to 90° for KOPS");
-                fitColor = "#8e8e93";
             }
         }
 
@@ -803,7 +793,7 @@
             fitColor = "var(--accent-red)";
         } else {
             if (autoTrunk && finalShldrAngle > 105 && Math.abs(actual_tA - MIN_SAFE_TRUNK) < 0.1) {
-                fitMsgs.push("Setup too long (Shorten Cockpit)");
+                fitMsgs.push("Setup too long");
                 fitColor = "var(--accent-orange)";
             } else if (finalShldrAngle > 105) {
                 fitMsgs.push("Over-stretched");
