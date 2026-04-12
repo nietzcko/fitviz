@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BikeFit Pro Compare v3.4.0</title>
+    <title>BikeFit Pro Compare v3.4.1</title>
     <style>
         :root {
             --bg-color: #f2f2f7;
@@ -361,8 +361,8 @@
         
         <h2 class="common h2-flex">
             Common Rider Profile
-            <button class="btn-small" onclick="document.getElementById('importRiderFile').click()">Import JSON</button>
-            <input type="file" id="importRiderFile" accept=".json" style="display:none;" onchange="importRiderData(event)">
+            <button class="btn-small" onclick="document.getElementById('importRiderFile').click()">Import File</button>
+            <input type="file" id="importRiderFile" accept=".json,.txt,.csv" style="display:none;" onchange="importRiderData(event)">
         </h2>
         <div class="card">
             <div class="row"><span class="label-text">Saddle Height</span><input type="range" id="seatHeight" min="600" max="950" value="760"><div class="val-container"><input type="number" id="seatHeight-num" class="val-input" value="760"></div></div>
@@ -379,7 +379,7 @@
             <div class="btn-group">
                 <button class="btn-export" onclick="exportData()" style="background:var(--accent-purple)">Export Setup</button>
                 <button class="btn-import" onclick="document.getElementById('importFile').click()">Import Setup</button>
-                <input type="file" id="importFile" accept=".json" style="display:none;" onchange="importData(event)">
+                <input type="file" id="importFile" accept=".json,.txt" style="display:none;" onchange="importData(event)">
             </div>
         </div>
         
@@ -387,7 +387,7 @@
 
 </div>
 
-<div class="version-tag">v3.4.0</div>
+<div class="version-tag">v3.4.1</div>
 
 <script>
     const canvas = document.getElementById('bikeCanvas');
@@ -481,7 +481,6 @@
     }
     setupPreset('A'); setupPreset('B');
 
-    // Force blur on enter, sync sliders
     function syncInput(sliderId) {
         const slider = document.getElementById(sliderId);
         const numInput = document.getElementById(sliderId + '-num');
@@ -556,7 +555,6 @@
         const offset = { x: dims.w * 0.35, y: groundY - (wheelR * scale) };
         const px = p => ({x: offset.x + p.x*scale, y: offset.y + p.y*scale});
 
-        // Frame
         const bb = {x:0, y:0};
         const readHub = {x: -wb_base * 0.42, y: 0};
         const htTop = {x: reach, y: -stack}; 
@@ -566,7 +564,6 @@
         const stemTotalRad = toRad((90-fa) + stemA);
         const stemEnd = { x: stemBase.x + Math.cos(stemTotalRad) * stemL, y: stemBase.y - Math.sin(stemTotalRad) * stemL };
         
-        // Handlebars
         const barRad = toRad(barAngle);
         const vF = { x: Math.cos(barRad), y: -Math.sin(barRad) }; 
         const vD = { x: Math.sin(barRad), y: Math.cos(barRad) };  
@@ -584,7 +581,6 @@
         const stTop = { x: Math.cos(Math.PI - toRad(sta)) * stl, y: -Math.sin(Math.PI - toRad(sta)) * stl };
         const saddle = { x: Math.cos(Math.PI - toRad(sta)) * riderData.sH + sOffset, y: -Math.sin(Math.PI - toRad(sta)) * riderData.sH };
 
-        // Crankset
         const pedal = { x: Math.sin(toRad(cRot))*172.5, y: -Math.cos(toRad(cRot))*172.5 };
         const pedalOpp = { x: Math.sin(toRad(cRot + 180))*172.5, y: -Math.cos(toRad(cRot + 180))*172.5 };
         
@@ -593,12 +589,10 @@
 
         const pts = { bb: px(bb), stTop: px(stTop), saddle: px(saddle), htTop: px(htTop), stemBase: px(stemBase), stemEnd: px(stemEnd), hoods: px(hoods), rh: px(readHub), fh: px(frontHub) };
 
-        // Draw Wheels
         ctx.strokeStyle = "#000000"; 
         ctx.lineWidth = 6 * (dims.w / 1400); 
         [pts.rh, pts.fh].forEach(w => { ctx.beginPath(); ctx.arc(w.x, w.y, wheelR*scale, 0, 7); ctx.stroke(); });
 
-        // Draw Far Leg
         ctx.globalAlpha = baseAlpha * 0.35; 
         ctx.strokeStyle = colors.crank || "#8e8e93"; ctx.lineWidth = 5 * zoomFactor;
         ctx.beginPath(); ctx.moveTo(pts.bb.x, pts.bb.y); ctx.lineTo(px(pedalOpp).x, px(pedalOpp).y); ctx.stroke();
@@ -611,7 +605,6 @@
             ctx.lineTo(px(ankleOpp).x, px(ankleOpp).y); ctx.lineTo(px(pedalOpp).x, px(pedalOpp).y); ctx.stroke();
         }
 
-        // Draw Frame
         ctx.globalAlpha = baseAlpha; 
         ctx.strokeStyle = colors.frame; ctx.lineWidth = 6 * zoomFactor; ctx.lineCap = "round"; ctx.lineJoin = "round";
         ctx.beginPath(); ctx.moveTo(pts.bb.x, pts.bb.y); ctx.lineTo(pts.stTop.x, pts.stTop.y); ctx.lineTo(pts.htTop.x, pts.htTop.y); ctx.lineTo(pts.bb.x, pts.bb.y); ctx.stroke();
@@ -636,13 +629,11 @@
         ctx.strokeStyle = "#8e8e93"; ctx.lineWidth = 4 * zoomFactor; ctx.beginPath(); ctx.moveTo(pts.stTop.x, pts.stTop.y); ctx.lineTo(pts.saddle.x, pts.saddle.y); ctx.stroke();
         ctx.strokeStyle = "#c7c7cc"; ctx.lineWidth = 2 * zoomFactor; ctx.beginPath(); ctx.moveTo(pts.stTop.x, pts.stTop.y); ctx.lineTo(pts.saddle.x, pts.saddle.y); ctx.stroke();
 
-        // Draw Near Crank
         ctx.strokeStyle = colors.crank || "#555"; ctx.lineWidth = 5 * zoomFactor;
         ctx.beginPath(); ctx.moveTo(pts.bb.x, pts.bb.y); ctx.lineTo(px(pedal).x, px(pedal).y); ctx.stroke();
         ctx.fillStyle = colors.crank || "#555";
         [pts.bb, px(pedal)].forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, 4*zoomFactor, 0, 7); ctx.fill(); });
 
-        // AUTO-TRUNK ALGORITHM
         let actual_tA = tA;
         let isAutoLeaning = false;
         let shoulder, elbow, d_shoulder_hand;
@@ -678,7 +669,6 @@
                 let shoulder_auto = solveIK(saddle, handTarget, riderData.torso, totalArmLength, true);
                 if (shoulder_auto) {
                     shoulder = shoulder_auto;
-                    // Ratio based elbow position if fully extended
                     let e_ratio = riderData.uArm / totalArmLength;
                     elbow = { x: shoulder.x + (handTarget.x - shoulder.x)*e_ratio, y: shoulder.y + (handTarget.y - shoulder.y)*e_ratio };
                 } else {
@@ -717,7 +707,6 @@
 
         const knee = solveIK(saddle, ankle, riderData.thigh, riderData.shin, true);
 
-        // GLOBAL MAX KNEE EXTENSION
         let maxKneeAngle = 0;
         let legTooShort = false;
         for (let testCrank = 0; testCrank < 360; testCrank += 5) {
@@ -740,7 +729,6 @@
 
         ctx.strokeStyle = colors.rider; ctx.lineWidth = 9 * zoomFactor;
         
-        // Draw Leg
         if(knee) {
             const sk = px(knee), sa = px(ankle), sp = px(pedal);
             ctx.beginPath(); ctx.moveTo(pts.saddle.x, pts.saddle.y); ctx.lineTo(sk.x, sk.y); 
@@ -761,20 +749,17 @@
             }
         }
         
-        // Draw Upper Body
         ctx.beginPath(); ctx.moveTo(pts.saddle.x, pts.saddle.y); ctx.lineTo(px(shoulder).x, px(shoulder).y);
         if(elbow) { ctx.lineTo(px(elbow).x, px(elbow).y); ctx.lineTo(px(handTarget).x, px(handTarget).y); }
         ctx.stroke();
 
         let finalShldrAngle = calcUpperArmShldrAngle(saddle, shoulder, handTarget, riderData);
 
-        // Draw Head
         const headCenter = { x: shoulder.x + Math.cos(toRad(-actual_tA))*180, y: shoulder.y + Math.sin(toRad(-actual_tA))*180 };
         ctx.beginPath(); ctx.arc(px(headCenter).x, px(headCenter).y, 100 * scale, 0, Math.PI * 2); ctx.stroke();
 
         ctx.restore();
         
-        // Update Stats UI 
         document.getElementById('stat-knee'+suffix).innerText = `${Math.round(maxKneeAngle)}°`;
         document.getElementById('stat-hip'+suffix).innerText = `${Math.round(actual_tA)}°`;
         let kopsLabel = knee ? (kopsDelta > 0 ? `+${Math.round(kopsDelta)}mm` : `${Math.round(kopsDelta)}mm`) : '--';
@@ -874,14 +859,27 @@
         if (!skipSave) saveToLocalStorage();
     }
 
-    // --- RIDER DATA IMPORT ---
+    // --- RIDER DATA SMART IMPORT ---
     function setSliderVal(id, value) {
         const slider = document.getElementById(id);
         const numInput = document.getElementById(id + '-num');
-        if (slider && numInput && value !== undefined) {
+        if (slider && numInput && value !== undefined && !isNaN(value)) {
             slider.value = value;
             numInput.value = value;
         }
+    }
+
+    // Helper to extract a number near a specific keyword using regex
+    function extractNumber(text, keywords) {
+        for (let kw of keywords) {
+            // Looks for the keyword, then optional spaces/colons/equals/dashes, then grabs the first number
+            let regex = new RegExp(kw + "\\s*[:=,-]?\\s*([0-9]+(?:\\.[0-9]+)?)", "i");
+            let match = text.match(regex);
+            if (match && match[1]) {
+                return parseFloat(match[1]);
+            }
+        }
+        return null;
     }
 
     function importRiderData(event) {
@@ -889,9 +887,11 @@
         if (!file) return;
         const reader = new FileReader();
         reader.onload = function(e) {
+            const rawText = e.target.result;
+            
+            // Step 1: Try JSON parse first
             try {
-                const data = JSON.parse(e.target.result);
-                // Flexible mapping for various JSON formats
+                const data = JSON.parse(rawText);
                 const torso = data.torso || data.Torso || data.back;
                 const uArm = data.upperArm || data.upper_arm || data.UpperArm || data.felkar;
                 const lArm = data.lowerArm || data.lower_arm || data.LowerArm || data.alkar;
@@ -909,11 +909,41 @@
                 if(sH) setSliderVal('seatHeight', sH);
 
                 update(false);
-                alert("Rider dimensions imported successfully!");
-            } catch (err) { alert("Invalid Rider JSON file format."); }
+                alert("Rider dimensions imported from JSON successfully!");
+                return; // Exit if JSON worked
+            } catch (err) {
+                // Not a valid JSON, move to Step 2
+            }
+
+            // Step 2: Fallback to Smart Text Parsing (RegEx)
+            console.log("Parsing raw text instead of JSON...");
+            
+            const torso = extractNumber(rawText, ["torso", "back", "hát", "hat"]);
+            const uArm = extractNumber(rawText, ["upper\\s*arm", "upper_arm", "felkar"]);
+            const lArm = extractNumber(rawText, ["lower\\s*arm", "lower_arm", "alkar"]);
+            const thigh = extractNumber(rawText, ["thigh", "upper\\s*leg", "comb"]);
+            const shin = extractNumber(rawText, ["shin", "lower\\s*leg", "vadli", "lábszár"]);
+            const foot = extractNumber(rawText, ["foot", "ankle\\s*pedal", "lábfej", "labfej"]);
+            const sH = extractNumber(rawText, ["seat\\s*height", "saddle\\s*height", "nyereg", "saddle"]);
+
+            let importedAny = false;
+            if(torso) { setSliderVal('torso', torso); importedAny = true; }
+            if(uArm) { setSliderVal('upperArm', uArm); importedAny = true; }
+            if(lArm) { setSliderVal('lowerArm', lArm); importedAny = true; }
+            if(thigh) { setSliderVal('thigh', thigh); importedAny = true; }
+            if(shin) { setSliderVal('shin', shin); importedAny = true; }
+            if(foot) { setSliderVal('foot', foot); importedAny = true; }
+            if(sH) { setSliderVal('seatHeight', sH); importedAny = true; }
+
+            if (importedAny) {
+                update(false);
+                alert("Rider dimensions successfully extracted from the text file!");
+            } else {
+                alert("Could not find any readable rider dimensions in this file. Make sure the keywords (e.g. 'torso', 'felkar') are next to the numbers!");
+            }
         };
         reader.readAsText(file);
-        event.target.value = ''; // Reset input
+        event.target.value = ''; 
     }
 
     // --- APP DATA MANAGEMENT ---
@@ -935,7 +965,6 @@
             }
         });
         
-        // Handle migration from old 'arm' data to split arms if needed
         if (stateObj['arm'] !== undefined && stateObj['upperArm'] === undefined) {
             let halfArm = parseFloat(stateObj['arm']) / 2;
             setSliderVal('upperArm', halfArm);
