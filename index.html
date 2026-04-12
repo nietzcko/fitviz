@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BikeFit Pro Compare v3.4.1</title>
+    <title>BikeFit Pro Compare v3.4.2</title>
     <style>
         :root {
             --bg-color: #f2f2f7;
@@ -387,7 +387,7 @@
 
 </div>
 
-<div class="version-tag">v3.4.1</div>
+<div class="version-tag">v3.4.2</div>
 
 <script>
     const canvas = document.getElementById('bikeCanvas');
@@ -707,6 +707,7 @@
 
         const knee = solveIK(saddle, ankle, riderData.thigh, riderData.shin, true);
 
+        // GLOBAL MAX KNEE EXTENSION
         let maxKneeAngle = 0;
         let legTooShort = false;
         for (let testCrank = 0; testCrank < 360; testCrank += 5) {
@@ -723,7 +724,18 @@
             }
         }
 
-        let kopsDelta = 0;
+        // --- STATIC KOPS CALCULATION (@ 90 Degrees) ---
+        let staticKops = 0;
+        let k90_valid = false;
+        let p90 = { x: Math.sin(toRad(90))*172.5, y: -Math.cos(toRad(90))*172.5 };
+        let a90 = { x: p90.x - Math.cos(toRad(-fA)) * riderData.foot, y: p90.y - Math.sin(toRad(-fA)) * riderData.foot };
+        let k90 = solveIK(saddle, a90, riderData.thigh, riderData.shin, true);
+        
+        if (k90) {
+            staticKops = k90.x - p90.x;
+            k90_valid = true;
+        }
+
         let cR = cRot % 360;
         if (cR < 0) cR += 360;
 
@@ -734,14 +746,14 @@
             ctx.beginPath(); ctx.moveTo(pts.saddle.x, pts.saddle.y); ctx.lineTo(sk.x, sk.y); 
             ctx.lineTo(sa.x, sa.y); ctx.lineTo(sp.x, sp.y); ctx.stroke();
 
-            kopsDelta = knee.x - pedal.x; 
-
+            // Draw Plumb line only when crank is horizontal (for visual clarity), but use staticKops for placement
             if (cR >= 80 && cR <= 100) {
                 ctx.save();
                 ctx.beginPath();
                 ctx.setLineDash([5*zoomFactor, 5*zoomFactor]);
                 ctx.strokeStyle = "var(--accent-blue)";
                 ctx.lineWidth = 2 * zoomFactor;
+                // We draw it from the *current* knee position down, representing the static metric contextually
                 ctx.moveTo(sk.x, sk.y);
                 ctx.lineTo(sk.x, sp.y + 30*scale);
                 ctx.stroke();
@@ -762,8 +774,11 @@
         
         document.getElementById('stat-knee'+suffix).innerText = `${Math.round(maxKneeAngle)}°`;
         document.getElementById('stat-hip'+suffix).innerText = `${Math.round(actual_tA)}°`;
-        let kopsLabel = knee ? (kopsDelta > 0 ? `+${Math.round(kopsDelta)}mm` : `${Math.round(kopsDelta)}mm`) : '--';
+        
+        // Output the Static KOPS value
+        let kopsLabel = k90_valid ? (staticKops > 0 ? `+${Math.round(staticKops)}mm` : `${Math.round(staticKops)}mm`) : '--';
         document.getElementById('stat-kops'+suffix).innerText = kopsLabel;
+        
         document.getElementById('stat-shldr'+suffix).innerText = `${Math.round(finalShldrAngle)}°`;
 
         let fitColor = "var(--accent-green)";
@@ -777,11 +792,12 @@
             fitColor = "var(--accent-orange)"; 
         }
 
-        if (cR >= 80 && cR <= 100) {
-            if (kopsDelta > 20) { 
+        // Static KOPS Evaluation
+        if (k90_valid) {
+            if (staticKops > 20) { 
                 fitMsgs.push("Saddle too forward"); 
                 if(fitColor === "var(--accent-green)") fitColor = "var(--accent-orange)"; 
-            } else if (kopsDelta < -20) { 
+            } else if (staticKops < -20) { 
                 fitMsgs.push("Saddle too far back"); 
                 if(fitColor === "var(--accent-green)") fitColor = "var(--accent-orange)"; 
             }
@@ -869,10 +885,8 @@
         }
     }
 
-    // Helper to extract a number near a specific keyword using regex
     function extractNumber(text, keywords) {
         for (let kw of keywords) {
-            // Looks for the keyword, then optional spaces/colons/equals/dashes, then grabs the first number
             let regex = new RegExp(kw + "\\s*[:=,-]?\\s*([0-9]+(?:\\.[0-9]+)?)", "i");
             let match = text.match(regex);
             if (match && match[1]) {
@@ -889,7 +903,6 @@
         reader.onload = function(e) {
             const rawText = e.target.result;
             
-            // Step 1: Try JSON parse first
             try {
                 const data = JSON.parse(rawText);
                 const torso = data.torso || data.Torso || data.back;
@@ -910,14 +923,9 @@
 
                 update(false);
                 alert("Rider dimensions imported from JSON successfully!");
-                return; // Exit if JSON worked
-            } catch (err) {
-                // Not a valid JSON, move to Step 2
-            }
+                return; 
+            } catch (err) {}
 
-            // Step 2: Fallback to Smart Text Parsing (RegEx)
-            console.log("Parsing raw text instead of JSON...");
-            
             const torso = extractNumber(rawText, ["torso", "back", "hát", "hat"]);
             const uArm = extractNumber(rawText, ["upper\\s*arm", "upper_arm", "felkar"]);
             const lArm = extractNumber(rawText, ["lower\\s*arm", "lower_arm", "alkar"]);
