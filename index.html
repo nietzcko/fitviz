@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BikeFit Pro Compare v3.4.3</title>
+    <title>BikeFit Pro Compare v3.6.0</title>
     <style>
         :root {
             --bg-color: #f2f2f7;
@@ -85,7 +85,7 @@
 
         canvas { width: 100%; height: 100%; display: block; }
 
-        /* --- STATS DASHBOARD --- */
+        /* --- STATS DASHBOARD (NEW 2-ROW COMPACT LAYOUT) --- */
         .stats-panel {
             width: 95%;
             max-width: 900px;
@@ -101,23 +101,43 @@
 
         .stat-row {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
             padding: 8px 12px;
             border-radius: 8px;
             background: #f2f2f7;
-            font-size: 11px;
+            gap: 6px;
         }
 
         .stat-row.bike-a { border-left: 4px solid var(--accent-purple); }
         .stat-row.bike-b { border-left: 4px solid var(--accent-red); }
 
-        .stat-title { font-weight: 800; color: #333; text-transform: uppercase; width: 45px; }
-        .stat-group { display: flex; gap: 10px; flex: 1; justify-content: center; flex-wrap: wrap; }
-        .stat-item { color: #666; font-weight: 500; }
-        .stat-val { font-weight: 700; color: #111; font-variant-numeric: tabular-nums; }
-        .fit-status { font-weight: 800; text-transform: uppercase; text-align: right; width: 190px; }
+        .stat-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            width: 100%;
+        }
 
+        .stat-title { font-weight: 800; font-size: 11px; color: #333; text-transform: uppercase; }
+        .fit-status { font-weight: 800; font-size: 10px; text-transform: uppercase; text-align: right; max-width: 75%; line-height: 1.2; }
+
+        .stat-bottom {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            border-top: 1px solid rgba(0,0,0,0.06);
+            padding-top: 6px;
+        }
+
+        .stat-item { color: #666; font-size: 10px; font-weight: 500; white-space: nowrap; }
+        .stat-val { font-weight: 700; color: #111; font-variant-numeric: tabular-nums; }
+        
+        @media (min-width: 400px) {
+            .stat-item { font-size: 11px; }
+            .fit-status { font-size: 11px; }
+        }
+
+        /* --- SIDEBAR HEADINGS & CARDS --- */
         h1 { font-size: 14px; margin: 0 0 15px 0; color: var(--accent-purple); text-transform: uppercase; display: flex; align-items: center; justify-content: space-between; }
         h1.bike-b { color: var(--accent-red); } 
         h2 { font-size: 11px; color: #8e8e93; text-transform: uppercase; margin: 15px 0 6px 5px; letter-spacing: 0.5px; }
@@ -227,6 +247,11 @@
             <div class="row"><span class="label-text">Stack</span><input type="range" id="stackA" min="500" max="750" value="580"><div class="val-container"><input type="number" id="stackA-num" class="val-input" value="580"></div></div>
             <div class="row"><span class="label-text">Fork Angle</span><input type="range" id="faA" min="60" max="85" step="0.5" value="73"><div class="val-container"><input type="number" id="faA-num" class="val-input" value="73"><span class="unit">°</span></div></div>
             <div class="row"><span class="label-text">Seat Tube</span><input type="range" id="stlA" min="350" max="650" value="560"><div class="val-container"><input type="number" id="stlA-num" class="val-input" value="560"></div></div>
+        </div>
+
+        <h2>Saddle & Seatpost A</h2>
+        <div class="card">
+            <div class="row"><span class="label-text">Saddle Height</span><input type="range" id="seatHeightA" min="600" max="950" value="760"><div class="val-container"><input type="number" id="seatHeightA-num" class="val-input" value="760"></div></div>
             <div class="row"><span class="label-text">Saddle Offset</span><input type="range" id="saddleOffsetA" min="-60" max="60" value="0"><div class="val-container"><input type="number" id="saddleOffsetA-num" class="val-input" value="0"></div></div>
         </div>
 
@@ -262,24 +287,29 @@
         
         <div class="stats-panel">
             <div class="stat-row bike-a">
-                <span class="stat-title" style="color: var(--accent-purple)">Bike A</span>
-                <div class="stat-group">
+                <div class="stat-top">
+                    <span class="stat-title" style="color: var(--accent-purple)">Bike A</span>
+                    <span class="fit-status" id="fit-statusA">--</span>
+                </div>
+                <div class="stat-bottom">
                     <span class="stat-item">Knee: <span class="stat-val" id="stat-kneeA">--</span></span>
                     <span class="stat-item">Hip: <span class="stat-val" id="stat-hipA">--</span></span>
                     <span class="stat-item">KOPS: <span class="stat-val" id="stat-kopsA">--</span></span>
                     <span class="stat-item">Shldr: <span class="stat-val" id="stat-shldrA">--</span></span>
                 </div>
-                <span class="fit-status" id="fit-statusA">--</span>
             </div>
+            
             <div class="stat-row bike-b" id="stat-row-b" style="display:none;">
-                <span class="stat-title" style="color: var(--accent-red)">Bike B</span>
-                <div class="stat-group">
+                <div class="stat-top">
+                    <span class="stat-title" style="color: var(--accent-red)">Bike B</span>
+                    <span class="fit-status" id="fit-statusB">--</span>
+                </div>
+                <div class="stat-bottom">
                     <span class="stat-item">Knee: <span class="stat-val" id="stat-kneeB">--</span></span>
                     <span class="stat-item">Hip: <span class="stat-val" id="stat-hipB">--</span></span>
                     <span class="stat-item">KOPS: <span class="stat-val" id="stat-kopsB">--</span></span>
                     <span class="stat-item">Shldr: <span class="stat-val" id="stat-shldrB">--</span></span>
                 </div>
-                <span class="fit-status" id="fit-statusB">--</span>
             </div>
         </div>
     </main>
@@ -331,6 +361,11 @@
                 <div class="row"><span class="label-text">Stack</span><input type="range" id="stackB" min="500" max="750" value="599" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="stackB-num" class="val-input bike-b-input" value="599"></div></div>
                 <div class="row"><span class="label-text">Fork Angle</span><input type="range" id="faB" min="60" max="85" step="0.5" value="73" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="faB-num" class="val-input bike-b-input" value="73"><span class="unit unit-b">°</span></div></div>
                 <div class="row"><span class="label-text">Seat Tube</span><input type="range" id="stlB" min="350" max="650" value="580" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="stlB-num" class="val-input bike-b-input" value="580"></div></div>
+            </div>
+
+            <h2>Saddle & Seatpost B</h2>
+            <div class="card">
+                <div class="row"><span class="label-text">Saddle Height</span><input type="range" id="seatHeightB" min="600" max="950" value="760" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="seatHeightB-num" class="val-input bike-b-input" value="760"></div></div>
                 <div class="row"><span class="label-text">Saddle Offset</span><input type="range" id="saddleOffsetB" min="-60" max="60" value="0" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="saddleOffsetB-num" class="val-input bike-b-input" value="0"></div></div>
             </div>
 
@@ -365,7 +400,6 @@
             <input type="file" id="importRiderFile" accept=".json,.txt,.csv" style="display:none;" onchange="importRiderData(event)">
         </h2>
         <div class="card">
-            <div class="row"><span class="label-text">Saddle Height</span><input type="range" id="seatHeight" min="600" max="950" value="760"><div class="val-container"><input type="number" id="seatHeight-num" class="val-input" value="760"></div></div>
             <div class="row"><span class="label-text">Torso</span><input type="range" id="torso" min="50" max="80" value="65"><div class="val-container"><input type="number" id="torso-num" class="val-input" value="65"></div></div>
             <div class="row"><span class="label-text">Upper Arm (Felkar)</span><input type="range" id="upperArm" min="20" max="50" value="30"><div class="val-container"><input type="number" id="upperArm-num" class="val-input" value="30"></div></div>
             <div class="row"><span class="label-text">Lower Arm (Alkar)</span><input type="range" id="lowerArm" min="20" max="50" value="30"><div class="val-container"><input type="number" id="lowerArm-num" class="val-input" value="30"></div></div>
@@ -387,7 +421,7 @@
 
 </div>
 
-<div class="version-tag">v3.4.3</div>
+<div class="version-tag">v3.6.0</div>
 
 <script>
     const canvas = document.getElementById('bikeCanvas');
@@ -550,7 +584,9 @@
         const strVal = id => document.getElementById(id + suffix).value;
         const autoTrunk = document.getElementById('autoTrunk' + suffix).checked;
         
-        const reach = val('reach'), stack = val('stack'), fa = val('fa'), stl = val('stl'), sOffset = val('saddleOffset');
+        const reach = val('reach'), stack = val('stack'), fa = val('fa'), stl = val('stl');
+        const sH = val('seatHeight'); 
+        const sOffset = val('saddleOffset');
         const spacers = val('spacers'), stemL = val('stemL'), stemA = val('stemA');
         const barType = strVal('barType'), barReach = val('barReach'), barDrop = val('barDrop'), barAngle = val('barAngle'), handPos = strVal('handPos');
         const tA = val('trunkAngle'), cRot = val('crankRot'), fA = val('footAngle');
@@ -588,7 +624,7 @@
         }
 
         const stTop = { x: Math.cos(Math.PI - toRad(sta)) * stl, y: -Math.sin(Math.PI - toRad(sta)) * stl };
-        const saddle = { x: Math.cos(Math.PI - toRad(sta)) * riderData.sH + sOffset, y: -Math.sin(Math.PI - toRad(sta)) * riderData.sH };
+        const saddle = { x: Math.cos(Math.PI - toRad(sta)) * sH + sOffset, y: -Math.sin(Math.PI - toRad(sta)) * sH };
 
         const pedal = { x: Math.sin(toRad(cRot))*172.5, y: -Math.cos(toRad(cRot))*172.5 };
         const pedalOpp = { x: Math.sin(toRad(cRot + 180))*172.5, y: -Math.cos(toRad(cRot + 180))*172.5 };
@@ -845,8 +881,7 @@
             lArm: getV('lowerArm')*10, 
             thigh: getV('thigh')*10, 
             shin: getV('shin')*10, 
-            foot: getV('foot')*10, 
-            sH: getV('seatHeight') 
+            foot: getV('foot')*10
         };
 
         ctx.clearRect(0,0, dims.w, dims.h);
@@ -896,6 +931,8 @@
         reader.onload = function(e) {
             const rawText = e.target.result;
             
+            let sH_imported = null;
+
             try {
                 const data = JSON.parse(rawText);
                 const torso = data.torso || data.Torso || data.back;
@@ -912,7 +949,10 @@
                 if(thigh) setSliderVal('thigh', thigh);
                 if(shin) setSliderVal('shin', shin);
                 if(foot) setSliderVal('foot', foot);
-                if(sH) setSliderVal('seatHeight', sH);
+                if(sH) {
+                    setSliderVal('seatHeightA', sH);
+                    setSliderVal('seatHeightB', sH);
+                }
 
                 update(false);
                 alert("Rider dimensions imported from JSON successfully!");
@@ -934,7 +974,11 @@
             if(thigh) { setSliderVal('thigh', thigh); importedAny = true; }
             if(shin) { setSliderVal('shin', shin); importedAny = true; }
             if(foot) { setSliderVal('foot', foot); importedAny = true; }
-            if(sH) { setSliderVal('seatHeight', sH); importedAny = true; }
+            if(sH) { 
+                setSliderVal('seatHeightA', sH); 
+                setSliderVal('seatHeightB', sH); 
+                importedAny = true; 
+            }
 
             if (importedAny) {
                 update(false);
@@ -964,13 +1008,18 @@
                     i.checked = stateObj[i.id];
                 } else {
                     i.value = stateObj[i.id];
-                    // UI SYNC FIX: update corresponding text input explicitly
                     const numInput = document.getElementById(i.id + '-num');
                     if (numInput) numInput.value = stateObj[i.id];
                 }
             }
         });
         
+        if (stateObj['seatHeight'] !== undefined && stateObj['seatHeightA'] === undefined) {
+            let sH = parseFloat(stateObj['seatHeight']);
+            setSliderVal('seatHeightA', sH);
+            setSliderVal('seatHeightB', sH);
+        }
+
         if (stateObj['arm'] !== undefined && stateObj['upperArm'] === undefined) {
             let halfArm = parseFloat(stateObj['arm']) / 2;
             setSliderVal('upperArm', halfArm);
