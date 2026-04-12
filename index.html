@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BikeFit Pro Compare v3.3.1</title>
+    <title>BikeFit Pro Compare v3.4.0</title>
     <style>
         :root {
             --bg-color: #f2f2f7;
@@ -122,6 +122,7 @@
         h1.bike-b { color: var(--accent-red); } 
         h2 { font-size: 11px; color: #8e8e93; text-transform: uppercase; margin: 15px 0 6px 5px; letter-spacing: 0.5px; }
         h2.common { color: #555; font-weight: 800; border-top: 1px solid var(--border-color); padding-top: 15px; }
+        .h2-flex { display: flex; justify-content: space-between; align-items: center; padding-right: 5px; }
 
         .card { background: white; border-radius: 12px; padding: 4px 14px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
         .row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f2f2f7; }
@@ -157,6 +158,7 @@
         .btn-export:hover { background: #4441a1; }
         .btn-import { background: #e5e5ea; color: var(--text-main); }
         .btn-import:hover { background: #d1d1d6; }
+        .btn-small { padding: 4px 8px; font-size: 10px; background: #e5e5ea; color: var(--text-main); flex: none; border-radius: 6px; }
 
         #bikeB-settings { display: none; }
 
@@ -357,21 +359,26 @@
             </div>
         </div>
         
-        <h2 class="common">Common Rider Profile</h2>
+        <h2 class="common h2-flex">
+            Common Rider Profile
+            <button class="btn-small" onclick="document.getElementById('importRiderFile').click()">Import JSON</button>
+            <input type="file" id="importRiderFile" accept=".json" style="display:none;" onchange="importRiderData(event)">
+        </h2>
         <div class="card">
             <div class="row"><span class="label-text">Saddle Height</span><input type="range" id="seatHeight" min="600" max="950" value="760"><div class="val-container"><input type="number" id="seatHeight-num" class="val-input" value="760"></div></div>
             <div class="row"><span class="label-text">Torso</span><input type="range" id="torso" min="50" max="80" value="65"><div class="val-container"><input type="number" id="torso-num" class="val-input" value="65"></div></div>
-            <div class="row"><span class="label-text">Arm</span><input type="range" id="arm" min="40" max="80" value="60"><div class="val-container"><input type="number" id="arm-num" class="val-input" value="60"></div></div>
+            <div class="row"><span class="label-text">Upper Arm (Felkar)</span><input type="range" id="upperArm" min="20" max="50" value="30"><div class="val-container"><input type="number" id="upperArm-num" class="val-input" value="30"></div></div>
+            <div class="row"><span class="label-text">Lower Arm (Alkar)</span><input type="range" id="lowerArm" min="20" max="50" value="30"><div class="val-container"><input type="number" id="lowerArm-num" class="val-input" value="30"></div></div>
             <div class="row"><span class="label-text">Thigh</span><input type="range" id="thigh" min="35" max="60" value="45"><div class="val-container"><input type="number" id="thigh-num" class="val-input" value="45"></div></div>
             <div class="row"><span class="label-text">Shin</span><input type="range" id="shin" min="35" max="60" value="50"><div class="val-container"><input type="number" id="shin-num" class="val-input" value="50"></div></div>
             <div class="row"><span class="label-text">Ankle-Pedal Dist</span><input type="range" id="foot" min="5" max="20" value="12"><div class="val-container"><input type="number" id="foot-num" class="val-input" value="12"></div></div>
         </div>
 
-        <h2 class="common">Data Management</h2>
+        <h2 class="common">App Data Management</h2>
         <div class="card">
             <div class="btn-group">
-                <button class="btn-export" onclick="exportData()" style="background:var(--accent-purple)">Export Save</button>
-                <button class="btn-import" onclick="document.getElementById('importFile').click()">Import Save</button>
+                <button class="btn-export" onclick="exportData()" style="background:var(--accent-purple)">Export Setup</button>
+                <button class="btn-import" onclick="document.getElementById('importFile').click()">Import Setup</button>
                 <input type="file" id="importFile" accept=".json" style="display:none;" onchange="importData(event)">
             </div>
         </div>
@@ -380,7 +387,7 @@
 
 </div>
 
-<div class="version-tag">v3.3.1</div>
+<div class="version-tag">v3.4.0</div>
 
 <script>
     const canvas = document.getElementById('bikeCanvas');
@@ -474,9 +481,11 @@
     }
     setupPreset('A'); setupPreset('B');
 
-    document.querySelectorAll('input[type="range"]').forEach(slider => {
-        const numInput = document.getElementById(slider.id + '-num');
-        if(numInput) {
+    // Force blur on enter, sync sliders
+    function syncInput(sliderId) {
+        const slider = document.getElementById(sliderId);
+        const numInput = document.getElementById(sliderId + '-num');
+        if(slider && numInput) {
             slider.addEventListener('input', () => { numInput.value = slider.value; });
             numInput.addEventListener('input', () => { slider.value = numInput.value; update(false); });
             numInput.addEventListener('blur', () => {
@@ -485,7 +494,8 @@
                 numInput.value = v; slider.value = v; update(false);
             });
         }
-    });
+    }
+    document.querySelectorAll('input[type="range"]').forEach(slider => syncInput(slider.id));
 
     function initCanvas() {
         const dpr = window.devicePixelRatio || 1;
@@ -508,7 +518,7 @@
     }
 
     function calcUpperArmShldrAngle(saddle, shoulder, handTarget, riderData) {
-        const elbow = solveIK(shoulder, handTarget, riderData.arm*0.5, riderData.arm*0.5, false);
+        const elbow = solveIK(shoulder, handTarget, riderData.uArm, riderData.lArm, false);
         if (!elbow) {
             const a = Math.hypot(handTarget.x - saddle.x, handTarget.y - saddle.y);
             const b = riderData.torso;
@@ -638,6 +648,7 @@
         let shoulder, elbow, d_shoulder_hand;
         const MIN_SAFE_TRUNK = 35; 
         const MAX_SAFE_TRUNK = 60; 
+        const totalArmLength = riderData.uArm + riderData.lArm;
         
         if (autoTrunk) {
             let best_tA = null;
@@ -647,7 +658,7 @@
             for (let test_tA = MIN_SAFE_TRUNK; test_tA <= MAX_SAFE_TRUNK; test_tA += 0.5) {
                 let s = { x: saddle.x + Math.cos(toRad(-test_tA))*riderData.torso, y: saddle.y + Math.sin(toRad(-test_tA))*riderData.torso };
                 let d = Math.hypot(s.x - handTarget.x, s.y - handTarget.y);
-                if (d <= riderData.arm) {
+                if (d <= totalArmLength) {
                     let shldrAngleUA = calcUpperArmShldrAngle(saddle, s, handTarget, riderData);
                     let penalty = Math.abs(shldrAngleUA - 90); 
                     if (penalty < min_penalty) {
@@ -661,18 +672,20 @@
             if (best_tA !== null) {
                 actual_tA = best_tA;
                 shoulder = best_shoulder;
-                elbow = solveIK(shoulder, handTarget, riderData.arm*0.5, riderData.arm*0.5, false);
+                elbow = solveIK(shoulder, handTarget, riderData.uArm, riderData.lArm, false);
             } else {
                 isAutoLeaning = true;
-                let shoulder_auto = solveIK(saddle, handTarget, riderData.torso, riderData.arm, true);
+                let shoulder_auto = solveIK(saddle, handTarget, riderData.torso, totalArmLength, true);
                 if (shoulder_auto) {
                     shoulder = shoulder_auto;
-                    elbow = { x: (shoulder.x + handTarget.x)/2, y: (shoulder.y + handTarget.y)/2 };
+                    // Ratio based elbow position if fully extended
+                    let e_ratio = riderData.uArm / totalArmLength;
+                    elbow = { x: shoulder.x + (handTarget.x - shoulder.x)*e_ratio, y: shoulder.y + (handTarget.y - shoulder.y)*e_ratio };
                 } else {
                     let angle = Math.atan2(handTarget.y - saddle.y, handTarget.x - saddle.x);
                     shoulder = { x: saddle.x + Math.cos(angle)*riderData.torso, y: saddle.y + Math.sin(angle)*riderData.torso };
-                    elbow = { x: shoulder.x + Math.cos(angle)*(riderData.arm*0.5), y: shoulder.y + Math.sin(angle)*(riderData.arm*0.5) };
-                    handTarget = { x: shoulder.x + Math.cos(angle)*riderData.arm, y: shoulder.y + Math.sin(angle)*riderData.arm };
+                    elbow = { x: shoulder.x + Math.cos(angle)*riderData.uArm, y: shoulder.y + Math.sin(angle)*riderData.uArm };
+                    handTarget = { x: shoulder.x + Math.cos(angle)*totalArmLength, y: shoulder.y + Math.sin(angle)*totalArmLength };
                 }
                 actual_tA = -Math.atan2(shoulder.y - saddle.y, shoulder.x - saddle.x) * (180 / Math.PI);
             }
@@ -683,19 +696,20 @@
         } else {
             shoulder = { x: saddle.x + Math.cos(toRad(-actual_tA))*riderData.torso, y: saddle.y + Math.sin(toRad(-actual_tA))*riderData.torso };
             d_shoulder_hand = Math.hypot(shoulder.x - handTarget.x, shoulder.y - handTarget.y);
-            if (d_shoulder_hand <= riderData.arm) {
-                elbow = solveIK(shoulder, handTarget, riderData.arm*0.5, riderData.arm*0.5, false);
+            if (d_shoulder_hand <= totalArmLength) {
+                elbow = solveIK(shoulder, handTarget, riderData.uArm, riderData.lArm, false);
             } else {
                 isAutoLeaning = true;
-                let shoulder_auto = solveIK(saddle, handTarget, riderData.torso, riderData.arm, true);
+                let shoulder_auto = solveIK(saddle, handTarget, riderData.torso, totalArmLength, true);
                 if (shoulder_auto) {
                     shoulder = shoulder_auto;
-                    elbow = { x: (shoulder.x + handTarget.x)/2, y: (shoulder.y + handTarget.y)/2 };
+                    let e_ratio = riderData.uArm / totalArmLength;
+                    elbow = { x: shoulder.x + (handTarget.x - shoulder.x)*e_ratio, y: shoulder.y + (handTarget.y - shoulder.y)*e_ratio };
                 } else {
                     let angle = Math.atan2(handTarget.y - saddle.y, handTarget.x - saddle.x);
                     shoulder = { x: saddle.x + Math.cos(angle)*riderData.torso, y: saddle.y + Math.sin(angle)*riderData.torso };
-                    elbow = { x: shoulder.x + Math.cos(angle)*(riderData.arm*0.5), y: shoulder.y + Math.sin(angle)*(riderData.arm*0.5) };
-                    handTarget = { x: shoulder.x + Math.cos(angle)*riderData.arm, y: shoulder.y + Math.sin(angle)*riderData.arm };
+                    elbow = { x: shoulder.x + Math.cos(angle)*riderData.uArm, y: shoulder.y + Math.sin(angle)*riderData.uArm };
+                    handTarget = { x: shoulder.x + Math.cos(angle)*totalArmLength, y: shoulder.y + Math.sin(angle)*totalArmLength };
                 }
                 actual_tA = -Math.atan2(shoulder.y - saddle.y, shoulder.x - saddle.x) * (180 / Math.PI);
             }
@@ -760,7 +774,7 @@
 
         ctx.restore();
         
-        // Update Stats UI (BUGFIXED)
+        // Update Stats UI 
         document.getElementById('stat-knee'+suffix).innerText = `${Math.round(maxKneeAngle)}°`;
         document.getElementById('stat-hip'+suffix).innerText = `${Math.round(actual_tA)}°`;
         let kopsLabel = knee ? (kopsDelta > 0 ? `+${Math.round(kopsDelta)}mm` : `${Math.round(kopsDelta)}mm`) : '--';
@@ -821,7 +835,15 @@
         document.getElementById('stat-row-b').style.display = showBikeB ? 'flex' : 'none';
 
         const getV = id => parseFloat(document.getElementById(id).value);
-        const riderData = { torso: getV('torso')*10, arm: getV('arm')*10, thigh: getV('thigh')*10, shin: getV('shin')*10, foot: getV('foot')*10, sH: getV('seatHeight') };
+        const riderData = { 
+            torso: getV('torso')*10, 
+            uArm: getV('upperArm')*10, 
+            lArm: getV('lowerArm')*10, 
+            thigh: getV('thigh')*10, 
+            shin: getV('shin')*10, 
+            foot: getV('foot')*10, 
+            sH: getV('seatHeight') 
+        };
 
         ctx.clearRect(0,0, dims.w, dims.h);
         
@@ -852,7 +874,49 @@
         if (!skipSave) saveToLocalStorage();
     }
 
-    // --- DATA MANAGEMENT ---
+    // --- RIDER DATA IMPORT ---
+    function setSliderVal(id, value) {
+        const slider = document.getElementById(id);
+        const numInput = document.getElementById(id + '-num');
+        if (slider && numInput && value !== undefined) {
+            slider.value = value;
+            numInput.value = value;
+        }
+    }
+
+    function importRiderData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const data = JSON.parse(e.target.result);
+                // Flexible mapping for various JSON formats
+                const torso = data.torso || data.Torso || data.back;
+                const uArm = data.upperArm || data.upper_arm || data.UpperArm || data.felkar;
+                const lArm = data.lowerArm || data.lower_arm || data.LowerArm || data.alkar;
+                const thigh = data.thigh || data.Thigh || data.upperLeg || data.upper_leg || data.comb;
+                const shin = data.shin || data.Shin || data.lowerLeg || data.lower_leg || data.vadli;
+                const foot = data.foot || data.Foot || data.labfej || data.ankle_pedal;
+                const sH = data.seatHeight || data.seat_height || data.saddleHeight || data.nyereg_magassag;
+
+                if(torso) setSliderVal('torso', torso);
+                if(uArm) setSliderVal('upperArm', uArm);
+                if(lArm) setSliderVal('lowerArm', lArm);
+                if(thigh) setSliderVal('thigh', thigh);
+                if(shin) setSliderVal('shin', shin);
+                if(foot) setSliderVal('foot', foot);
+                if(sH) setSliderVal('seatHeight', sH);
+
+                update(false);
+                alert("Rider dimensions imported successfully!");
+            } catch (err) { alert("Invalid Rider JSON file format."); }
+        };
+        reader.readAsText(file);
+        event.target.value = ''; // Reset input
+    }
+
+    // --- APP DATA MANAGEMENT ---
     function saveToLocalStorage() {
         const state = {};
         document.querySelectorAll('input, select').forEach(i => {
@@ -870,6 +934,14 @@
                 else i.value = stateObj[i.id];
             }
         });
+        
+        // Handle migration from old 'arm' data to split arms if needed
+        if (stateObj['arm'] !== undefined && stateObj['upperArm'] === undefined) {
+            let halfArm = parseFloat(stateObj['arm']) / 2;
+            setSliderVal('upperArm', halfArm);
+            setSliderVal('lowerArm', halfArm);
+        }
+
         updateBarUI('A'); updateBarUI('B');
         toggleAutoTrunk('A'); toggleAutoTrunk('B');
         update(true); 
