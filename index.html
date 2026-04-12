@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BikeFit Pro Compare v3.4.2</title>
+    <title>BikeFit Pro Compare v3.4.3</title>
     <style>
         :root {
             --bg-color: #f2f2f7;
@@ -387,7 +387,7 @@
 
 </div>
 
-<div class="version-tag">v3.4.2</div>
+<div class="version-tag">v3.4.3</div>
 
 <script>
     const canvas = document.getElementById('bikeCanvas');
@@ -408,6 +408,15 @@
         "konaL": { reach: 475, stack: 606, fa: 68.0, stl: 470, saddleOffset: 0, barType: 'flat', barReach: 20, barAngle: 90 },
         "konaXL": { reach: 510, stack: 615, fa: 68.0, stl: 530, saddleOffset: 0, barType: 'flat', barReach: 20, barAngle: 90 }
     };
+
+    function setSliderVal(id, value) {
+        const slider = document.getElementById(id);
+        const numInput = document.getElementById(id + '-num');
+        if (slider && numInput && value !== undefined && !isNaN(value)) {
+            slider.value = value;
+            numInput.value = value;
+        }
+    }
 
     function updateBarUI(suffix) {
         const type = document.getElementById('barType' + suffix).value;
@@ -459,17 +468,17 @@
         select.addEventListener('change', function() {
             if (this.value !== 'custom') {
                 const p = bikePresets[this.value];
-                document.getElementById('reach'+suffix).value = p.reach;
-                document.getElementById('stack'+suffix).value = p.stack;
-                document.getElementById('fa'+suffix).value = p.fa;
-                document.getElementById('stl'+suffix).value = p.stl;
+                setSliderVal('reach'+suffix, p.reach);
+                setSliderVal('stack'+suffix, p.stack);
+                setSliderVal('fa'+suffix, p.fa);
+                setSliderVal('stl'+suffix, p.stl);
                 
-                if (p.saddleOffset !== undefined) document.getElementById('saddleOffset'+suffix).value = p.saddleOffset;
+                if (p.saddleOffset !== undefined) setSliderVal('saddleOffset'+suffix, p.saddleOffset);
                 if (p.barType) { document.getElementById('barType'+suffix).value = p.barType; updateBarUI(suffix); }
-                if (p.barDrop) document.getElementById('barDrop'+suffix).value = p.barDrop;
+                if (p.barDrop !== undefined) setSliderVal('barDrop'+suffix, p.barDrop);
                 if (p.handPos) document.getElementById('handPos'+suffix).value = p.handPos;
-                if (p.barReach !== undefined) document.getElementById('barReach'+suffix).value = p.barReach;
-                if (p.barAngle !== undefined) document.getElementById('barAngle'+suffix).value = p.barAngle;
+                if (p.barReach !== undefined) setSliderVal('barReach'+suffix, p.barReach);
+                if (p.barAngle !== undefined) setSliderVal('barAngle'+suffix, p.barAngle);
                 
                 update();
             }
@@ -707,7 +716,6 @@
 
         const knee = solveIK(saddle, ankle, riderData.thigh, riderData.shin, true);
 
-        // GLOBAL MAX KNEE EXTENSION
         let maxKneeAngle = 0;
         let legTooShort = false;
         for (let testCrank = 0; testCrank < 360; testCrank += 5) {
@@ -724,7 +732,6 @@
             }
         }
 
-        // --- STATIC KOPS CALCULATION (@ 90 Degrees) ---
         let staticKops = 0;
         let k90_valid = false;
         let p90 = { x: Math.sin(toRad(90))*172.5, y: -Math.cos(toRad(90))*172.5 };
@@ -746,14 +753,12 @@
             ctx.beginPath(); ctx.moveTo(pts.saddle.x, pts.saddle.y); ctx.lineTo(sk.x, sk.y); 
             ctx.lineTo(sa.x, sa.y); ctx.lineTo(sp.x, sp.y); ctx.stroke();
 
-            // Draw Plumb line only when crank is horizontal (for visual clarity), but use staticKops for placement
             if (cR >= 80 && cR <= 100) {
                 ctx.save();
                 ctx.beginPath();
                 ctx.setLineDash([5*zoomFactor, 5*zoomFactor]);
                 ctx.strokeStyle = "var(--accent-blue)";
                 ctx.lineWidth = 2 * zoomFactor;
-                // We draw it from the *current* knee position down, representing the static metric contextually
                 ctx.moveTo(sk.x, sk.y);
                 ctx.lineTo(sk.x, sp.y + 30*scale);
                 ctx.stroke();
@@ -775,7 +780,6 @@
         document.getElementById('stat-knee'+suffix).innerText = `${Math.round(maxKneeAngle)}°`;
         document.getElementById('stat-hip'+suffix).innerText = `${Math.round(actual_tA)}°`;
         
-        // Output the Static KOPS value
         let kopsLabel = k90_valid ? (staticKops > 0 ? `+${Math.round(staticKops)}mm` : `${Math.round(staticKops)}mm`) : '--';
         document.getElementById('stat-kops'+suffix).innerText = kopsLabel;
         
@@ -792,7 +796,6 @@
             fitColor = "var(--accent-orange)"; 
         }
 
-        // Static KOPS Evaluation
         if (k90_valid) {
             if (staticKops > 20) { 
                 fitMsgs.push("Saddle too forward"); 
@@ -875,16 +878,6 @@
         if (!skipSave) saveToLocalStorage();
     }
 
-    // --- RIDER DATA SMART IMPORT ---
-    function setSliderVal(id, value) {
-        const slider = document.getElementById(id);
-        const numInput = document.getElementById(id + '-num');
-        if (slider && numInput && value !== undefined && !isNaN(value)) {
-            slider.value = value;
-            numInput.value = value;
-        }
-    }
-
     function extractNumber(text, keywords) {
         for (let kw of keywords) {
             let regex = new RegExp(kw + "\\s*[:=,-]?\\s*([0-9]+(?:\\.[0-9]+)?)", "i");
@@ -954,7 +947,6 @@
         event.target.value = ''; 
     }
 
-    // --- APP DATA MANAGEMENT ---
     function saveToLocalStorage() {
         const state = {};
         document.querySelectorAll('input, select').forEach(i => {
@@ -968,8 +960,14 @@
         document.querySelectorAll('input, select').forEach(i => {
             if (i.type === 'file' || i.type === 'number') return;
             if (stateObj[i.id] !== undefined) {
-                if (i.type === 'checkbox') i.checked = stateObj[i.id];
-                else i.value = stateObj[i.id];
+                if (i.type === 'checkbox') {
+                    i.checked = stateObj[i.id];
+                } else {
+                    i.value = stateObj[i.id];
+                    // UI SYNC FIX: update corresponding text input explicitly
+                    const numInput = document.getElementById(i.id + '-num');
+                    if (numInput) numInput.value = stateObj[i.id];
+                }
             }
         });
         
