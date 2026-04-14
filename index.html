@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BikeFit Pro Compare v3.6.0</title>
+    <title>BikeFit Pro Compare v3.7.0</title>
     <style>
         :root {
             --bg-color: #f2f2f7;
@@ -245,6 +245,7 @@
             </div>
             <div class="row"><span class="label-text">Reach</span><input type="range" id="reachA" min="350" max="550" value="393"><div class="val-container"><input type="number" id="reachA-num" class="val-input" value="393"></div></div>
             <div class="row"><span class="label-text">Stack</span><input type="range" id="stackA" min="500" max="750" value="580"><div class="val-container"><input type="number" id="stackA-num" class="val-input" value="580"></div></div>
+            <div class="row"><span class="label-text">Seat Angle</span><input type="range" id="staA" min="65" max="85" step="0.1" value="73.0"><div class="val-container"><input type="number" id="staA-num" class="val-input" value="73.0"><span class="unit">°</span></div></div>
             <div class="row"><span class="label-text">Fork Angle</span><input type="range" id="faA" min="60" max="85" step="0.5" value="73"><div class="val-container"><input type="number" id="faA-num" class="val-input" value="73"><span class="unit">°</span></div></div>
             <div class="row"><span class="label-text">Seat Tube</span><input type="range" id="stlA" min="350" max="650" value="560"><div class="val-container"><input type="number" id="stlA-num" class="val-input" value="560"></div></div>
         </div>
@@ -359,6 +360,7 @@
                 </div>
                 <div class="row"><span class="label-text">Reach</span><input type="range" id="reachB" min="350" max="550" value="402" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="reachB-num" class="val-input bike-b-input" value="402"></div></div>
                 <div class="row"><span class="label-text">Stack</span><input type="range" id="stackB" min="500" max="750" value="599" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="stackB-num" class="val-input bike-b-input" value="599"></div></div>
+                <div class="row"><span class="label-text">Seat Angle</span><input type="range" id="staB" min="65" max="85" step="0.1" value="72.5" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="staB-num" class="val-input bike-b-input" value="72.5"><span class="unit unit-b">°</span></div></div>
                 <div class="row"><span class="label-text">Fork Angle</span><input type="range" id="faB" min="60" max="85" step="0.5" value="73" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="faB-num" class="val-input bike-b-input" value="73"><span class="unit unit-b">°</span></div></div>
                 <div class="row"><span class="label-text">Seat Tube</span><input type="range" id="stlB" min="350" max="650" value="580" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="stlB-num" class="val-input bike-b-input" value="580"></div></div>
             </div>
@@ -421,7 +423,7 @@
 
 </div>
 
-<div class="version-tag">v3.6.0</div>
+<div class="version-tag">v3.7.0</div>
 
 <script>
     const canvas = document.getElementById('bikeCanvas');
@@ -431,16 +433,17 @@
     let animationId = null;
     let globalCrank = 0;
 
+    // Frissített Preset-ek valós Seat Tube Angle (sta) értékekkel
     const bikePresets = {
-        "ms50": { reach: 379, stack: 544, fa: 72.0, stl: 500, saddleOffset: 0, barType: 'drop', barReach: 80, barDrop: 120, barAngle: 0, handPos: 'hoods' },
-        "ms54": { reach: 389, stack: 560, fa: 72.5, stl: 540, saddleOffset: 0, barType: 'drop', barReach: 80, barDrop: 120, barAngle: 0, handPos: 'hoods' },
-        "ms56": { reach: 393, stack: 580, fa: 73.0, stl: 560, saddleOffset: 0, barType: 'drop', barReach: 80, barDrop: 120, barAngle: 0, handPos: 'hoods' },
-        "ms58": { reach: 402, stack: 599, fa: 73.0, stl: 580, saddleOffset: 0, barType: 'drop', barReach: 80, barDrop: 120, barAngle: 0, handPos: 'hoods' },
-        "ms60": { reach: 409, stack: 620, fa: 73.5, stl: 600, saddleOffset: 0, barType: 'drop', barReach: 80, barDrop: 120, barAngle: 0, handPos: 'hoods' },
-        "konaS": { reach: 425, stack: 588, fa: 68.0, stl: 370, saddleOffset: 0, barType: 'flat', barReach: 20, barAngle: 90 },
-        "konaM": { reach: 450, stack: 597, fa: 68.0, stl: 420, saddleOffset: 0, barType: 'flat', barReach: 20, barAngle: 90 },
-        "konaL": { reach: 475, stack: 606, fa: 68.0, stl: 470, saddleOffset: 0, barType: 'flat', barReach: 20, barAngle: 90 },
-        "konaXL": { reach: 510, stack: 615, fa: 68.0, stl: 530, saddleOffset: 0, barType: 'flat', barReach: 20, barAngle: 90 }
+        "ms50": { reach: 379, stack: 544, sta: 74.0, fa: 72.0, stl: 500, saddleOffset: 0, barType: 'drop', barReach: 80, barDrop: 120, barAngle: 0, handPos: 'hoods' },
+        "ms54": { reach: 389, stack: 560, sta: 73.5, fa: 72.5, stl: 540, saddleOffset: 0, barType: 'drop', barReach: 80, barDrop: 120, barAngle: 0, handPos: 'hoods' },
+        "ms56": { reach: 393, stack: 580, sta: 73.0, fa: 73.0, stl: 560, saddleOffset: 0, barType: 'drop', barReach: 80, barDrop: 120, barAngle: 0, handPos: 'hoods' },
+        "ms58": { reach: 402, stack: 599, sta: 72.5, fa: 73.0, stl: 580, saddleOffset: 0, barType: 'drop', barReach: 80, barDrop: 120, barAngle: 0, handPos: 'hoods' },
+        "ms60": { reach: 409, stack: 620, sta: 72.5, fa: 73.5, stl: 600, saddleOffset: 0, barType: 'drop', barReach: 80, barDrop: 120, barAngle: 0, handPos: 'hoods' },
+        "konaS": { reach: 425, stack: 588, sta: 75.0, fa: 68.0, stl: 370, saddleOffset: 0, barType: 'flat', barReach: 20, barAngle: 90 },
+        "konaM": { reach: 450, stack: 597, sta: 75.0, fa: 68.0, stl: 420, saddleOffset: 0, barType: 'flat', barReach: 20, barAngle: 90 },
+        "konaL": { reach: 475, stack: 606, sta: 75.0, fa: 68.0, stl: 470, saddleOffset: 0, barType: 'flat', barReach: 20, barAngle: 90 },
+        "konaXL": { reach: 510, stack: 615, sta: 75.0, fa: 68.0, stl: 530, saddleOffset: 0, barType: 'flat', barReach: 20, barAngle: 90 }
     };
 
     function setSliderVal(id, value) {
@@ -504,6 +507,7 @@
                 const p = bikePresets[this.value];
                 setSliderVal('reach'+suffix, p.reach);
                 setSliderVal('stack'+suffix, p.stack);
+                if (p.sta !== undefined) setSliderVal('sta'+suffix, p.sta);
                 setSliderVal('fa'+suffix, p.fa);
                 setSliderVal('stl'+suffix, p.stl);
                 
@@ -517,7 +521,7 @@
                 update();
             }
         });
-        ['reach'+suffix, 'stack'+suffix, 'fa'+suffix, 'stl'+suffix, 'saddleOffset'+suffix, 'barReach'+suffix, 'barDrop'+suffix, 'barAngle'+suffix, 'barType'+suffix, 'handPos'+suffix].forEach(id => {
+        ['reach'+suffix, 'stack'+suffix, 'sta'+suffix, 'fa'+suffix, 'stl'+suffix, 'saddleOffset'+suffix, 'barReach'+suffix, 'barDrop'+suffix, 'barAngle'+suffix, 'barType'+suffix, 'handPos'+suffix].forEach(id => {
             const el = document.getElementById(id);
             if(el) el.addEventListener('input', () => { select.value = 'custom'; });
         });
@@ -584,7 +588,7 @@
         const strVal = id => document.getElementById(id + suffix).value;
         const autoTrunk = document.getElementById('autoTrunk' + suffix).checked;
         
-        const reach = val('reach'), stack = val('stack'), fa = val('fa'), stl = val('stl');
+        const reach = val('reach'), stack = val('stack'), sta = val('sta'), fa = val('fa'), stl = val('stl');
         const sH = val('seatHeight'); 
         const sOffset = val('saddleOffset');
         const spacers = val('spacers'), stemL = val('stemL'), stemA = val('stemA');
@@ -594,7 +598,7 @@
         ctx.save();
         ctx.globalAlpha = baseAlpha;
 
-        const sta = 73.5, wheelR = 340, wb_base = 1010;
+        const wheelR = 340, wb_base = 1010;
         const scale = (dims.w / 1400) * zoomFactor;
         const groundY = dims.h * 0.90;
         const offset = { x: dims.w * 0.35, y: groundY - (wheelR * scale) };
@@ -1014,6 +1018,10 @@
             }
         });
         
+        // MIGRÁCIÓ: Ha a régi mentésben nem volt sta, de a geometria igen (fallback)
+        if (stateObj['staA'] === undefined) { setSliderVal('staA', 73.5); }
+        if (stateObj['staB'] === undefined) { setSliderVal('staB', 73.5); }
+
         if (stateObj['seatHeight'] !== undefined && stateObj['seatHeightA'] === undefined) {
             let sH = parseFloat(stateObj['seatHeight']);
             setSliderVal('seatHeightA', sH);
