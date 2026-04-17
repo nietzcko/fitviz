@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BikeFit Pro Compare v3.8.1</title>
+    <title>BikeFit Pro Compare v3.8.2</title>
     <style>
         :root {
             --bg-color: #f2f2f7;
@@ -409,7 +409,7 @@
 
 </div>
 
-<div class="version-tag">v3.8.1</div>
+<div class="version-tag">v3.8.2</div>
 
 <script>
     const canvas = document.getElementById('bikeCanvas');
@@ -496,8 +496,7 @@
                 setSliderVal('fa'+suffix, p.fa);
                 setSliderVal('stl'+suffix, p.stl);
                 
-                // Kivéve a Crank Length és a Bar Reach a preset betöltésből
-                if (p.saddleOffset !== undefined) setSliderVal('saddleOffset'+suffix, p.saddleOffset);
+                // Személyes paraméterek (Crank, BarReach, SaddleOffset) NEM töltődnek be a presetből
                 if (p.barType) { document.getElementById('barType'+suffix).value = p.barType; updateBarUI(suffix); }
                 if (p.barDrop !== undefined) setSliderVal('barDrop'+suffix, p.barDrop);
                 if (p.handPos) document.getElementById('handPos'+suffix).value = p.handPos;
@@ -507,8 +506,8 @@
             }
         });
         
-        // Kivettem a 'crankLength' és 'barReach' azonosítókat, így ha ezeket állítod, nem dob vissza 'Custom...'-ra a legördülő
-        ['reach'+suffix, 'stack'+suffix, 'sta'+suffix, 'fa'+suffix, 'stl'+suffix, 'saddleOffset'+suffix, 'barDrop'+suffix, 'barAngle'+suffix, 'barType'+suffix, 'handPos'+suffix].forEach(id => {
+        // Csak a vázgeometria (és kormány típus) módosítása állítja "Custom"-ra a legördülőt
+        ['reach'+suffix, 'stack'+suffix, 'sta'+suffix, 'fa'+suffix, 'stl'+suffix, 'barDrop'+suffix, 'barAngle'+suffix, 'barType'+suffix, 'handPos'+suffix].forEach(id => {
             const el = document.getElementById(id);
             if(el) el.addEventListener('input', () => { select.value = 'custom'; });
         });
