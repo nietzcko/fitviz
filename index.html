@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BikeFit Pro Compare v3.8.0</title>
+    <title>BikeFit Pro Compare v3.8.1</title>
     <style>
         :root {
             --bg-color: #f2f2f7;
@@ -409,7 +409,7 @@
 
 </div>
 
-<div class="version-tag">v3.8.0</div>
+<div class="version-tag">v3.8.1</div>
 
 <script>
     const canvas = document.getElementById('bikeCanvas');
@@ -495,19 +495,20 @@
                 if (p.sta !== undefined) setSliderVal('sta'+suffix, p.sta);
                 setSliderVal('fa'+suffix, p.fa);
                 setSliderVal('stl'+suffix, p.stl);
-                if (p.crankL !== undefined) setSliderVal('crankLength'+suffix, p.crankL);
                 
+                // Kivéve a Crank Length és a Bar Reach a preset betöltésből
                 if (p.saddleOffset !== undefined) setSliderVal('saddleOffset'+suffix, p.saddleOffset);
                 if (p.barType) { document.getElementById('barType'+suffix).value = p.barType; updateBarUI(suffix); }
                 if (p.barDrop !== undefined) setSliderVal('barDrop'+suffix, p.barDrop);
                 if (p.handPos) document.getElementById('handPos'+suffix).value = p.handPos;
-                if (p.barReach !== undefined) setSliderVal('barReach'+suffix, p.barReach);
                 if (p.barAngle !== undefined) setSliderVal('barAngle'+suffix, p.barAngle);
                 
                 update();
             }
         });
-        ['reach'+suffix, 'stack'+suffix, 'sta'+suffix, 'fa'+suffix, 'stl'+suffix, 'crankLength'+suffix, 'saddleOffset'+suffix, 'barReach'+suffix, 'barDrop'+suffix, 'barAngle'+suffix, 'barType'+suffix, 'handPos'+suffix].forEach(id => {
+        
+        // Kivettem a 'crankLength' és 'barReach' azonosítókat, így ha ezeket állítod, nem dob vissza 'Custom...'-ra a legördülő
+        ['reach'+suffix, 'stack'+suffix, 'sta'+suffix, 'fa'+suffix, 'stl'+suffix, 'saddleOffset'+suffix, 'barDrop'+suffix, 'barAngle'+suffix, 'barType'+suffix, 'handPos'+suffix].forEach(id => {
             const el = document.getElementById(id);
             if(el) el.addEventListener('input', () => { select.value = 'custom'; });
         });
@@ -1005,7 +1006,6 @@
             }
         });
         
-        // MIGRÁCIÓ: Ha a régi mentésben nem volt sta vagy crankLength
         if (stateObj['staA'] === undefined) { setSliderVal('staA', 73.5); }
         if (stateObj['staB'] === undefined) { setSliderVal('staB', 73.5); }
         if (stateObj['crankLengthA'] === undefined) { setSliderVal('crankLengthA', 172.5); }
