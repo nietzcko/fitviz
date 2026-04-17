@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BikeFit Pro Compare v3.8.2</title>
+    <title>BikeFit Pro Compare v3.8.3</title>
     <style>
         :root {
             --bg-color: #f2f2f7;
@@ -409,7 +409,7 @@
 
 </div>
 
-<div class="version-tag">v3.8.2</div>
+<div class="version-tag">v3.8.3</div>
 
 <script>
     const canvas = document.getElementById('bikeCanvas');
@@ -496,7 +496,6 @@
                 setSliderVal('fa'+suffix, p.fa);
                 setSliderVal('stl'+suffix, p.stl);
                 
-                // Személyes paraméterek (Crank, BarReach, SaddleOffset) NEM töltődnek be a presetből
                 if (p.barType) { document.getElementById('barType'+suffix).value = p.barType; updateBarUI(suffix); }
                 if (p.barDrop !== undefined) setSliderVal('barDrop'+suffix, p.barDrop);
                 if (p.handPos) document.getElementById('handPos'+suffix).value = p.handPos;
@@ -506,7 +505,6 @@
             }
         });
         
-        // Csak a vázgeometria (és kormány típus) módosítása állítja "Custom"-ra a legördülőt
         ['reach'+suffix, 'stack'+suffix, 'sta'+suffix, 'fa'+suffix, 'stl'+suffix, 'barDrop'+suffix, 'barAngle'+suffix, 'barType'+suffix, 'handPos'+suffix].forEach(id => {
             const el = document.getElementById(id);
             if(el) el.addEventListener('input', () => { select.value = 'custom'; });
@@ -538,10 +536,22 @@
         return { w: rect.width, h: rect.height };
     }
 
+    // ÚJRAÍRT IK FÜGGVÉNY A VILLÓDZÁS ELLEN
     function solveIK(p1, p2, l1, l2, flip) {
         const dx = p2.x - p1.x, dy = p2.y - p1.y;
         const d = Math.sqrt(dx*dx + dy*dy);
-        if (d > l1 + l2 || d < Math.abs(l1 - l2)) return null;
+        
+        // HA TÚL MESSZE VAN A CÉL: Ne fagyjon le, hanem nyújtsa ki a végtagot egyenesen
+        if (d > l1 + l2) {
+            const ratio = l1 / d;
+            return { x: p1.x + dx * ratio, y: p1.y + dy * ratio };
+        }
+        // HA TÚL KÖZEL VAN: Teljesen összezárva mutasson
+        if (d < Math.abs(l1 - l2)) {
+            const ratio = l1 / (d === 0 ? 0.001 : d);
+            return { x: p1.x + dx * ratio, y: p1.y + dy * ratio };
+        }
+        
         const a = (l1*l1 - l2*l2 + d*d) / (2*d);
         const h = Math.sqrt(Math.max(0, l1*l1 - a*a));
         const x2 = p1.x + a*dx/d, y2 = p1.y + a*dy/d;
@@ -682,7 +692,8 @@
             let min_penalty = Infinity;
             let best_shoulder = null;
 
-            for (let test_tA = MIN_SAFE_TRUNK; test_tA <= MAX_SAFE_TRUNK; test_tA += 0.5) {
+            // Növelt precízió: 0.5 helyett 0.1 fokos lépésekben optimalizál
+            for (let test_tA = MIN_SAFE_TRUNK; test_tA <= MAX_SAFE_TRUNK; test_tA += 0.1) {
                 let s = { x: saddle.x + Math.cos(toRad(-test_tA))*riderData.torso, y: saddle.y + Math.sin(toRad(-test_tA))*riderData.torso };
                 let d = Math.hypot(s.x - handTarget.x, s.y - handTarget.y);
                 if (d <= totalArmLength) {
