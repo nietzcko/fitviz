@@ -3,1084 +3,1059 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BikeFit Pro Compare v3.8.3</title>
+    <title>Neon Trial - Vertical Survival</title>
     <style>
         :root {
-            --bg-color: #f2f2f7;
-            --sidebar-bg: #ffffff;
-            --accent-purple: #5856d6; 
-            --accent-green: #34c759;  
-            --accent-red: #ff3b30;
-            --accent-orange: #ff9500;
-            --accent-blue: #0a84ff;
-            --text-main: #1c1c1e;
-            --border-color: #d1d1d6;
+            --bg-color: #0b0c10;
+            --platform-body: #171d25;
+            --neon-main: #00f3ff;
+            --neon-alt: #ff0055;
+            --neon-scored: #ffd700;
+            --text-color: #c5c6c7;
         }
 
         body {
-            font-family: -apple-system, system-ui, sans-serif;
             margin: 0;
+            padding: 0;
             background-color: var(--bg-color);
-            color: var(--text-main);
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        /* --- RESPONSIVE LAYOUT --- */
-        .app-container {
-            display: grid;
-            grid-template-columns: 340px 1fr 340px;
-            height: 100vh;
-            width: 100vw;
-        }
-
-        .sidebar {
-            background: var(--sidebar-bg);
-            padding: 15px;
-            overflow-y: auto;
-            box-sizing: border-box;
-            border-right: 1px solid var(--border-color);
-        }
-        .right-sidebar {
-            border-right: none;
-            border-left: 1px solid var(--border-color);
-        }
-
-        .visualizer-section {
-            background: var(--bg-color);
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
-            padding: 15px;
-            position: relative;
-        }
-
-        @media (max-width: 1200px) {
-            body { overflow: auto; height: auto; }
-            .app-container { display: flex; flex-direction: column; height: auto; }
-            .sidebar { overflow-y: visible; border: none; padding: 15px; }
-            .right-sidebar { border: none; }
-            
-            .visualizer-section { 
-                order: -1; 
-                position: sticky; 
-                top: 0; 
-                z-index: 100; 
-                padding: 10px; 
-                border-bottom: 1px solid var(--border-color); 
-            }
-        }
-
-        /* --- UI ELEMENTS --- */
-        .canvas-card {
-            background: white;
-            width: 100%;
-            max-width: 1000px;
-            aspect-ratio: 1.3 / 1;
-            border-radius: 18px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            align-items: center;
+            height: 100vh;
             overflow: hidden;
+            font-family: system-ui, -apple-system, sans-serif;
+            touch-action: none;
+            color: var(--text-color);
         }
 
-        canvas { width: 100%; height: 100%; display: block; }
-
-        /* --- STATS DASHBOARD --- */
-        .stats-panel {
-            width: 95%;
-            max-width: 900px;
-            background: white;
-            margin-top: 15px;
-            padding: 12px 16px;
-            border-radius: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        canvas {
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.9);
+            max-width: 100vw;
+            max-height: 100vh;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            cursor: crosshair;
         }
 
-        .stat-row {
-            display: flex;
-            flex-direction: column;
-            padding: 8px 12px;
-            border-radius: 8px;
-            background: #f2f2f7;
-            gap: 6px;
+        #ui-top {
+            position: absolute;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            pointer-events: none;
+            width: 100%;
+            text-align: center;
         }
 
-        .stat-row.bike-a { border-left: 4px solid var(--accent-purple); }
-        .stat-row.bike-b { border-left: 4px solid var(--accent-red); }
+        .hud {
+            display: inline-block;
+            font-weight: 900;
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 4px 10px rgba(0, 0, 0, 0.9);
+            color: #fff;
+        }
 
-        .stat-top { display: flex; justify-content: space-between; align-items: flex-start; width: 100%; }
-        .stat-title { font-weight: 800; font-size: 11px; color: #333; text-transform: uppercase; }
-        .fit-status { font-weight: 800; font-size: 10px; text-transform: uppercase; text-align: right; max-width: 75%; line-height: 1.2; }
-
-        .stat-bottom { display: flex; justify-content: space-between; width: 100%; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 6px; }
-        .stat-item { color: #666; font-size: 10px; font-weight: 500; white-space: nowrap; }
-        .stat-val { font-weight: 700; color: #111; font-variant-numeric: tabular-nums; }
-        
-        @media (min-width: 400px) { .stat-item { font-size: 11px; } .fit-status { font-size: 11px; } }
-
-        /* --- SIDEBAR HEADINGS & CARDS --- */
-        h1 { font-size: 14px; margin: 0 0 15px 0; color: var(--accent-purple); text-transform: uppercase; display: flex; align-items: center; justify-content: space-between; }
-        h1.bike-b { color: var(--accent-red); } 
-        h2 { font-size: 11px; color: #8e8e93; text-transform: uppercase; margin: 15px 0 6px 5px; letter-spacing: 0.5px; }
-        h2.common { color: #555; font-weight: 800; border-top: 1px solid var(--border-color); padding-top: 15px; }
-        .h2-flex { display: flex; justify-content: space-between; align-items: center; padding-right: 5px; }
-
-        .card { background: white; border-radius: 12px; padding: 4px 14px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
-        .row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f2f2f7; }
-        .row:last-child { border-bottom: none; }
-        
-        .label-text { font-size: 12px; flex: 1; color: #444; font-weight: 500; display: flex; align-items: center; }
-        input[type="range"] { flex: 2; margin: 0 8px; accent-color: var(--accent-purple); }
-        input[type="range"]:disabled { opacity: 0.5; }
-        select { flex: 2; margin: 0 8px; padding: 4px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 12px; background: white; color: var(--text-main); outline: none; }
-        
-        /* Editable Number Inputs */
-        .val-container { display: flex; align-items: center; justify-content: flex-end; width: 50px; }
-        .val-input { width: 40px; border: 1px solid transparent; border-radius: 4px; font-weight: 600; color: var(--accent-purple); text-align: right; background: #f2f2f7; font-size: 11px; font-family: inherit; margin: 0; padding: 2px 4px; outline: none; transition: 0.2s; }
-        .val-input:focus { border-color: var(--accent-purple); background: white; }
-        .val-input:disabled { background: transparent; color: #8e8e93; }
-        .val-input::-webkit-outer-spin-button, .val-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        .val-input[type=number] { -moz-appearance: textfield; }
-        .unit { font-size: 11px; color: var(--accent-purple); font-weight: 600; margin-left: 2px; }
-
-        .bike-b-input { color: var(--accent-red); } 
-        .bike-b-input:focus { border-color: var(--accent-red); }
-        .unit-b { color: var(--accent-red); }
-
-        input[type="checkbox"] { transform: scale(1.2); accent-color: var(--accent-purple); margin-right: 8px; cursor: pointer; }
-        .auto-checkbox { transform: scale(0.9) !important; margin-left: 6px; margin-right: 4px !important; }
-        .auto-label { font-size: 10px; color: #8e8e93; font-weight: bold; text-transform: uppercase; display: flex; align-items: center; cursor: pointer; }
-
-        .toggle-wrapper { display: flex; align-items: center; font-size: 11px; color: #555; text-transform: none; cursor: pointer; }
-
-        .btn-group { display: flex; gap: 10px; padding: 10px 0; }
-        button { flex: 1; padding: 8px 12px; border: none; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; }
-        .btn-export { background: var(--accent-purple); color: white; }
-        .btn-export:hover { background: #4441a1; }
-        .btn-import { background: #e5e5ea; color: var(--text-main); }
-        .btn-import:hover { background: #d1d1d6; }
-        .btn-small { padding: 4px 8px; font-size: 10px; background: #e5e5ea; color: var(--text-main); flex: none; border-radius: 6px; }
-
-        #bikeB-settings { display: none; }
-
-        .version-tag { position: fixed; bottom: 8px; right: 12px; font-size: 10px; color: #aeaeb2; font-weight: bold; z-index: 1000; pointer-events: none; }
+        .score-num {
+            color: var(--neon-scored);
+            font-size: 2rem;
+            text-shadow: 0 0 15px var(--neon-scored), 0 4px 10px rgba(0,0,0,0.9);
+        }
     </style>
 </head>
 <body>
 
-<div class="app-container">
-
-    <aside class="sidebar left-sidebar">
-        <h1>Bike A (Main)</h1>
-        
-        <h2>View Settings</h2>
-        <div class="card">
-            <div class="row"><span class="label-text">Zoom</span><input type="range" id="zoom" min="-50" max="100" value="-50"><div class="val-container"><input type="number" id="zoom-num" class="val-input" value="-50"><span class="unit">%</span></div></div>
-            <div class="row">
-                <label class="toggle-wrapper" style="width:100%;">
-                    <input type="checkbox" id="bikeAFront" checked> 
-                    <span style="font-weight:bold; color: var(--accent-purple)">Bring Bike A to Front</span>
-                </label>
-            </div>
-            <div class="row">
-                <label class="toggle-wrapper" style="width:100%;">
-                    <input type="checkbox" id="animatePedaling" onchange="toggleAnimation()"> 
-                    <span style="font-weight:bold; color: var(--text-main)">Animate Pedaling</span>
-                </label>
-            </div>
+    <div id="ui-top">
+        <div class="hud">
+            SCORE: <span id="scoreDisplay" class="score-num">0</span>
         </div>
+    </div>
 
-        <h2>Rider Position A</h2>
-        <div class="card">
-            <div class="row">
-                <span class="label-text">Trunk Angle
-                    <label class="auto-label"><input type="checkbox" id="autoTrunkA" class="auto-checkbox" checked onchange="toggleAutoTrunk('A')"> Auto</label>
-                </span>
-                <input type="range" id="trunkAngleA" min="0" max="90" value="40" disabled>
-                <div class="val-container"><input type="number" id="trunkAngleA-num" class="val-input" value="40" disabled><span class="unit">°</span></div>
-            </div>
-            <div class="row"><span class="label-text">Foot Angle</span><input type="range" id="footAngleA" min="-30" max="45" value="0"><div class="val-container"><input type="number" id="footAngleA-num" class="val-input" value="0"><span class="unit">°</span></div></div>
-            <div class="row"><span class="label-text">Crank Rot.</span><input type="range" id="crankRotA" min="0" max="360" value="90"><div class="val-container"><input type="number" id="crankRotA-num" class="val-input" value="90"><span class="unit">°</span></div></div>
-        </div>
+    <canvas id="gameCanvas" width="540" height="960"></canvas>
 
-        <h2>Frame & Fork A</h2>
-        <div class="card">
-            <div class="row">
-                <span class="label-text">Preset</span>
-                <select id="presetA">
-                    <option value="custom">Custom...</option>
-                    <optgroup label="Surly MS">
-                        <option value="ms50">50cm</option>
-                        <option value="ms54">54cm</option>
-                        <option value="ms56" selected>56cm</option>
-                        <option value="ms58">58cm</option>
-                        <option value="ms60">60cm</option>
-                    </optgroup>
-                    <optgroup label="Kona Unit X">
-                        <option value="konaS">Size S</option>
-                        <option value="konaM">Size M</option>
-                        <option value="konaL">Size L</option>
-                        <option value="konaXL">Size XL</option>
-                    </optgroup>
-                </select>
-            </div>
-            <div class="row"><span class="label-text">Reach</span><input type="range" id="reachA" min="350" max="550" value="393"><div class="val-container"><input type="number" id="reachA-num" class="val-input" value="393"></div></div>
-            <div class="row"><span class="label-text">Stack</span><input type="range" id="stackA" min="500" max="750" value="580"><div class="val-container"><input type="number" id="stackA-num" class="val-input" value="580"></div></div>
-            <div class="row"><span class="label-text">Seat Angle</span><input type="range" id="staA" min="65" max="85" step="0.1" value="73.0"><div class="val-container"><input type="number" id="staA-num" class="val-input" value="73.0"><span class="unit">°</span></div></div>
-            <div class="row"><span class="label-text">Fork Angle</span><input type="range" id="faA" min="60" max="85" step="0.5" value="73"><div class="val-container"><input type="number" id="faA-num" class="val-input" value="73"><span class="unit">°</span></div></div>
-            <div class="row"><span class="label-text">Seat Tube</span><input type="range" id="stlA" min="350" max="650" value="560"><div class="val-container"><input type="number" id="stlA-num" class="val-input" value="560"></div></div>
-            <div class="row"><span class="label-text">Crank Length</span><input type="range" id="crankLengthA" min="150" max="185" step="2.5" value="172.5"><div class="val-container"><input type="number" id="crankLengthA-num" class="val-input" value="172.5"><span class="unit">mm</span></div></div>
-        </div>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreDisplay = document.getElementById('scoreDisplay');
 
-        <h2>Saddle & Seatpost A</h2>
-        <div class="card">
-            <div class="row"><span class="label-text">Saddle Height</span><input type="range" id="seatHeightA" min="600" max="950" value="760"><div class="val-container"><input type="number" id="seatHeightA-num" class="val-input" value="760"></div></div>
-            <div class="row"><span class="label-text">Saddle Offset</span><input type="range" id="saddleOffsetA" min="-60" max="60" value="0"><div class="val-container"><input type="number" id="saddleOffsetA-num" class="val-input" value="0"></div></div>
-        </div>
+        const STATE_PLAYING = 0;
+        const STATE_GAMEOVER = 1;
 
-        <h2>Cockpit A</h2>
-        <div class="card">
-            <div class="row"><span class="label-text">Spacers</span><input type="range" id="spacersA" min="0" max="100" value="30"><div class="val-container"><input type="number" id="spacersA-num" class="val-input" value="30"></div></div>
-            <div class="row"><span class="label-text">Stem Length</span><input type="range" id="stemLA" min="30" max="140" value="100"><div class="val-container"><input type="number" id="stemLA-num" class="val-input" value="100"></div></div>
-            <div class="row"><span class="label-text">Stem Angle</span><input type="range" id="stemAA" min="-25" max="25" value="-6"><div class="val-container"><input type="number" id="stemAA-num" class="val-input" value="-6"><span class="unit">°</span></div></div>
-            <div class="row">
-                <span class="label-text">Bar Type</span>
-                <select id="barTypeA" onchange="updateBarUI('A')">
-                    <option value="flat">Flat / Riser</option>
-                    <option value="drop" selected>Drop Bar</option>
-                </select>
-            </div>
-            <div class="row"><span class="label-text">Bar Reach</span><input type="range" id="barReachA" min="0" max="150" value="80"><div class="val-container"><input type="number" id="barReachA-num" class="val-input" value="80"></div></div>
-            <div class="row" id="row-barDropA"><span class="label-text">Bar Drop</span><input type="range" id="barDropA" min="100" max="160" value="120"><div class="val-container"><input type="number" id="barDropA-num" class="val-input" value="120"></div></div>
-            <div class="row"><span class="label-text">Bar Angle</span><input type="range" id="barAngleA" min="-180" max="180" value="0"><div class="val-container"><input type="number" id="barAngleA-num" class="val-input" value="0"><span class="unit">°</span></div></div>
-            <div class="row" id="row-handPosA">
-                <span class="label-text">Hand Position</span>
-                <select id="handPosA">
-                    <option value="hoods" selected>Hoods</option>
-                    <option value="drops">Drops</option>
-                </select>
-            </div>
-        </div>
-    </aside>
+        let gameState = STATE_PLAYING;
+        let isDragging = false;
+        let dragStart = { x: 0, y: 0 };
+        let dragCurrent = { x: 0, y: 0 };
 
-    <main class="visualizer-section">
-        <div class="canvas-card">
-            <canvas id="bikeCanvas"></canvas>
-        </div>
-        
-        <div class="stats-panel">
-            <div class="stat-row bike-a">
-                <div class="stat-top">
-                    <span class="stat-title" style="color: var(--accent-purple)">Bike A</span>
-                    <span class="fit-status" id="fit-statusA">--</span>
-                </div>
-                <div class="stat-bottom">
-                    <span class="stat-item">Knee: <span class="stat-val" id="stat-kneeA">--</span></span>
-                    <span class="stat-item">Hip: <span class="stat-val" id="stat-hipA">--</span></span>
-                    <span class="stat-item">KOPS: <span class="stat-val" id="stat-kopsA">--</span></span>
-                    <span class="stat-item">Shldr: <span class="stat-val" id="stat-shldrA">--</span></span>
-                </div>
-            </div>
-            
-            <div class="stat-row bike-b" id="stat-row-b" style="display:none;">
-                <div class="stat-top">
-                    <span class="stat-title" style="color: var(--accent-red)">Bike B</span>
-                    <span class="fit-status" id="fit-statusB">--</span>
-                </div>
-                <div class="stat-bottom">
-                    <span class="stat-item">Knee: <span class="stat-val" id="stat-kneeB">--</span></span>
-                    <span class="stat-item">Hip: <span class="stat-val" id="stat-hipB">--</span></span>
-                    <span class="stat-item">KOPS: <span class="stat-val" id="stat-kopsB">--</span></span>
-                    <span class="stat-item">Shldr: <span class="stat-val" id="stat-shldrB">--</span></span>
-                </div>
-            </div>
-        </div>
-    </main>
+        const maxDragDistance = 220;
+        let score = 0;
 
-    <aside class="sidebar right-sidebar">
-        <h1 class="bike-b">
-            Bike B (Compare)
-            <label class="toggle-wrapper" style="color:var(--accent-red)">
-                <input type="checkbox" id="enableBikeB" style="accent-color:var(--accent-red)"> Show
-            </label>
-        </h1>
-        
-        <div id="bikeB-settings">
-            <h2>Rider Position B</h2>
-            <div class="card">
-                <div class="row">
-                    <span class="label-text">Trunk Angle
-                        <label class="auto-label"><input type="checkbox" id="autoTrunkB" class="auto-checkbox" checked onchange="toggleAutoTrunk('B')" style="accent-color: var(--accent-red)"> Auto</label>
-                    </span>
-                    <input type="range" id="trunkAngleB" min="0" max="90" value="40" disabled style="accent-color: var(--accent-red)">
-                    <div class="val-container"><input type="number" id="trunkAngleB-num" class="val-input bike-b-input" value="40" disabled><span class="unit unit-b">°</span></div>
-                </div>
-                <div class="row"><span class="label-text">Foot Angle</span><input type="range" id="footAngleB" min="-30" max="45" value="0" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="footAngleB-num" class="val-input bike-b-input" value="0"><span class="unit unit-b">°</span></div></div>
-                <div class="row"><span class="label-text">Crank Rot.</span><input type="range" id="crankRotB" min="0" max="360" value="180" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="crankRotB-num" class="val-input bike-b-input" value="180"><span class="unit unit-b">°</span></div></div>
-            </div>
+        let cameraX = 0;
+        let targetCameraX = 0;
+        let cameraY = 0;
+        let targetCameraY = 0;
 
-            <h2>Frame & Fork B</h2>
-            <div class="card">
-                <div class="row">
-                    <span class="label-text">Preset</span>
-                    <select id="presetB" style="border-color: var(--accent-red); color: var(--accent-red)">
-                        <option value="custom">Custom...</option>
-                        <optgroup label="Surly MS">
-                            <option value="ms50">50cm</option>
-                            <option value="ms54">54cm</option>
-                            <option value="ms56">56cm</option>
-                            <option value="ms58" selected>58cm</option>
-                            <option value="ms60">60cm</option>
-                        </optgroup>
-                        <optgroup label="Kona Unit X">
-                            <option value="konaS">Size S</option>
-                            <option value="konaM">Size M</option>
-                            <option value="konaL">Size L</option>
-                            <option value="konaXL">Size XL</option>
-                        </optgroup>
-                    </select>
-                </div>
-                <div class="row"><span class="label-text">Reach</span><input type="range" id="reachB" min="350" max="550" value="402" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="reachB-num" class="val-input bike-b-input" value="402"></div></div>
-                <div class="row"><span class="label-text">Stack</span><input type="range" id="stackB" min="500" max="750" value="599" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="stackB-num" class="val-input bike-b-input" value="599"></div></div>
-                <div class="row"><span class="label-text">Seat Angle</span><input type="range" id="staB" min="65" max="85" step="0.1" value="72.5" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="staB-num" class="val-input bike-b-input" value="72.5"><span class="unit unit-b">°</span></div></div>
-                <div class="row"><span class="label-text">Fork Angle</span><input type="range" id="faB" min="60" max="85" step="0.5" value="73" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="faB-num" class="val-input bike-b-input" value="73"><span class="unit unit-b">°</span></div></div>
-                <div class="row"><span class="label-text">Seat Tube</span><input type="range" id="stlB" min="350" max="650" value="580" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="stlB-num" class="val-input bike-b-input" value="580"></div></div>
-                <div class="row"><span class="label-text">Crank Length</span><input type="range" id="crankLengthB" min="150" max="185" step="2.5" value="172.5" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="crankLengthB-num" class="val-input bike-b-input" value="172.5"><span class="unit unit-b">mm</span></div></div>
-            </div>
+        let bgPulse = 0;
 
-            <h2>Saddle & Seatpost B</h2>
-            <div class="card">
-                <div class="row"><span class="label-text">Saddle Height</span><input type="range" id="seatHeightB" min="600" max="950" value="760" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="seatHeightB-num" class="val-input bike-b-input" value="760"></div></div>
-                <div class="row"><span class="label-text">Saddle Offset</span><input type="range" id="saddleOffsetB" min="-60" max="60" value="0" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="saddleOffsetB-num" class="val-input bike-b-input" value="0"></div></div>
-            </div>
+        let genX = 0;
+        let genY = 0;
 
-            <h2>Cockpit B</h2>
-            <div class="card">
-                <div class="row"><span class="label-text">Spacers</span><input type="range" id="spacersB" min="0" max="100" value="10" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="spacersB-num" class="val-input bike-b-input" value="10"></div></div>
-                <div class="row"><span class="label-text">Stem Length</span><input type="range" id="stemLB" min="30" max="140" value="110" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="stemLB-num" class="val-input bike-b-input" value="110"></div></div>
-                <div class="row"><span class="label-text">Stem Angle</span><input type="range" id="stemAB" min="-25" max="25" value="-17" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="stemAB-num" class="val-input bike-b-input" value="-17"><span class="unit unit-b">°</span></div></div>
-                <div class="row">
-                    <span class="label-text">Bar Type</span>
-                    <select id="barTypeB" onchange="updateBarUI('B')" style="border-color: var(--accent-red); color: var(--accent-red)">
-                        <option value="flat">Flat / Riser</option>
-                        <option value="drop" selected>Drop Bar</option>
-                    </select>
-                </div>
-                <div class="row"><span class="label-text">Bar Reach</span><input type="range" id="barReachB" min="0" max="150" value="80" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="barReachB-num" class="val-input bike-b-input" value="80"></div></div>
-                <div class="row" id="row-barDropB"><span class="label-text">Bar Drop</span><input type="range" id="barDropB" min="100" max="160" value="120" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="barDropB-num" class="val-input bike-b-input" value="120"></div></div>
-                <div class="row"><span class="label-text">Bar Angle</span><input type="range" id="barAngleB" min="-180" max="180" value="0" style="accent-color: var(--accent-red)"><div class="val-container"><input type="number" id="barAngleB-num" class="val-input bike-b-input" value="0"><span class="unit unit-b">°</span></div></div>
-                <div class="row" id="row-handPosB">
-                    <span class="label-text">Hand Position</span>
-                    <select id="handPosB" style="border-color: var(--accent-red); color: var(--accent-red)">
-                        <option value="hoods" selected>Hoods</option>
-                        <option value="drops">Drops</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-        
-        <h2 class="common h2-flex">
-            Common Rider Profile
-            <button class="btn-small" onclick="document.getElementById('importRiderFile').click()">Import File</button>
-            <input type="file" id="importRiderFile" accept=".json,.txt,.csv" style="display:none;" onchange="importRiderData(event)">
-        </h2>
-        <div class="card">
-            <div class="row"><span class="label-text">Torso</span><input type="range" id="torso" min="50" max="80" value="65"><div class="val-container"><input type="number" id="torso-num" class="val-input" value="65"></div></div>
-            <div class="row"><span class="label-text">Upper Arm (Felkar)</span><input type="range" id="upperArm" min="20" max="50" value="30"><div class="val-container"><input type="number" id="upperArm-num" class="val-input" value="30"></div></div>
-            <div class="row"><span class="label-text">Lower Arm (Alkar)</span><input type="range" id="lowerArm" min="20" max="50" value="30"><div class="val-container"><input type="number" id="lowerArm-num" class="val-input" value="30"></div></div>
-            <div class="row"><span class="label-text">Thigh</span><input type="range" id="thigh" min="35" max="60" value="45"><div class="val-container"><input type="number" id="thigh-num" class="val-input" value="45"></div></div>
-            <div class="row"><span class="label-text">Shin</span><input type="range" id="shin" min="35" max="60" value="50"><div class="val-container"><input type="number" id="shin-num" class="val-input" value="50"></div></div>
-            <div class="row"><span class="label-text">Ankle-Pedal Dist</span><input type="range" id="foot" min="5" max="20" value="12"><div class="val-container"><input type="number" id="foot-num" class="val-input" value="12"></div></div>
-        </div>
+        const getCSSVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+        const colors = {
+            main: getCSSVar('--neon-main'),
+            alt: getCSSVar('--neon-alt'),
+            scored: getCSSVar('--neon-scored'),
+            platform: getCSSVar('--platform-body'),
+            bg: getCSSVar('--bg-color')
+        };
 
-        <h2 class="common">App Data Management</h2>
-        <div class="card">
-            <div class="btn-group">
-                <button class="btn-export" onclick="exportData()" style="background:var(--accent-purple)">Export Setup</button>
-                <button class="btn-import" onclick="document.getElementById('importFile').click()">Import Setup</button>
-                <input type="file" id="importFile" accept=".json,.txt" style="display:none;" onchange="importData(event)">
-            </div>
-        </div>
-        
-    </aside>
+        const wheelColors = {
+            rear: '#b400ff',
+            front: '#ff0055'
+        };
 
-</div>
+        let tutorialShown = {
+            wheelOrder: false
+        };
 
-<div class="version-tag">v3.8.3</div>
+        let worldHint = null;
 
-<script>
-    const canvas = document.getElementById('bikeCanvas');
-    const ctx = canvas.getContext('2d');
-    const toRad = deg => deg * (Math.PI / 180);
+        const jumpPower = 0.045;
+        const gravity = 0.4;
+        const bounceFactor = 0.4;
+        const poseStates = { GROUNDED: 0, AIRBORNE: 1, TAKING_OFF: 2 };
 
-    let animationId = null;
-    let globalCrank = 0;
+        const AIR_ROTATE_MAX = -Math.PI / 4;
+        const AIR_ROTATE_MIN = -0.08;
+        const GROUND_ANGLE_LIMIT = 0.55;
+        const ONE_WHEEL_POP = 0.22;
+        const ONE_WHEEL_DROP = 0.18;
 
-    const bikePresets = {
-        "ms50": { reach: 379, stack: 544, sta: 74.0, fa: 72.0, stl: 500, crankL: 170.0, saddleOffset: 0, barType: 'drop', barReach: 80, barDrop: 120, barAngle: 0, handPos: 'hoods' },
-        "ms54": { reach: 389, stack: 560, sta: 73.5, fa: 72.5, stl: 540, crankL: 170.0, saddleOffset: 0, barType: 'drop', barReach: 80, barDrop: 120, barAngle: 0, handPos: 'hoods' },
-        "ms56": { reach: 393, stack: 580, sta: 73.0, fa: 73.0, stl: 560, crankL: 172.5, saddleOffset: 0, barType: 'drop', barReach: 80, barDrop: 120, barAngle: 0, handPos: 'hoods' },
-        "ms58": { reach: 402, stack: 599, sta: 72.5, fa: 73.0, stl: 580, crankL: 172.5, saddleOffset: 0, barType: 'drop', barReach: 80, barDrop: 120, barAngle: 0, handPos: 'hoods' },
-        "ms60": { reach: 409, stack: 620, sta: 72.5, fa: 73.5, stl: 600, crankL: 175.0, saddleOffset: 0, barType: 'drop', barReach: 80, barDrop: 120, barAngle: 0, handPos: 'hoods' },
-        "konaS": { reach: 425, stack: 588, sta: 75.0, fa: 68.0, stl: 370, crankL: 170.0, saddleOffset: 0, barType: 'flat', barReach: 20, barAngle: 90 },
-        "konaM": { reach: 450, stack: 597, sta: 75.0, fa: 68.0, stl: 420, crankL: 170.0, saddleOffset: 0, barType: 'flat', barReach: 20, barAngle: 90 },
-        "konaL": { reach: 475, stack: 606, sta: 75.0, fa: 68.0, stl: 470, crankL: 175.0, saddleOffset: 0, barType: 'flat', barReach: 20, barAngle: 90 },
-        "konaXL": { reach: 510, stack: 615, sta: 75.0, fa: 68.0, stl: 530, crankL: 175.0, saddleOffset: 0, barType: 'flat', barReach: 20, barAngle: 90 }
-    };
+        let bike = {
+            x: 150,
+            y: 500,
+            vx: 0,
+            vy: 0,
+            radius: 15,
+            angle: 0,
+            angVel: 0,
+            grounded: false,
+            pose: poseStates.GROUNDED,
+            tuckFactor: 0,
+            dir: 1,
+            targetAirAngle: 0,
+            airRotateStrength: 0.12,
+            airRotateBlend: 0,
+            landingRecover: 0,
+            groundAngle: 0
+        };
 
-    function setSliderVal(id, value) {
-        const slider = document.getElementById(id);
-        const numInput = document.getElementById(id + '-num');
-        if (slider && numInput && value !== undefined && !isNaN(value)) {
-            slider.value = value;
-            numInput.value = value;
+        let terrain = [];
+
+        function updateHUD() {
+            scoreDisplay.innerText = score;
         }
-    }
 
-    function updateBarUI(suffix) {
-        const type = document.getElementById('barType' + suffix).value;
-        document.getElementById('row-barDrop' + suffix).style.display = (type === 'drop') ? 'flex' : 'none';
-        document.getElementById('row-handPos' + suffix).style.display = (type === 'drop') ? 'flex' : 'none';
-    }
-
-    function toggleAutoTrunk(suffix) {
-        const isAuto = document.getElementById('autoTrunk'+suffix).checked;
-        document.getElementById('trunkAngle'+suffix).disabled = isAuto;
-        document.getElementById('trunkAngle'+suffix+'-num').disabled = isAuto;
-        update(false);
-    }
-
-    function toggleAnimation() {
-        const isAnimating = document.getElementById('animatePedaling').checked;
-        ['A', 'B'].forEach(suffix => {
-            const slider = document.getElementById('crankRot'+suffix);
-            const num = document.getElementById('crankRot'+suffix+'-num');
-            if(slider) slider.disabled = isAnimating;
-            if(num) num.disabled = isAnimating;
-        });
-
-        if (isAnimating) {
-            globalCrank = parseFloat(document.getElementById('crankRotA').value) || 0;
-            animateFrame();
-        } else {
-            cancelAnimationFrame(animationId);
-            update(false);
+        function clamp(v, min, max) {
+            return Math.max(min, Math.min(max, v));
         }
-    }
 
-    function animateFrame() {
-        globalCrank = (globalCrank + 3) % 360;
-        ['A', 'B'].forEach(suffix => {
-            const slider = document.getElementById('crankRot'+suffix);
-            const num = document.getElementById('crankRot'+suffix+'-num');
-            if (slider && num) {
-                slider.value = Math.round(globalCrank);
-                num.value = Math.round(globalCrank);
+        function getWheelColorName(partName) {
+            if (partName === 'rear') return 'rear';
+            if (partName === 'front') return 'front';
+            return null;
+        }
+
+        function getWheelColorValue(partName) {
+            const key = getWheelColorName(partName);
+            return key ? wheelColors[key] : null;
+        }
+
+        function getWheelPlatformFill(requiredWheel) {
+            return requiredWheel === 'rear' ? 'rgba(180, 0, 255, 0.28)' : 'rgba(255, 0, 85, 0.24)';
+        }
+
+        function generateObstacle() {
+            let gapX = 70 + Math.random() * 80;
+            let startX = genX + gapX;
+
+            let type = Math.floor(Math.random() * 14);
+
+            if (genY < 250) type = Math.max(type, 3);
+            if (genY > 750) type = Math.min(type, 2);
+
+            if (type === 0) {
+                let w = 30 + Math.random() * 80;
+                let y = genY + (Math.random() * 260 - 140);
+                terrain.push({type: 'rect', x: startX, y: y, w: w, h: 30, landed: false});
+                genX = startX + w;
+                genY = y;
             }
-        });
-        update(true); 
-        animationId = requestAnimationFrame(animateFrame);
-    }
-
-    function setupPreset(suffix) {
-        const select = document.getElementById('preset' + suffix);
-        select.addEventListener('change', function() {
-            if (this.value !== 'custom') {
-                const p = bikePresets[this.value];
-                setSliderVal('reach'+suffix, p.reach);
-                setSliderVal('stack'+suffix, p.stack);
-                if (p.sta !== undefined) setSliderVal('sta'+suffix, p.sta);
-                setSliderVal('fa'+suffix, p.fa);
-                setSliderVal('stl'+suffix, p.stl);
-                
-                if (p.barType) { document.getElementById('barType'+suffix).value = p.barType; updateBarUI(suffix); }
-                if (p.barDrop !== undefined) setSliderVal('barDrop'+suffix, p.barDrop);
-                if (p.handPos) document.getElementById('handPos'+suffix).value = p.handPos;
-                if (p.barAngle !== undefined) setSliderVal('barAngle'+suffix, p.barAngle);
-                
-                update();
+            else if (type === 1) {
+                let r = 20 + Math.random() * 30;
+                let y = genY + (Math.random() * 200 - 100);
+                terrain.push({type: 'circle', x: startX + r, y: y, r: r, landed: false});
+                genX = startX + r * 2;
+                genY = y - r;
             }
+            else if (type === 2) {
+                let currX = startX;
+                let currY = genY;
+                let stepW = 30 + Math.random() * 20;
+                for(let i=0; i<3; i++) {
+                    terrain.push({type: 'rect', x: currX, y: currY, w: stepW, h: 40, landed: false});
+                    currX += stepW + 10;
+                    currY -= (40 + Math.random() * 20);
+                }
+                genX = currX;
+                genY = currY + 40;
+            }
+            else if (type === 3) {
+                let currX = startX;
+                let currY = genY;
+                let stepW = 30 + Math.random() * 20;
+                for(let i=0; i<3; i++) {
+                    terrain.push({type: 'rect', x: currX, y: currY, w: stepW, h: 40, landed: false});
+                    currX += stepW + 10;
+                    currY += (40 + Math.random() * 20);
+                }
+                genX = currX;
+                genY = currY - 40;
+            }
+            else if (type === 4) {
+                let w = 80 + Math.random() * 50;
+                let h = 25; let angle = -0.45;
+                terrain.push({type: 'slope', x: startX, y: genY, w: w, h: h, angle: angle, landed: false});
+                genX = startX + w * Math.cos(angle);
+                genY = genY + w * Math.sin(angle);
+            }
+            else if (type === 5) {
+                let w = 80 + Math.random() * 50;
+                let h = 25; let angle = 0.45;
+                terrain.push({type: 'slope', x: startX, y: genY, w: w, h: h, angle: angle, landed: false});
+                genX = startX + w * Math.cos(angle);
+                genY = genY + w * Math.sin(angle);
+            }
+            else if (type === 6) {
+                let currX = startX;
+                let baseY = genY + (Math.random() * 80 - 40);
+                let count = 2 + Math.floor(Math.random() * 3);
+
+                for (let i = 0; i < count; i++) {
+                    let w = 24 + Math.random() * 22;
+                    let gap = 35 + Math.random() * 45;
+                    terrain.push({type: 'rect', x: currX, y: baseY, w: w, h: 22, landed: false});
+                    currX += w + gap;
+                }
+
+                genX = currX;
+                genY = baseY;
+            }
+            else if (type === 7) {
+                let baseY = genY + (Math.random() * 60 - 30);
+                let lowW = 36 + Math.random() * 18;
+                let highW = 34 + Math.random() * 18;
+                let gap = 18 + Math.random() * 18;
+                let stepUp = 45 + Math.random() * 30;
+
+                terrain.push({type: 'rect', x: startX, y: baseY, w: lowW, h: 24, landed: false});
+                terrain.push({type: 'rect', x: startX + lowW + gap, y: baseY - stepUp, w: highW, h: 24, landed: false});
+
+                genX = startX + lowW + gap + highW;
+                genY = baseY - stepUp;
+            }
+            else if (type === 8) {
+                let baseY = genY + (Math.random() * 50 - 25);
+                let kickerW = 26 + Math.random() * 12;
+                let kickerH = 20;
+                let gap = 28 + Math.random() * 24;
+                let landW = 54 + Math.random() * 28;
+
+                terrain.push({type: 'slope', x: startX, y: baseY, w: kickerW, h: kickerH, angle: -0.32, landed: false});
+                let landX = startX + kickerW + gap;
+                terrain.push({type: 'rect', x: landX, y: baseY - 8, w: landW, h: 24, landed: false});
+
+                genX = landX + landW;
+                genY = baseY - 8;
+            }
+            else if (type === 9) {
+                let currX = startX;
+                let currY = genY + (Math.random() * 40 - 20);
+                let count = 3 + Math.floor(Math.random() * 2);
+
+                for (let i = 0; i < count; i++) {
+                    let w = 22 + Math.random() * 14;
+                    terrain.push({type: 'rect', x: currX, y: currY, w: w, h: 20, landed: false});
+                    currX += w + (18 + Math.random() * 18);
+                    currY -= 24 + Math.random() * 18;
+                }
+
+                genX = currX;
+                genY = currY + 28;
+            }
+            else if (type === 10) {
+                let w = 80 + Math.random() * 40;
+                let y = genY + (Math.random() * 80 - 40);
+                terrain.push({
+                    type: 'moving', x: startX, y: y, baseX: startX, w: w, h: 22,
+                    range: 28 + Math.random() * 18, speed: 0.002 + Math.random() * 0.003,
+                    phase: Math.random() * Math.PI * 2, moveDX: 0, landed: false
+                });
+                genX = startX + w + 40;
+                genY = y;
+            }
+            else if (type === 11) {
+                let baseY = genY + (Math.random() * 40 - 20);
+                let leadW = 86 + Math.random() * 32;
+                let gap = 32 + Math.random() * 12;
+                let landW = 58 + Math.random() * 24;
+
+                terrain.push({type: 'rect', x: startX, y: baseY, w: leadW, h: 24, landed: false});
+                terrain.push({type: 'laser', x: startX + leadW + gap * 0.5, y: baseY - 50, w: 8, h: 30, landed: false});
+                terrain.push({type: 'rect', x: startX + leadW + gap, y: baseY, w: landW, h: 24, landed: false});
+
+                genX = startX + leadW + gap + landW;
+                genY = baseY;
+            }
+            else if (type === 12) {
+                let w = 60 + Math.random() * 30;
+                let y = genY + (Math.random() * 70 - 35);
+                terrain.push({
+                    type: 'break', x: startX, y: y, w: w, h: 24,
+                    timer: 0, breaking: false, dead: false, landed: false
+                });
+                genX = startX + w + 35;
+                genY = y;
+            }
+            else if (type === 13) {
+                let y = genY + (Math.random() * 60 - 30);
+                let size = (26 + Math.random() * 10) * 1.4;
+                let requiredWheel = Math.random() < 0.5 ? 'rear' : 'front';
+
+                terrain.push({
+                    type: 'wheelGate',
+                    x: startX,
+                    y: y,
+                    w: size,
+                    h: size,
+                    landed: false,
+                    requiredWheel: requiredWheel,
+                    triggered: false,
+                    showHint: !tutorialShown.wheelOrder
+                });
+
+                if (!tutorialShown.wheelOrder) {
+                    tutorialShown.wheelOrder = true;
+                    worldHint = {
+                        type: 'wheelOrder',
+                        targetX: startX + size / 2,
+                        targetY: y - 24,
+                        timer: 360
+                    };
+                }
+
+                genX = startX + size + 45;
+                genY = y;
+            }
+        }
+
+        function initGame() {
+            score = 0;
+            terrain = [];
+            tutorialShown.wheelOrder = false;
+            worldHint = null;
+            updateHUD();
+
+            genX = 0; genY = 600;
+            terrain.push({ type: 'rect', x: 0, y: 600, w: 300, h: 50, landed: true });
+            genX = 300;
+
+            for(let i=0; i<10; i++) generateObstacle();
+
+            bike.x = 150;
+            bike.y = 550;
+            bike.vx = 0;
+            bike.vy = 0;
+            bike.angle = 0;
+            bike.angVel = 0;
+            bike.pose = poseStates.GROUNDED;
+            bike.grounded = true;
+            bike.tuckFactor = 0;
+            bike.targetAirAngle = 0;
+            bike.airRotateStrength = 0.12;
+            bike.airRotateBlend = 0;
+            bike.landingRecover = 0;
+            bike.groundAngle = 0;
+
+            isDragging = false;
+
+            targetCameraX = bike.x - 120;
+            targetCameraY = bike.y - 650;
+            cameraX = targetCameraX;
+            cameraY = targetCameraY;
+            gameState = STATE_PLAYING;
+        }
+
+        function getPointerPos(clientX, clientY) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            return {
+                x: (clientX - rect.left) * scaleX + cameraX,
+                y: (clientY - rect.top) * scaleY + cameraY
+            };
+        }
+
+        function startDrag(x, y) {
+            if (gameState === STATE_GAMEOVER) { initGame(); return; }
+            if (bike.grounded && gameState === STATE_PLAYING) {
+                isDragging = true;
+                dragStart = { x, y };
+                dragCurrent = { x, y };
+                bike.pose = poseStates.TAKING_OFF;
+            }
+        }
+
+        function moveDrag(x, y) {
+            if (isDragging && gameState === STATE_PLAYING) {
+                dragCurrent = { x, y };
+            }
+        }
+
+        function endDrag() {
+            if (isDragging && gameState === STATE_PLAYING) {
+                isDragging = false;
+                let aimX = dragStart.x - dragCurrent.x;
+                let aimY = dragStart.y - dragCurrent.y;
+                let aimLen = Math.sqrt(aimX * aimX + aimY * aimY);
+
+                if (aimLen > maxDragDistance) {
+                    aimX = (aimX / aimLen) * maxDragDistance;
+                    aimY = (aimY / aimLen) * maxDragDistance;
+                    aimLen = maxDragDistance;
+                }
+
+                if (aimLen > 5) {
+                    bike.vx = aimX * jumpPower;
+                    bike.vy = aimY * jumpPower;
+
+                    const pullRatio = Math.min(1, aimLen / maxDragDistance);
+                    const horizontalRatio = Math.min(1, Math.abs(aimX) / maxDragDistance);
+                    const naturalTurn = 0.35 * horizontalRatio + 0.65 * pullRatio;
+                    const easedTurn = 1 - Math.pow(1 - naturalTurn, 2);
+
+                    bike.targetAirAngle = AIR_ROTATE_MIN + (AIR_ROTATE_MAX - AIR_ROTATE_MIN) * easedTurn;
+                    bike.airRotateStrength = 0.06 + easedTurn * 0.07;
+                    bike.airRotateBlend = 0;
+                    bike.angVel = 0;
+
+                    bike.grounded = false;
+                    bike.pose = poseStates.AIRBORNE;
+                    bike.tuckFactor = 0;
+                    bike.landingRecover = 0;
+                } else {
+                    bike.pose = poseStates.GROUNDED;
+                }
+            }
+        }
+
+        canvas.addEventListener('mousedown', (e) => {
+            const pos = getPointerPos(e.clientX, e.clientY);
+            startDrag(pos.x, pos.y);
         });
-        
-        ['reach'+suffix, 'stack'+suffix, 'sta'+suffix, 'fa'+suffix, 'stl'+suffix, 'barDrop'+suffix, 'barAngle'+suffix, 'barType'+suffix, 'handPos'+suffix].forEach(id => {
-            const el = document.getElementById(id);
-            if(el) el.addEventListener('input', () => { select.value = 'custom'; });
+
+        canvas.addEventListener('mousemove', (e) => {
+            const pos = getPointerPos(e.clientX, e.clientY);
+            moveDrag(pos.x, pos.y);
         });
-    }
-    setupPreset('A'); setupPreset('B');
 
-    function syncInput(sliderId) {
-        const slider = document.getElementById(sliderId);
-        const numInput = document.getElementById(sliderId + '-num');
-        if(slider && numInput) {
-            slider.addEventListener('input', () => { numInput.value = slider.value; });
-            numInput.addEventListener('input', () => { slider.value = numInput.value; update(false); });
-            numInput.addEventListener('blur', () => {
-                let v = parseFloat(numInput.value), min = parseFloat(slider.min), max = parseFloat(slider.max);
-                if (v < min) v = min; if (v > max) v = max; if (isNaN(v)) v = parseFloat(slider.value);
-                numInput.value = v; slider.value = v; update(false);
-            });
-        }
-    }
-    document.querySelectorAll('input[type="range"]').forEach(slider => syncInput(slider.id));
+        window.addEventListener('mouseup', endDrag);
 
-    function initCanvas() {
-        const dpr = window.devicePixelRatio || 1;
-        const rect = canvas.parentNode.getBoundingClientRect();
-        canvas.width = rect.width * dpr;
-        canvas.height = rect.height * dpr;
-        ctx.resetTransform(); ctx.scale(dpr, dpr);
-        return { w: rect.width, h: rect.height };
-    }
+        canvas.addEventListener('touchstart', (e) => {
+            const pos = getPointerPos(e.touches[0].clientX, e.touches[0].clientY);
+            startDrag(pos.x, pos.y);
+        }, { passive: true });
 
-    // ÚJRAÍRT IK FÜGGVÉNY A VILLÓDZÁS ELLEN
-    function solveIK(p1, p2, l1, l2, flip) {
-        const dx = p2.x - p1.x, dy = p2.y - p1.y;
-        const d = Math.sqrt(dx*dx + dy*dy);
-        
-        // HA TÚL MESSZE VAN A CÉL: Ne fagyjon le, hanem nyújtsa ki a végtagot egyenesen
-        if (d > l1 + l2) {
-            const ratio = l1 / d;
-            return { x: p1.x + dx * ratio, y: p1.y + dy * ratio };
-        }
-        // HA TÚL KÖZEL VAN: Teljesen összezárva mutasson
-        if (d < Math.abs(l1 - l2)) {
-            const ratio = l1 / (d === 0 ? 0.001 : d);
-            return { x: p1.x + dx * ratio, y: p1.y + dy * ratio };
-        }
-        
-        const a = (l1*l1 - l2*l2 + d*d) / (2*d);
-        const h = Math.sqrt(Math.max(0, l1*l1 - a*a));
-        const x2 = p1.x + a*dx/d, y2 = p1.y + a*dy/d;
-        const rx = -dy*(h/d), ry = dx*(h/d);
-        return flip ? {x: x2 - rx, y: y2 - ry} : {x: x2 + rx, y: y2 + ry};
-    }
+        canvas.addEventListener('touchmove', (e) => {
+            const pos = getPointerPos(e.touches[0].clientX, e.touches[0].clientY);
+            moveDrag(pos.x, pos.y);
+        }, { passive: true });
 
-    function calcUpperArmShldrAngle(saddle, shoulder, handTarget, riderData) {
-        const elbow = solveIK(shoulder, handTarget, riderData.uArm, riderData.lArm, false);
-        if (!elbow) {
-            const a = Math.hypot(handTarget.x - saddle.x, handTarget.y - saddle.y);
-            const b = riderData.torso;
-            const c = Math.hypot(handTarget.x - shoulder.x, handTarget.y - shoulder.y); 
-            let angle = Math.acos((b**2 + c**2 - a**2) / (2*b*c)) * 180 / Math.PI;
-            return isNaN(angle) ? 180 : angle;
-        }
-        const vUA = { x: elbow.x - shoulder.x, y: elbow.y - shoulder.y }; 
-        const vT = { x: saddle.x - shoulder.x, y: saddle.y - shoulder.y }; 
-        const dot = vUA.x * vT.x + vUA.y * vT.y;
-        const lenUA = Math.hypot(vUA.x, vUA.y); 
-        const lenT = Math.hypot(vT.x, vT.y); 
-        let angle = Math.acos(dot / (lenUA * lenT)) * 180 / Math.PI;
-        return isNaN(angle) ? 180 : angle;
-    }
+        window.addEventListener('touchend', endDrag);
 
-    let dims = initCanvas();
+        function checkCollision(px, py, radius, t) {
+            if (t.type === 'laser') {
+                return { hit: false };
+            }
+            if (t.type === 'circle') {
+                let dx = px - t.x;
+                let dy = py - t.y;
+                let dist = Math.sqrt(dx*dx + dy*dy);
+                if (dist < radius + t.r) return { hit: true, nx: dx/dist, ny: dy/dist, pen: (radius + t.r) - dist };
+            }
+            else if (t.type === 'slope') {
+                let cx = t.x + t.w/2;
+                let cy = t.y + t.h/2;
+                let dx = px - cx;
+                let dy = py - cy;
+                let rdx = dx * Math.cos(-t.angle) - dy * Math.sin(-t.angle);
+                let rdy = dx * Math.sin(-t.angle) + dy * Math.cos(-t.angle);
+                let lwx = cx + rdx;
+                let lwy = cy + rdy;
 
-    function drawBikeAndRider(suffix, riderData, colors, baseAlpha, zoomFactor) {
-        const val = id => parseFloat(document.getElementById(id + suffix).value);
-        const strVal = id => document.getElementById(id + suffix).value;
-        const autoTrunk = document.getElementById('autoTrunk' + suffix).checked;
-        
-        const reach = val('reach'), stack = val('stack'), sta = val('sta'), fa = val('fa'), stl = val('stl');
-        const crankL = val('crankLength');
-        const sH = val('seatHeight'); 
-        const sOffset = val('saddleOffset');
-        const spacers = val('spacers'), stemL = val('stemL'), stemA = val('stemA');
-        const barType = strVal('barType'), barReach = val('barReach'), barDrop = val('barDrop'), barAngle = val('barAngle'), handPos = strVal('handPos');
-        const tA = val('trunkAngle'), cRot = val('crankRot'), fA = val('footAngle');
-        
-        ctx.save();
-        ctx.globalAlpha = baseAlpha;
+                let closestX = Math.max(t.x, Math.min(lwx, t.x + t.w));
+                let closestY = Math.max(t.y, Math.min(lwy, t.y + t.h));
+                let cdx = lwx - closestX;
+                let cdy = lwy - closestY;
+                let dist = Math.sqrt(cdx*cdx + cdy*cdy);
 
-        const wheelR = 340, wb_base = 1010;
-        const scale = (dims.w / 1400) * zoomFactor;
-        const groundY = dims.h * 0.90;
-        const offset = { x: dims.w * 0.35, y: groundY - (wheelR * scale) };
-        const px = p => ({x: offset.x + p.x*scale, y: offset.y + p.y*scale});
+                if (dist < radius) {
+                    let nx_l = dist === 0 ? 0 : cdx/dist;
+                    let ny_l = dist === 0 ? -1 : cdy/dist;
+                    if (dist === 0) { ny_l = -1; dist = 0.1; }
+                    let nx = nx_l * Math.cos(t.angle) - ny_l * Math.sin(t.angle);
+                    let ny = nx_l * Math.sin(t.angle) + ny_l * Math.cos(t.angle);
+                    return { hit: true, nx: nx, ny: ny, pen: radius - dist };
+                }
+            }
+            else {
+                let closestX = Math.max(t.x, Math.min(px, t.x + t.w));
+                let closestY = Math.max(t.y, Math.min(py, t.y + t.h));
+                let dx = px - closestX;
+                let dy = py - closestY;
+                let dist = Math.sqrt(dx*dx + dy*dy);
 
-        const bb = {x:0, y:0};
-        const readHub = {x: -wb_base * 0.42, y: 0};
-        const htTop = {x: reach, y: -stack}; 
-        const steererVec = { x: -Math.cos(toRad(fa)), y: -Math.sin(toRad(fa)) };
-        const frontHub = { x: htTop.x - (steererVec.x * (stack / Math.sin(toRad(fa)))), y: 0 };
-        const stemBase = { x: htTop.x + (steererVec.x * spacers), y: htTop.y + (steererVec.y * spacers) };
-        const stemTotalRad = toRad((90-fa) + stemA);
-        const stemEnd = { x: stemBase.x + Math.cos(stemTotalRad) * stemL, y: stemBase.y - Math.sin(stemTotalRad) * stemL };
-        
-        const barRad = toRad(barAngle);
-        const vF = { x: Math.cos(barRad), y: -Math.sin(barRad) }; 
-        const vD = { x: Math.sin(barRad), y: Math.cos(barRad) };  
-
-        const hoods = { x: stemEnd.x + vF.x * barReach, y: stemEnd.y + vF.y * barReach };
-        let handTarget = hoods;
-        let drops = null, dropsEnd = null;
-        
-        if (barType === 'drop') {
-            drops = { x: hoods.x - vF.x * 20 + vD.x * barDrop, y: hoods.y - vF.y * 20 + vD.y * barDrop };
-            dropsEnd = { x: drops.x - vF.x * 40, y: drops.y - vF.y * 40 };
-            if (handPos === 'drops') handTarget = drops;
+                if (dist < radius) {
+                    let nx = dist === 0 ? 0 : dx/dist;
+                    let ny = dist === 0 ? -1 : dy/dist;
+                    if (dist === 0) { ny = -1; dist = 0.1; }
+                    return { hit: true, nx: nx, ny: ny, pen: radius - dist };
+                }
+            }
+            return { hit: false };
         }
 
-        const stTop = { x: Math.cos(Math.PI - toRad(sta)) * stl, y: -Math.sin(Math.PI - toRad(sta)) * stl };
-        const saddle = { x: Math.cos(Math.PI - toRad(sta)) * sH + sOffset, y: -Math.sin(Math.PI - toRad(sta)) * sH };
+        function updatePhysics() {
+            targetCameraX = bike.x - 120;
+            targetCameraY = bike.y - 650;
+            cameraX += (targetCameraX - cameraX) * 0.08;
+            cameraY += (targetCameraY - cameraY) * 0.08;
 
-        const pedal = { x: Math.sin(toRad(cRot))*crankL, y: -Math.cos(toRad(cRot))*crankL };
-        const pedalOpp = { x: Math.sin(toRad(cRot + 180))*crankL, y: -Math.cos(toRad(cRot + 180))*crankL };
-        
-        const ankle = { x: pedal.x - Math.cos(toRad(-fA)) * riderData.foot, y: pedal.y - Math.sin(toRad(-fA)) * riderData.foot };
-        const ankleOpp = { x: pedalOpp.x - Math.cos(toRad(-fA)) * riderData.foot, y: pedalOpp.y - Math.sin(toRad(-fA)) * riderData.foot };
+            bgPulse = (bgPulse + 0.002) % (Math.PI * 2);
 
-        const pts = { bb: px(bb), stTop: px(stTop), saddle: px(saddle), htTop: px(htTop), stemBase: px(stemBase), stemEnd: px(stemEnd), hoods: px(hoods), rh: px(readHub), fh: px(frontHub) };
+            if (gameState !== STATE_PLAYING) return;
 
-        ctx.strokeStyle = "#000000"; 
-        ctx.lineWidth = 6 * (dims.w / 1400); 
-        [pts.rh, pts.fh].forEach(w => { ctx.beginPath(); ctx.arc(w.x, w.y, wheelR*scale, 0, 7); ctx.stroke(); });
+            if (cameraX + canvas.width > genX - 500) {
+                generateObstacle();
+            }
 
-        ctx.globalAlpha = baseAlpha * 0.35; 
-        ctx.strokeStyle = colors.crank || "#8e8e93"; ctx.lineWidth = 5 * zoomFactor;
-        ctx.beginPath(); ctx.moveTo(pts.bb.x, pts.bb.y); ctx.lineTo(px(pedalOpp).x, px(pedalOpp).y); ctx.stroke();
-        ctx.fillStyle = colors.crank || "#8e8e93"; ctx.beginPath(); ctx.arc(px(pedalOpp).x, px(pedalOpp).y, 4*zoomFactor, 0, 7); ctx.fill();
-        
-        const kneeOpp = solveIK(saddle, ankleOpp, riderData.thigh, riderData.shin, true);
-        if(kneeOpp) {
-            ctx.strokeStyle = colors.rider; ctx.lineWidth = 9 * zoomFactor;
-            ctx.beginPath(); ctx.moveTo(pts.saddle.x, pts.saddle.y); ctx.lineTo(px(kneeOpp).x, px(kneeOpp).y); 
-            ctx.lineTo(px(ankleOpp).x, px(ankleOpp).y); ctx.lineTo(px(pedalOpp).x, px(pedalOpp).y); ctx.stroke();
-        }
+            const now = performance.now();
+            for (let t of terrain) {
+                if (t.type === 'moving') {
+                    let prevX = t.x;
+                    t.x = t.baseX + Math.sin(now * t.speed + t.phase) * t.range;
+                    t.moveDX = t.x - prevX;
+                }
+                else if (t.type === 'break' && t.breaking) {
+                    t.timer++;
+                    if (t.timer > 75) {
+                        t.y += 0.9;
+                    }
+                    if (t.timer > 120) t.dead = true;
+                }
+            }
+            terrain = terrain.filter(t => !t.dead && t.x > cameraX - 1000);
 
-        ctx.globalAlpha = baseAlpha; 
-        ctx.strokeStyle = colors.frame; ctx.lineWidth = 6 * zoomFactor; ctx.lineCap = "round"; ctx.lineJoin = "round";
-        ctx.beginPath(); ctx.moveTo(pts.bb.x, pts.bb.y); ctx.lineTo(pts.stTop.x, pts.stTop.y); ctx.lineTo(pts.htTop.x, pts.htTop.y); ctx.lineTo(pts.bb.x, pts.bb.y); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(pts.bb.x, pts.bb.y); ctx.lineTo(pts.rh.x, pts.rh.y); ctx.lineTo(pts.stTop.x, pts.stTop.y); ctx.stroke();
-        
-        ctx.strokeStyle = colors.fork; ctx.lineWidth = 5 * zoomFactor; ctx.beginPath(); ctx.moveTo(pts.fh.x, pts.fh.y); ctx.lineTo(pts.htTop.x, pts.htTop.y); ctx.stroke();
-        ctx.strokeStyle = "#8e8e93"; ctx.lineWidth = 4 * zoomFactor; ctx.beginPath(); ctx.moveTo(pts.htTop.x, pts.htTop.y); ctx.lineTo(pts.stemBase.x, pts.stemBase.y); ctx.stroke();
-        
-        ctx.strokeStyle = colors.frame; ctx.lineWidth = 5 * zoomFactor; 
-        ctx.beginPath(); ctx.moveTo(pts.stemBase.x, pts.stemBase.y); ctx.lineTo(pts.stemEnd.x, pts.stemEnd.y); ctx.stroke();
-        
-        ctx.strokeStyle = "#555"; ctx.lineWidth = 4 * zoomFactor; 
-        ctx.beginPath(); 
-        ctx.moveTo(pts.stemEnd.x, pts.stemEnd.y); 
-        ctx.lineTo(pts.hoods.x, pts.hoods.y); 
-        if (barType === 'drop' && drops && dropsEnd) {
-            ctx.quadraticCurveTo(pts.hoods.x + vF.x * 15 * scale, pts.hoods.y + vF.y * 15 * scale, px(drops).x, px(drops).y);
-            ctx.lineTo(px(dropsEnd).x, px(dropsEnd).y);
-        }
-        ctx.stroke();
-        
-        ctx.strokeStyle = "#8e8e93"; ctx.lineWidth = 4 * zoomFactor; ctx.beginPath(); ctx.moveTo(pts.stTop.x, pts.stTop.y); ctx.lineTo(pts.saddle.x, pts.saddle.y); ctx.stroke();
-        ctx.strokeStyle = "#c7c7cc"; ctx.lineWidth = 2 * zoomFactor; ctx.beginPath(); ctx.moveTo(pts.stTop.x, pts.stTop.y); ctx.lineTo(pts.saddle.x, pts.saddle.y); ctx.stroke();
+            if (worldHint) {
+                worldHint.timer--;
+                if (worldHint.timer <= 0) worldHint = null;
+            }
 
-        ctx.strokeStyle = colors.crank || "#555"; ctx.lineWidth = 5 * zoomFactor;
-        ctx.beginPath(); ctx.moveTo(pts.bb.x, pts.bb.y); ctx.lineTo(px(pedal).x, px(pedal).y); ctx.stroke();
-        ctx.fillStyle = colors.crank || "#555";
-        [pts.bb, px(pedal)].forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, 4*zoomFactor, 0, 7); ctx.fill(); });
+            bike.vy += gravity;
 
-        let actual_tA = tA;
-        let isAutoLeaning = false;
-        let shoulder, elbow, d_shoulder_hand;
-        const MIN_SAFE_TRUNK = 35; 
-        const MAX_SAFE_TRUNK = 60; 
-        const totalArmLength = riderData.uArm + riderData.lArm;
-        
-        if (autoTrunk) {
-            let best_tA = null;
-            let min_penalty = Infinity;
-            let best_shoulder = null;
+            if (!bike.grounded) {
+                bike.tuckFactor = Math.min(1, bike.tuckFactor + 0.05);
+                bike.airRotateBlend = Math.min(1, bike.airRotateBlend + 0.05);
 
-            // Növelt precízió: 0.5 helyett 0.1 fokos lépésekben optimalizál
-            for (let test_tA = MIN_SAFE_TRUNK; test_tA <= MAX_SAFE_TRUNK; test_tA += 0.1) {
-                let s = { x: saddle.x + Math.cos(toRad(-test_tA))*riderData.torso, y: saddle.y + Math.sin(toRad(-test_tA))*riderData.torso };
-                let d = Math.hypot(s.x - handTarget.x, s.y - handTarget.y);
-                if (d <= totalArmLength) {
-                    let shldrAngleUA = calcUpperArmShldrAngle(saddle, s, handTarget, riderData);
-                    let penalty = Math.abs(shldrAngleUA - 90); 
-                    if (penalty < min_penalty) {
-                        min_penalty = penalty;
-                        best_tA = test_tA;
-                        best_shoulder = s;
+                const riseFactor = clamp(-bike.vy / 8, 0, 1);
+                const fallFactor = clamp(bike.vy / 10, 0, 1);
+                const dynamicTarget = bike.targetAirAngle + riseFactor * -0.06 + fallFactor * 0.04;
+                const clampedDynamicTarget = clamp(dynamicTarget, AIR_ROTATE_MAX, -0.02);
+
+                const diff = clampedDynamicTarget - bike.angle;
+                const strength = bike.airRotateStrength * (0.75 + bike.airRotateBlend * 0.5);
+                bike.angle += diff * strength;
+
+                if (Math.abs(diff) < 0.0015) {
+                    bike.angle = clampedDynamicTarget;
+                }
+
+                bike.angle = clamp(bike.angle, AIR_ROTATE_MAX, 0.18);
+            }
+
+            if (isDragging && bike.grounded) {
+                const pullX = dragCurrent.x - dragStart.x;
+                let targetAngle = (pullX / maxDragDistance) * 0.45;
+                targetAngle = clamp(targetAngle, -0.45, 0.45);
+                bike.angle += (targetAngle - bike.angle) * 0.14;
+            }
+
+            bike.x += bike.vx;
+            bike.y += bike.vy;
+
+            let headRx = 8 * bike.dir;
+            let headRy = -52;
+            let headWx = bike.x + Math.cos(bike.angle)*headRx - Math.sin(bike.angle)*headRy;
+            let headWy = bike.y + Math.sin(bike.angle)*headRx + Math.cos(bike.angle)*headRy;
+
+            for (let t of terrain) {
+                if (t.type === 'laser') {
+                    let inX = headWx > t.x && headWx < t.x + t.w;
+                    let inY = headWy > t.y && headWy < t.y + t.h;
+                    if (inX && inY) {
+                        gameState = STATE_GAMEOVER;
+                        return;
                     }
                 }
             }
-            
-            if (best_tA !== null) {
-                actual_tA = best_tA;
-                shoulder = best_shoulder;
-                elbow = solveIK(shoulder, handTarget, riderData.uArm, riderData.lArm, false);
-            } else {
-                isAutoLeaning = true;
-                let shoulder_auto = solveIK(saddle, handTarget, riderData.torso, totalArmLength, true);
-                if (shoulder_auto) {
-                    shoulder = shoulder_auto;
-                    let e_ratio = riderData.uArm / totalArmLength;
-                    elbow = { x: shoulder.x + (handTarget.x - shoulder.x)*e_ratio, y: shoulder.y + (handTarget.y - shoulder.y)*e_ratio };
-                } else {
-                    let angle = Math.atan2(handTarget.y - saddle.y, handTarget.x - saddle.x);
-                    shoulder = { x: saddle.x + Math.cos(angle)*riderData.torso, y: saddle.y + Math.sin(angle)*riderData.torso };
-                    elbow = { x: shoulder.x + Math.cos(angle)*riderData.uArm, y: shoulder.y + Math.sin(angle)*riderData.uArm };
-                    handTarget = { x: shoulder.x + Math.cos(angle)*totalArmLength, y: shoulder.y + Math.sin(angle)*totalArmLength };
+
+            for (let t of terrain) {
+                let hitResult = checkCollision(headWx, headWy, 12, t);
+                if (hitResult.hit) {
+                    gameState = STATE_GAMEOVER;
+                    return;
                 }
-                actual_tA = -Math.atan2(shoulder.y - saddle.y, shoulder.x - saddle.x) * (180 / Math.PI);
             }
-            
-            document.getElementById('trunkAngle'+suffix).value = Math.round(actual_tA);
-            document.getElementById('trunkAngle'+suffix+'-num').value = Math.round(actual_tA);
-            
-        } else {
-            shoulder = { x: saddle.x + Math.cos(toRad(-actual_tA))*riderData.torso, y: saddle.y + Math.sin(toRad(-actual_tA))*riderData.torso };
-            d_shoulder_hand = Math.hypot(shoulder.x - handTarget.x, shoulder.y - handTarget.y);
-            if (d_shoulder_hand <= totalArmLength) {
-                elbow = solveIK(shoulder, handTarget, riderData.uArm, riderData.lArm, false);
-            } else {
-                isAutoLeaning = true;
-                let shoulder_auto = solveIK(saddle, handTarget, riderData.torso, totalArmLength, true);
-                if (shoulder_auto) {
-                    shoulder = shoulder_auto;
-                    let e_ratio = riderData.uArm / totalArmLength;
-                    elbow = { x: shoulder.x + (handTarget.x - shoulder.x)*e_ratio, y: shoulder.y + (handTarget.y - shoulder.y)*e_ratio };
-                } else {
-                    let angle = Math.atan2(handTarget.y - saddle.y, handTarget.x - saddle.x);
-                    shoulder = { x: saddle.x + Math.cos(angle)*riderData.torso, y: saddle.y + Math.sin(angle)*riderData.torso };
-                    elbow = { x: shoulder.x + Math.cos(angle)*riderData.uArm, y: shoulder.y + Math.sin(angle)*riderData.uArm };
-                    handTarget = { x: shoulder.x + Math.cos(angle)*totalArmLength, y: shoulder.y + Math.sin(angle)*totalArmLength };
+
+            let hitGroundThisFrame = false;
+            let rearContact = null;
+            let frontContact = null;
+            let pedalContact = null;
+
+            const collisionPoints = [
+                { name: 'rear',  rx: -25 * bike.dir, ry: 10, radius: 12 },
+                { name: 'front', rx: 30 * bike.dir,  ry: 10, radius: 12 },
+                { name: 'pedal', rx: 0,              ry: 10, radius: 6 },
+                { name: 'body',  rx: 0,              ry: 0,  radius: 10 }
+            ];
+
+            for (let p of collisionPoints) {
+                let wx = bike.x + Math.cos(bike.angle)*p.rx - Math.sin(bike.angle)*p.ry;
+                let wy = bike.y + Math.sin(bike.angle)*p.rx + Math.cos(bike.angle)*p.ry;
+
+                let leftBound = cameraX - 50;
+                if (wx - p.radius < leftBound) {
+                    bike.x += Math.abs(wx - p.radius - leftBound);
+                    bike.vx = Math.abs(bike.vx) * bounceFactor;
+                    wx = leftBound + p.radius;
                 }
-                actual_tA = -Math.atan2(shoulder.y - saddle.y, shoulder.x - saddle.x) * (180 / Math.PI);
+
+                for (let t of terrain) {
+                    if (t.type === 'laser') {
+                        let closestX = Math.max(t.x, Math.min(wx, t.x + t.w));
+                        let closestY = Math.max(t.y, Math.min(wy, t.y + t.h));
+                        let dx = wx - closestX;
+                        let dy = wy - closestY;
+                        if (dx * dx + dy * dy < p.radius * p.radius) {
+                            gameState = STATE_GAMEOVER;
+                            return;
+                        }
+                        continue;
+                    }
+
+                    let c = checkCollision(wx, wy, p.radius, t);
+                    if (c.hit) {
+                        if (t.type === 'wheelGate' && !t.triggered) {
+                            if (p.name === 'rear' || p.name === 'front') {
+                                t.triggered = true;
+                                if (p.name !== t.requiredWheel) {
+                                    gameState = STATE_GAMEOVER;
+                                    return;
+                                }
+                            } else {
+                                gameState = STATE_GAMEOVER;
+                                return;
+                            }
+                        }
+
+                        bike.x += c.nx * c.pen;
+                        bike.y += c.ny * c.pen;
+
+                        if (t.type === 'break' && c.ny < -0.5 && (p.name === 'rear' || p.name === 'front' || p.name === 'pedal')) {
+                            t.breaking = true;
+                        }
+
+                        if (!t.landed && c.ny < -0.5 && (p.name === 'rear' || p.name === 'front' || p.name === 'pedal')) {
+                            t.landed = true;
+                            score++;
+                            updateHUD();
+                        }
+
+                        if (Math.abs(c.ny) > Math.abs(c.nx)) {
+                            if (c.ny < 0) {
+                                if (p.name === 'rear') {
+                                    rearContact = { wx, wy, nx: c.nx, ny: c.ny };
+                                }
+                                if (p.name === 'front') {
+                                    frontContact = { wx, wy, nx: c.nx, ny: c.ny };
+                                }
+                                if (p.name === 'pedal') {
+                                    pedalContact = { wx, wy, nx: c.nx, ny: c.ny };
+                                }
+
+                                if (t.type === 'moving') {
+                                    bike.x += t.moveDX || 0;
+                                }
+                                bike.vy = 0;
+                                if (p.name === 'rear' || p.name === 'front') bike.vx *= 0.35;
+                                if (p.name === 'pedal') bike.vx *= 0.92;
+                                bike.angVel = 0;
+                                bike.targetAirAngle = 0;
+                                bike.airRotateStrength = 0.12;
+                                bike.airRotateBlend = 0;
+                                bike.landingRecover = 1;
+                                hitGroundThisFrame = true;
+                                bike.pose = poseStates.GROUNDED;
+                            } else {
+                                bike.vy = Math.abs(bike.vy) * 0.5;
+                            }
+                        } else {
+                            bike.vx = -bike.vx * bounceFactor;
+                        }
+                    }
+                }
             }
-        }
 
-        const knee = solveIK(saddle, ankle, riderData.thigh, riderData.shin, true);
+            if (hitGroundThisFrame) {
+                if (rearContact && frontContact) {
+                    const dx = frontContact.wx - rearContact.wx;
+                    const dy = frontContact.wy - rearContact.wy;
+                    bike.groundAngle = Math.atan2(dy, dx);
+                } else if (rearContact) {
+                    const surfaceAngle = Math.atan2(rearContact.ny, rearContact.nx) + Math.PI / 2;
+                    bike.groundAngle = surfaceAngle - ONE_WHEEL_POP;
+                } else if (frontContact) {
+                    const surfaceAngle = Math.atan2(frontContact.ny, frontContact.nx) + Math.PI / 2;
+                    bike.groundAngle = surfaceAngle - ONE_WHEEL_DROP;
+                } else if (pedalContact) {
+                    const surfaceAngle = Math.atan2(pedalContact.ny, pedalContact.nx) + Math.PI / 2;
+                    bike.groundAngle = surfaceAngle - 0.05;
+                }
 
-        let maxKneeAngle = 0;
-        let legTooShort = false;
-        for (let testCrank = 0; testCrank < 360; testCrank += 5) {
-            let p = { x: Math.sin(toRad(testCrank))*crankL, y: -Math.cos(toRad(testCrank))*crankL };
-            let a = { x: p.x - Math.cos(toRad(-fA)) * riderData.foot, y: p.y - Math.sin(toRad(-fA)) * riderData.foot };
-            let d = Math.hypot(saddle.x - a.x, saddle.y - a.y);
-            
-            if (d > riderData.thigh + riderData.shin) {
-                maxKneeAngle = 180;
-                legTooShort = true;
-            } else {
-                let k = Math.acos((riderData.thigh**2 + riderData.shin**2 - d**2)/(2*riderData.thigh*riderData.shin)) * 180/Math.PI;
-                if (!isNaN(k) && k > maxKneeAngle) maxKneeAngle = k;
+                bike.groundAngle = clamp(bike.groundAngle, -GROUND_ANGLE_LIMIT, GROUND_ANGLE_LIMIT);
             }
+
+            bike.grounded = hitGroundThisFrame;
+
+            if (bike.grounded && !isDragging) {
+                bike.landingRecover = Math.max(0, bike.landingRecover - 0.08);
+                const droop = pedalContact && !rearContact && !frontContact ? -0.03 * bike.landingRecover : -0.08 * bike.landingRecover;
+                const settleTarget = bike.groundAngle + droop;
+
+                bike.angle += (settleTarget - bike.angle) * 0.16;
+
+                if (Math.abs(settleTarget - bike.angle) < 0.002 && bike.landingRecover <= 0.02) {
+                    bike.angle += (bike.groundAngle - bike.angle) * 0.2;
+                }
+
+                bike.tuckFactor = Math.max(0, bike.tuckFactor - 0.1);
+            }
+
+            if (bike.y > cameraY + canvas.height + 100) gameState = STATE_GAMEOVER;
         }
 
-        let staticKops = 0;
-        let k90_valid = false;
-        let p90 = { x: Math.sin(toRad(90))*crankL, y: -Math.cos(toRad(90))*crankL };
-        let a90 = { x: p90.x - Math.cos(toRad(-fA)) * riderData.foot, y: p90.y - Math.sin(toRad(-fA)) * riderData.foot };
-        let k90 = solveIK(saddle, a90, riderData.thigh, riderData.shin, true);
-        
-        if (k90) {
-            staticKops = k90.x - p90.x;
-            k90_valid = true;
-        }
+        function draw() {
+            ctx.fillStyle = colors.bg;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        let cR = cRot % 360;
-        if (cR < 0) cR += 360;
+            let centerPulse = Math.sin(bgPulse) * 0.03 + 0.03;
+            let grad = ctx.createRadialGradient(canvas.width/2, canvas.height/2, 0, canvas.width/2, canvas.height/2, canvas.width);
+            grad.addColorStop(0, `rgba(102, 252, 241, ${centerPulse})`);
+            grad.addColorStop(1, 'transparent');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        ctx.strokeStyle = colors.rider; ctx.lineWidth = 9 * zoomFactor;
-        
-        if(knee) {
-            const sk = px(knee), sa = px(ankle), sp = px(pedal);
-            ctx.beginPath(); ctx.moveTo(pts.saddle.x, pts.saddle.y); ctx.lineTo(sk.x, sk.y); 
-            ctx.lineTo(sa.x, sa.y); ctx.lineTo(sp.x, sp.y); ctx.stroke();
+            ctx.save();
+            ctx.translate(-cameraX, -cameraY);
 
-            if (cR >= 80 && cR <= 100) {
+            ctx.lineJoin = 'miter';
+            ctx.lineCap = 'butt';
+
+            for (let t of terrain) {
+                ctx.fillStyle = colors.platform;
+                let edgeColor = t.landed ? colors.scored : colors.main;
+
+                if (t.type === 'rect' || t.type === 'moving' || t.type === 'break' || t.type === 'wheelGate') {
+                    if (t.type === 'break') {
+                        ctx.fillStyle = t.breaking ? 'rgba(255, 0, 140, 0.92)' : 'rgba(255, 0, 140, 0.42)';
+                        edgeColor = '#ff4dc4';
+                    }
+
+                    if (t.type === 'wheelGate') {
+                        ctx.fillStyle = getWheelPlatformFill(t.requiredWheel);
+                        edgeColor = t.requiredWheel === 'rear' ? wheelColors.rear : wheelColors.front;
+                    }
+
+                    ctx.fillRect(t.x, t.y, t.w, t.h);
+                    ctx.beginPath();
+                    ctx.moveTo(t.x, t.y+1);
+                    ctx.lineTo(t.x+t.w, t.y+1);
+                    ctx.lineWidth = t.landed ? 3 : 2;
+                    ctx.strokeStyle = t.landed ? colors.scored : edgeColor;
+                    ctx.stroke();
+
+                    if (t.type === 'moving') {
+                        ctx.beginPath();
+                        ctx.moveTo(t.x + 12, t.y + t.h - 4);
+                        ctx.lineTo(t.x + t.w - 12, t.y + t.h - 4);
+                        ctx.lineWidth = 2;
+                        ctx.strokeStyle = 'rgba(255,255,255,0.28)';
+                        ctx.stroke();
+                    }
+
+                    if (t.type === 'wheelGate') {
+                        ctx.beginPath();
+                        ctx.strokeStyle = t.landed ? colors.scored : edgeColor;
+                        ctx.lineWidth = 2;
+                        ctx.arc(t.x + t.w / 2, t.y + t.h / 2, Math.min(t.w, t.h) * 0.22, 0, Math.PI * 2);
+                        ctx.stroke();
+                    }
+                }
+                else if (t.type === 'circle') {
+                    ctx.beginPath();
+                    ctx.arc(t.x, t.y, t.r, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.lineWidth = t.landed ? 3 : 2;
+                    ctx.strokeStyle = edgeColor;
+                    ctx.stroke();
+                }
+                else if (t.type === 'slope') {
+                    ctx.save();
+                    ctx.translate(t.x + t.w/2, t.y + t.h/2);
+                    ctx.rotate(t.angle);
+                    ctx.translate(-(t.x + t.w/2), -(t.y + t.h/2));
+                    ctx.fillRect(t.x, t.y, t.w, t.h);
+                    ctx.beginPath();
+                    ctx.moveTo(t.x, t.y+1);
+                    ctx.lineTo(t.x+t.w, t.y+1);
+                    ctx.lineWidth = t.landed ? 3 : 2;
+                    ctx.strokeStyle = edgeColor;
+                    ctx.stroke();
+                    ctx.restore();
+                }
+                else if (t.type === 'laser') {
+                    ctx.fillStyle = 'rgba(255, 0, 85, 0.16)';
+                    ctx.fillRect(t.x, t.y, t.w, t.h);
+                    ctx.strokeStyle = colors.alt;
+                    ctx.lineWidth = 3;
+                    ctx.shadowBlur = 18;
+                    ctx.shadowColor = colors.alt;
+                    ctx.strokeRect(t.x, t.y, t.w, t.h);
+                    ctx.beginPath();
+                    ctx.moveTo(t.x + t.w * 0.5, t.y + 10);
+                    ctx.lineTo(t.x + t.w * 0.5, t.y + t.h - 10);
+                    ctx.stroke();
+                    ctx.shadowBlur = 0;
+                }
+            }
+
+            if (worldHint && worldHint.type === 'wheelOrder') {
                 ctx.save();
-                ctx.beginPath();
-                ctx.setLineDash([5*zoomFactor, 5*zoomFactor]);
-                ctx.strokeStyle = "var(--accent-blue)";
-                ctx.lineWidth = 2 * zoomFactor;
-                ctx.moveTo(sk.x, sk.y);
-                ctx.lineTo(sk.x, sp.y + 30*scale);
-                ctx.stroke();
+                ctx.globalAlpha = Math.min(1, worldHint.timer / 40 + 0.15);
+                ctx.textAlign = 'center';
+                ctx.font = 'bold 18px system-ui, sans-serif';
+                ctx.fillStyle = '#ffffff';
+                ctx.strokeStyle = 'rgba(0,0,0,0.75)';
+                ctx.lineWidth = 5;
+                const text = 'A blokk színével egyező kerék érkezzen először!';
+                ctx.strokeText(text, worldHint.targetX, worldHint.targetY);
+                ctx.fillText(text, worldHint.targetX, worldHint.targetY);
                 ctx.restore();
             }
-        }
-        
-        ctx.beginPath(); ctx.moveTo(pts.saddle.x, pts.saddle.y); ctx.lineTo(px(shoulder).x, px(shoulder).y);
-        if(elbow) { ctx.lineTo(px(elbow).x, px(elbow).y); ctx.lineTo(px(handTarget).x, px(handTarget).y); }
-        ctx.stroke();
 
-        let finalShldrAngle = calcUpperArmShldrAngle(saddle, shoulder, handTarget, riderData);
+            if (isDragging && gameState === STATE_PLAYING) {
+                let aimX = dragStart.x - dragCurrent.x;
+                let aimY = dragStart.y - dragCurrent.y;
+                let dragX = dragCurrent.x - dragStart.x;
+                let dragY = dragCurrent.y - dragStart.y;
+                let aimLen = Math.sqrt(aimX * aimX + aimY * aimY);
 
-        const headCenter = { x: shoulder.x + Math.cos(toRad(-actual_tA))*180, y: shoulder.y + Math.sin(toRad(-actual_tA))*180 };
-        ctx.beginPath(); ctx.arc(px(headCenter).x, px(headCenter).y, 100 * scale, 0, Math.PI * 2); ctx.stroke();
-
-        ctx.restore();
-        
-        document.getElementById('stat-knee'+suffix).innerText = `${Math.round(maxKneeAngle)}°`;
-        document.getElementById('stat-hip'+suffix).innerText = `${Math.round(actual_tA)}°`;
-        
-        let kopsLabel = k90_valid ? (staticKops > 0 ? `+${Math.round(staticKops)}mm` : `${Math.round(staticKops)}mm`) : '--';
-        document.getElementById('stat-kops'+suffix).innerText = kopsLabel;
-        
-        document.getElementById('stat-shldr'+suffix).innerText = `${Math.round(finalShldrAngle)}°`;
-
-        let fitColor = "var(--accent-green)";
-        let fitMsgs = [];
-        
-        if (legTooShort || maxKneeAngle > 150) { 
-            fitMsgs.push("Saddle too high"); 
-            fitColor = "var(--accent-red)"; 
-        } else if (maxKneeAngle < 137) { 
-            fitMsgs.push("Saddle too low"); 
-            fitColor = "var(--accent-orange)"; 
-        }
-
-        if (k90_valid) {
-            if (staticKops > 20) { 
-                fitMsgs.push("Saddle too forward"); 
-                if(fitColor === "var(--accent-green)") fitColor = "var(--accent-orange)"; 
-            } else if (staticKops < -20) { 
-                fitMsgs.push("Saddle too far back"); 
-                if(fitColor === "var(--accent-green)") fitColor = "var(--accent-orange)"; 
-            }
-        }
-
-        if (isAutoLeaning) {
-            fitMsgs.push("Reach extreme (Setup wrong)");
-            fitColor = "var(--accent-red)";
-        } else {
-            if (autoTrunk && finalShldrAngle > 105 && Math.abs(actual_tA - MIN_SAFE_TRUNK) < 0.1) {
-                fitMsgs.push("Setup too long");
-                fitColor = "var(--accent-orange)";
-            } else if (finalShldrAngle > 105) {
-                fitMsgs.push("Over-stretched");
-                if(fitColor === "var(--accent-green)" || fitColor === "#8e8e93") fitColor = "var(--accent-orange)";
-            } else if (finalShldrAngle < 80) { 
-                fitMsgs.push("Cramped reach"); 
-                if(fitColor === "var(--accent-green)" || fitColor === "#8e8e93") fitColor = "var(--accent-orange)"; 
-            }
-        }
-
-        if (fitMsgs.length === 0) {
-            fitMsgs.push("Optimal Fit ✓");
-            fitColor = "var(--accent-green)";
-        }
-
-        const statEl = document.getElementById('fit-status'+suffix);
-        statEl.innerText = fitMsgs.join(" | ");
-        statEl.style.color = fitColor;
-    }
-
-    function update(skipSave = false) {
-        const showBikeB = document.getElementById('enableBikeB').checked;
-        const bikeAFront = document.getElementById('bikeAFront').checked;
-        document.getElementById('bikeB-settings').style.display = showBikeB ? 'block' : 'none';
-        document.getElementById('stat-row-b').style.display = showBikeB ? 'flex' : 'none';
-
-        const getV = id => parseFloat(document.getElementById(id).value);
-        const riderData = { 
-            torso: getV('torso')*10, 
-            uArm: getV('upperArm')*10, 
-            lArm: getV('lowerArm')*10, 
-            thigh: getV('thigh')*10, 
-            shin: getV('shin')*10, 
-            foot: getV('foot')*10
-        };
-
-        ctx.clearRect(0,0, dims.w, dims.h);
-        
-        const zoomFactor = 1 + (getV('zoom') / 100);
-        const scale = (dims.w / 1400) * zoomFactor;
-        const groundY = dims.h * 0.90;
-        
-        ctx.strokeStyle = "#8e8e93"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, groundY); ctx.lineTo(dims.w, groundY); ctx.stroke();
-        
-        const offset = { x: dims.w * 0.35, y: groundY - (340 * scale) };
-        const px = p => ({x: offset.x + p.x*scale, y: offset.y + p.y*scale});
-
-        const colorsA = { frame: "#1c1c1e", fork: "#555555", crank: "#333", rider: "rgba(88, 86, 214, 0.9)" };
-        const colorsB = { frame: "#ff3b30", fork: "#cc2211", crank: "#cc2211", rider: "rgba(52, 199, 89, 0.9)" };
-
-        if (!showBikeB) {
-            drawBikeAndRider('A', riderData, colorsA, 1.0, zoomFactor);
-        } else {
-            if (bikeAFront) {
-                drawBikeAndRider('B', riderData, colorsB, 0.25, zoomFactor); 
-                drawBikeAndRider('A', riderData, colorsA, 1.0, zoomFactor);
-            } else {
-                drawBikeAndRider('A', riderData, colorsA, 0.25, zoomFactor);
-                drawBikeAndRider('B', riderData, colorsB, 1.0, zoomFactor);
-            }
-        }
-
-        if (!skipSave) saveToLocalStorage();
-    }
-
-    function extractNumber(text, keywords) {
-        for (let kw of keywords) {
-            let regex = new RegExp(kw + "\\s*[:=,-]?\\s*([0-9]+(?:\\.[0-9]+)?)", "i");
-            let match = text.match(regex);
-            if (match && match[1]) {
-                return parseFloat(match[1]);
-            }
-        }
-        return null;
-    }
-
-    function importRiderData(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const rawText = e.target.result;
-            
-            let sH_imported = null;
-
-            try {
-                const data = JSON.parse(rawText);
-                const torso = data.torso || data.Torso || data.back;
-                const uArm = data.upperArm || data.upper_arm || data.UpperArm || data.felkar;
-                const lArm = data.lowerArm || data.lower_arm || data.LowerArm || data.alkar;
-                const thigh = data.thigh || data.Thigh || data.upperLeg || data.upper_leg || data.comb;
-                const shin = data.shin || data.Shin || data.lowerLeg || data.lower_leg || data.vadli;
-                const foot = data.foot || data.Foot || data.labfej || data.ankle_pedal;
-                const sH = data.seatHeight || data.seat_height || data.saddleHeight || data.nyereg_magassag;
-
-                if(torso) setSliderVal('torso', torso);
-                if(uArm) setSliderVal('upperArm', uArm);
-                if(lArm) setSliderVal('lowerArm', lArm);
-                if(thigh) setSliderVal('thigh', thigh);
-                if(shin) setSliderVal('shin', shin);
-                if(foot) setSliderVal('foot', foot);
-                if(sH) {
-                    setSliderVal('seatHeightA', sH);
-                    setSliderVal('seatHeightB', sH);
+                if (aimLen > maxDragDistance) {
+                    aimX = (aimX / aimLen) * maxDragDistance;
+                    aimY = (aimY / aimLen) * maxDragDistance;
+                    dragX = (dragX / aimLen) * maxDragDistance;
+                    dragY = (dragY / aimLen) * maxDragDistance;
                 }
 
-                update(false);
-                alert("Rider dimensions imported from JSON successfully!");
-                return; 
-            } catch (err) {}
+                ctx.beginPath();
+                ctx.moveTo(bike.x, bike.y);
+                ctx.lineTo(bike.x + aimX, bike.y + aimY);
+                ctx.strokeStyle = 'rgba(102, 252, 241, 0.5)';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([8, 6]);
+                ctx.stroke();
 
-            const torso = extractNumber(rawText, ["torso", "back", "hát", "hat"]);
-            const uArm = extractNumber(rawText, ["upper\\s*arm", "upper_arm", "felkar"]);
-            const lArm = extractNumber(rawText, ["lower\\s*arm", "lower_arm", "alkar"]);
-            const thigh = extractNumber(rawText, ["thigh", "upper\\s*leg", "comb"]);
-            const shin = extractNumber(rawText, ["shin", "lower\\s*leg", "vadli", "lábszár"]);
-            const foot = extractNumber(rawText, ["foot", "ankle\\s*pedal", "lábfej", "labfej"]);
-            const sH = extractNumber(rawText, ["seat\\s*height", "saddle\\s*height", "nyereg", "saddle"]);
+                ctx.setLineDash([]);
+                ctx.beginPath();
+                ctx.moveTo(bike.x, bike.y);
+                ctx.lineTo(bike.x + dragX, bike.y + dragY);
+                ctx.strokeStyle = 'rgba(255, 0, 85, 0.6)';
+                ctx.lineWidth = 3;
+                ctx.stroke();
 
-            let importedAny = false;
-            if(torso) { setSliderVal('torso', torso); importedAny = true; }
-            if(uArm) { setSliderVal('upperArm', uArm); importedAny = true; }
-            if(lArm) { setSliderVal('lowerArm', lArm); importedAny = true; }
-            if(thigh) { setSliderVal('thigh', thigh); importedAny = true; }
-            if(shin) { setSliderVal('shin', shin); importedAny = true; }
-            if(foot) { setSliderVal('foot', foot); importedAny = true; }
-            if(sH) { 
-                setSliderVal('seatHeightA', sH); 
-                setSliderVal('seatHeightB', sH); 
-                importedAny = true; 
-            }
-
-            if (importedAny) {
-                update(false);
-                alert("Rider dimensions successfully extracted from the text file!");
-            } else {
-                alert("Could not find any readable rider dimensions in this file. Make sure the keywords (e.g. 'torso', 'felkar') are next to the numbers!");
-            }
-        };
-        reader.readAsText(file);
-        event.target.value = ''; 
-    }
-
-    function saveToLocalStorage() {
-        const state = {};
-        document.querySelectorAll('input, select').forEach(i => {
-            if (i.type === 'file' || i.type === 'number') return; 
-            state[i.id] = i.type === 'checkbox' ? i.checked : i.value;
-        });
-        localStorage.setItem('bikeFitData', JSON.stringify(state));
-    }
-
-    function loadFromState(stateObj) {
-        document.querySelectorAll('input, select').forEach(i => {
-            if (i.type === 'file' || i.type === 'number') return;
-            if (stateObj[i.id] !== undefined) {
-                if (i.type === 'checkbox') {
-                    i.checked = stateObj[i.id];
-                } else {
-                    i.value = stateObj[i.id];
-                    const numInput = document.getElementById(i.id + '-num');
-                    if (numInput) numInput.value = stateObj[i.id];
+                if (aimLen >= maxDragDistance) {
+                    ctx.beginPath();
+                    ctx.fillStyle = colors.alt;
+                    ctx.arc(bike.x + dragX, bike.y + dragY, 4, 0, Math.PI * 2);
+                    ctx.fill();
                 }
             }
-        });
-        
-        if (stateObj['staA'] === undefined) { setSliderVal('staA', 73.5); }
-        if (stateObj['staB'] === undefined) { setSliderVal('staB', 73.5); }
-        if (stateObj['crankLengthA'] === undefined) { setSliderVal('crankLengthA', 172.5); }
-        if (stateObj['crankLengthB'] === undefined) { setSliderVal('crankLengthB', 172.5); }
 
-        if (stateObj['seatHeight'] !== undefined && stateObj['seatHeightA'] === undefined) {
-            let sH = parseFloat(stateObj['seatHeight']);
-            setSliderVal('seatHeightA', sH);
-            setSliderVal('seatHeightB', sH);
+            ctx.save();
+            ctx.translate(bike.x, bike.y);
+            ctx.rotate(bike.angle);
+            ctx.scale(bike.dir, 1);
+            ctx.lineCap = 'square';
+            ctx.lineJoin = 'miter';
+
+            ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.arc(-22, 12, 12, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(-22, 12, 8, 0, Math.PI * 2);
+            ctx.strokeStyle = wheelColors.rear;
+            ctx.lineWidth = 2.2;
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.arc(25, 12, 12, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+            ctx.lineWidth = 4;
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(25, 12, 8, 0, Math.PI * 2);
+            ctx.strokeStyle = wheelColors.front;
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            ctx.strokeStyle = 'rgba(255,255,255,0.8)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+
+            ctx.moveTo(-22, 12);
+            ctx.lineTo(1, 5);
+            ctx.lineTo(15, -10);
+            ctx.lineTo(25, 12);
+
+            ctx.moveTo(15, -10);
+            ctx.lineTo(-5, -1);
+            ctx.lineTo(-22, 12);
+
+            ctx.moveTo(-5, -1);
+            ctx.lineTo(1, 5);
+
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(-7, -3);
+            ctx.lineTo(-2, -4);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(15, -10);
+            ctx.lineTo(20, -20);
+            ctx.lineTo(24, -23);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.strokeStyle = gameState !== STATE_PLAYING ? colors.alt : colors.main;
+            ctx.lineWidth = 4;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = ctx.strokeStyle;
+
+            const hands = { x: 24, y: -23 };
+            const pedals = { x: 1, y: 5 };
+            let butt = { x: -7, y: -17 };
+            let shoulder = { x: 5, y: -39 };
+            let head = { x: 10, y: -49 };
+
+            if (isDragging && gameState === STATE_PLAYING) {
+                const pullX = dragCurrent.x - dragStart.x;
+                const pullY = dragCurrent.y - dragStart.y;
+                const localPullX = pullX * bike.dir;
+                let pullLen = Math.sqrt(localPullX*localPullX + pullY*pullY);
+
+                if (pullLen > 0) {
+                    let moveDist = Math.min(pullLen, maxDragDistance);
+                    butt.x += (localPullX/pullLen)*(moveDist*0.10);
+                    butt.y += (pullY/pullLen)*(moveDist*0.10);
+                    shoulder.x += (localPullX/pullLen)*(moveDist*0.14);
+                    shoulder.y += (pullY/pullLen)*(moveDist*0.14);
+                    head.x += (localPullX/pullLen)*(moveDist*0.14);
+                    head.y += (pullY/pullLen)*(moveDist*0.14);
+                }
+            } else if (!bike.grounded && bike.pose === poseStates.AIRBORNE) {
+                const airy = bike.tuckFactor;
+                butt.x += 7 * airy;
+                butt.y += 7 * airy;
+                shoulder.x += 10 * airy;
+                shoulder.y += 10 * airy;
+                head.x += 10 * airy;
+                head.y += 10 * airy;
+            }
+
+            ctx.moveTo(butt.x, butt.y);
+            ctx.lineTo(shoulder.x, shoulder.y);
+
+            let armMx = (shoulder.x + hands.x) / 2 - 3;
+            let armMy = (shoulder.y + hands.y) / 2 - 5;
+            ctx.moveTo(shoulder.x, shoulder.y);
+            ctx.lineTo(armMx, armMy);
+            ctx.lineTo(hands.x, hands.y);
+
+            let legMx = (butt.x + pedals.x) / 2 + 8;
+            let legMy = (butt.y + pedals.y) / 2 - 2;
+            ctx.moveTo(butt.x, butt.y);
+            ctx.lineTo(legMx, legMy);
+            ctx.lineTo(pedals.x, pedals.y);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.arc(head.x, head.y, 8, 0, Math.PI * 2);
+            ctx.fillStyle = ctx.strokeStyle;
+            ctx.fill();
+
+            ctx.shadowBlur = 0;
+            ctx.restore();
+            ctx.restore();
+
+            if (gameState === STATE_GAMEOVER) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = colors.alt;
+                ctx.font = 'bold 55px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('CRASHED', canvas.width / 2, canvas.height / 2 - 40);
+                ctx.font = '30px sans-serif';
+                ctx.fillStyle = colors.scored;
+                ctx.fillText(`SCORE: ${score}`, canvas.width / 2, canvas.height / 2 + 10);
+                ctx.fillStyle = '#fff';
+                ctx.font = '16px sans-serif';
+                ctx.fillText('Click anywhere to restart!', canvas.width / 2, canvas.height / 2 + 70);
+            }
         }
 
-        if (stateObj['arm'] !== undefined && stateObj['upperArm'] === undefined) {
-            let halfArm = parseFloat(stateObj['arm']) / 2;
-            setSliderVal('upperArm', halfArm);
-            setSliderVal('lowerArm', halfArm);
+        function gameLoop() {
+            updatePhysics();
+            draw();
+            requestAnimationFrame(gameLoop);
         }
 
-        updateBarUI('A'); updateBarUI('B');
-        toggleAutoTrunk('A'); toggleAutoTrunk('B');
-        update(true); 
-    }
-
-    function exportData() {
-        const data = localStorage.getItem('bikeFitData');
-        if (!data) return alert("No data to save.");
-        const blob = new Blob([data], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = "bikefit-setup.json";
-        a.click();
-        URL.revokeObjectURL(url);
-    }
-
-    function importData(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            try {
-                const state = JSON.parse(e.target.result);
-                loadFromState(state);
-                alert("Setup imported successfully!");
-            } catch (err) { alert("Invalid save file."); }
-        };
-        reader.readAsText(file);
-        event.target.value = '';
-    }
-
-    window.addEventListener('resize', () => { dims = initCanvas(); update(true); });
-    document.querySelectorAll('input[type="range"], input[type="checkbox"], select').forEach(i => {
-        if (i.id !== 'animatePedaling') { 
-            i.addEventListener('input', () => { update(false); });
-        }
-    });
-    
-    setTimeout(() => { 
-        dims = initCanvas(); 
-        const saved = localStorage.getItem('bikeFitData');
-        if (saved) {
-            try { loadFromState(JSON.parse(saved)); } catch(e) { updateBarUI('A'); updateBarUI('B'); toggleAutoTrunk('A'); toggleAutoTrunk('B'); update(true); }
-        } else {
-            updateBarUI('A'); updateBarUI('B'); toggleAutoTrunk('A'); toggleAutoTrunk('B'); update(true); 
-        }
-    }, 150);
-</script>
+        initGame();
+        gameLoop();
+    </script>
 </body>
 </html>
